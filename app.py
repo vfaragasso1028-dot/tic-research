@@ -335,6 +335,13 @@ def api_analyze():
     return jsonify(result)
 
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    import traceback
+    tb = traceback.format_exc()
+    # Show detailed error in response so we can debug
+    return f"<pre style='background:#111;color:#ef4444;padding:20px;font-size:13px;'><b>Error:</b> {e}\n\n{tb}</pre>", 500
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
