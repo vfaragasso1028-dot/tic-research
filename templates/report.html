@@ -161,7 +161,16 @@ table.fin-table{width:100%;border-collapse:collapse;}
 
   <!-- ── HEADER ── -->
   <div class="ticker-header">
-    <div class="ticker-meta">{{ d.ticker }} <span>·</span> {{ d.sector }} <span>·</span> {{ d.industry }}</div>
+    <div class="ticker-meta">
+      {{ d.ticker }} <span>·</span> {{ d.sector }} <span>·</span> {{ d.industry }}
+      <span style="margin-left:10px;">
+        {% if d.data_source == 'schwab' %}
+          <span class="pill green" style="font-size:10px;">⚡ Schwab Live</span>
+        {% else %}
+          <span class="pill gray" style="font-size:10px;">Yahoo Finance</span>
+        {% endif %}
+      </span>
+    </div>
     <div class="company-name">{{ d.company }}</div>
     <div class="price-row">
       <span class="price">${{ d.price }}</span>

@@ -3,6 +3,7 @@ import warnings
 import numpy as np
 import yfinance as yf
 from flask import Flask, render_template, request, jsonify
+from analysis.schwab_data import fetch_stock_data, get_schwab_client
 from analysis.technical import (
     ema, sma, calc_atr, calc_rsi, calc_macd, calc_adx,
     swing_highs, swing_lows, detect_gap_zones,
@@ -109,23 +110,24 @@ def safe_df(df):
 
 def analyze_ticker(ticker, api_key=""):
     import pandas as pd
-    stock = yf.Ticker(ticker)
 
+    # ── Fetch data (Schwab → yfinance fallback) ───────────────────────
     try:
-        df = stock.history(period="2y", interval="1d")
-        df = safe_df(df)
+        df, info, qf, af = fetch_stock_data(ticker)
     except Exception as e:
-        return None, f"Failed to fetch price data: {e}"
+        return None, f"Data fetch error: {e}"
 
-    try:
-        info = stock.info or {}
-    except Exception:
-        info = {}
+    if df is None or (hasattr(df, 'empty') and df.empty):
+        return None, f"No price data found for {ticker}. Check the symbol."
 
-    qf, af = get_financials(stock)
+    if qf is None:
+        import pandas as pd
+        qf = pd.DataFrame()
+    if af is None:
+        import pandas as pd
+        af = pd.DataFrame()
 
-    if df is None or df.empty:
-        return None, "No price data found."
+    df = safe_df(df)
 
     # Flatten Close if it's a DataFrame (MultiIndex yfinance response)
     if hasattr(df["Close"], "squeeze"):
@@ -266,6 +268,7 @@ def analyze_ticker(ticker, api_key=""):
     result = {
         # Header
         "ticker":    ticker,
+        "data_source": "schwab" if info.get("_source") == "schwab" else "yahoo",
         "company":   company,
         "sector":    sector,
         "industry":  industry,
