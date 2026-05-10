@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{{ d.ticker }} — TIC Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0a0a0a;color:#e8e8e8;line-height:1.5;}
+
+/* ── Layout ── */
+.page{max-width:1100px;margin:0 auto;padding:24px 20px 60px;}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 0 20px;border-bottom:1px solid #1f2937;margin-bottom:28px;}
+.topbar-left{display:flex;align-items:center;gap:16px;}
+.brand{font-size:15px;font-weight:800;letter-spacing:2px;color:#3b82f6;}
+a.back{font-size:13px;color:#6b7280;text-decoration:none;border:1px solid #222;border-radius:6px;padding:6px 12px;transition:all 0.15s;}
+a.back:hover{border-color:#3b82f6;color:#60a5fa;}
+.timestamp{font-size:11px;color:#374151;letter-spacing:0.5px;}
+
+/* ── Ticker Header ── */
+.ticker-header{margin-bottom:28px;}
+.ticker-meta{font-size:12px;color:#6b7280;font-weight:500;letter-spacing:0.5px;margin-bottom:4px;}
+.ticker-meta span{color:#4b5563;margin:0 6px;}
+.company-name{font-size:26px;font-weight:800;color:#f9fafb;margin-bottom:8px;}
+.price-row{display:flex;align-items:baseline;gap:14px;}
+.price{font-size:38px;font-weight:800;color:#f9fafb;}
+.change.up{color:#22c55e;font-size:17px;font-weight:600;}
+.change.down{color:#ef4444;font-size:17px;font-weight:600;}
+
+/* ── Section label ── */
+.section{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#374151;font-weight:700;
+  margin:32px 0 14px;padding-bottom:6px;border-bottom:1px solid #1a1a1a;}
+
+/* ── Cards grid ── */
+.grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:16px;}
+
+@media(max-width:800px){
+  .grid-5,.grid-4{grid-template-columns:repeat(2,1fr);}
+  .grid-3{grid-template-columns:1fr;}
+  .grid-2,.grid-2-1{grid-template-columns:1fr;}
+}
+@media(max-width:480px){.grid-5,.grid-4{grid-template-columns:1fr;}.price{font-size:28px;}}
+
+/* ── Card ── */
+.card{background:#111;border:1px solid #1f2937;border-radius:10px;padding:16px 18px;}
+.card.green{border-left:3px solid #22c55e;}
+.card.red{border-left:3px solid #ef4444;}
+.card.yellow{border-left:3px solid #f59e0b;}
+.card.blue{border-left:3px solid #3b82f6;}
+.card.gray{border-left:3px solid #374151;}
+
+.card-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#4b5563;font-weight:700;margin-bottom:6px;}
+.card-val{font-size:20px;font-weight:700;color:#f9fafb;}
+.card-val.big{font-size:42px;font-weight:800;}
+.card-val.green{color:#22c55e;}
+.card-val.yellow{color:#f59e0b;}
+.card-val.red{color:#ef4444;}
+.card-val.blue{color:#60a5fa;}
+.card-sub{font-size:12px;color:#6b7280;margin-top:3px;}
+.card-sub.green{color:#4ade80;}
+.card-sub.red{color:#f87171;}
+
+/* ── Badges / pills ── */
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;}
+.pill.green{background:#052e16;color:#22c55e;border:1px solid #16a34a;}
+.pill.red{background:#450a0a;color:#ef4444;border:1px solid #dc2626;}
+.pill.yellow{background:#451a03;color:#f59e0b;border:1px solid #d97706;}
+.pill.blue{background:#0c1a3b;color:#60a5fa;border:1px solid #2563eb;}
+.pill.gray{background:#111827;color:#9ca3af;border:1px solid #374151;}
+
+.stage-badge{display:inline-block;padding:4px 12px;border-radius:5px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;}
+.stage-badge.green{background:#052e16;color:#22c55e;border:1px solid #16a34a;}
+.stage-badge.yellow{background:#451a03;color:#f59e0b;border:1px solid #d97706;}
+.stage-badge.red{background:#450a0a;color:#ef4444;border:1px solid #dc2626;}
+.stage-badge.blue{background:#0c1a3b;color:#60a5fa;border:1px solid #2563eb;}
+.stage-badge.gray{background:#111827;color:#9ca3af;border:1px solid #374151;}
+
+/* ── Signal box ── */
+.signal-box{background:#0b1320;border:1px solid #1e3a5f;border-radius:10px;padding:18px 22px;
+  font-size:14px;line-height:1.8;color:#cbd5e1;}
+
+/* ── Prose boxes ── */
+.prose-box{background:#0f0f0f;border:1px solid #1a1a1a;border-radius:10px;padding:18px 22px;
+  font-size:13.5px;line-height:1.8;color:#d1d5db;margin-bottom:0;}
+
+/* ── Thesis ── */
+.thesis-item{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid #141414;}
+.thesis-num{min-width:32px;font-size:20px;font-weight:800;color:#374151;}
+.thesis-text{font-size:13.5px;color:#d1d5db;line-height:1.7;}
+
+/* ── Bull / Bear ── */
+.bull-box{background:#052e16;border:1px solid #16a34a;border-radius:10px;padding:18px 20px;}
+.bear-box{background:#450a0a;border:1px solid #dc2626;border-radius:10px;padding:18px 20px;}
+.bb-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:14px;}
+.bull-box .bb-title{color:#16a34a;}
+.bear-box .bb-title{color:#dc2626;}
+.bb-item{font-size:13px;line-height:1.7;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.bb-item:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none;}
+.bull-box .bb-item{color:#86efac;}
+.bear-box .bb-item{color:#fca5a5;}
+.bull-arrow{color:#22c55e;font-weight:800;margin-right:6px;}
+.bear-arrow{color:#ef4444;font-weight:800;margin-right:6px;}
+
+/* ── Catalyst ── */
+.catalyst-item{background:#111;border:1px solid #1f2937;border-left:3px solid #3b82f6;border-radius:8px;padding:14px 18px;margin-bottom:10px;}
+.catalyst-date{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#3b82f6;font-weight:700;margin-bottom:5px;}
+.catalyst-text{font-size:13px;color:#d1d5db;line-height:1.6;}
+
+/* ── PowerStack table ── */
+.ma-row{display:grid;grid-template-columns:90px 1fr auto auto;align-items:center;gap:12px;
+  padding:11px 0;border-bottom:1px solid #141414;}
+.ma-label{font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;font-weight:600;}
+.ma-val{font-size:15px;font-weight:700;color:#f9fafb;}
+.ma-pct{font-size:13px;font-weight:600;}
+.ma-pct.green{color:#22c55e;} .ma-pct.yellow{color:#f59e0b;} .ma-pct.red{color:#ef4444;}
+.ma-bar{height:4px;border-radius:2px;background:#1f2937;overflow:hidden;width:80px;}
+.ma-bar-fill{height:100%;border-radius:2px;}
+
+/* ── Indicator row ── */
+.ind-row{display:grid;grid-template-columns:80px 1fr auto;gap:10px;align-items:center;
+  padding:11px 0;border-bottom:1px solid #141414;}
+.ind-label{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;font-weight:700;}
+.ind-val{font-size:16px;font-weight:700;}
+.ind-sub{font-size:12px;color:#6b7280;text-align:right;}
+
+/* ── Financials table ── */
+table.fin-table{width:100%;border-collapse:collapse;}
+.fin-table th{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#4b5563;
+  padding:8px 12px;text-align:left;border-bottom:1px solid #1f2937;font-weight:600;}
+.fin-table td{font-size:13px;color:#e5e7eb;padding:10px 12px;border-bottom:1px solid #141414;}
+.fin-table tr:hover td{background:#111;}
+
+/* ── Footer ── */
+.report-footer{text-align:center;color:#374151;font-size:11px;margin-top:48px;padding-top:16px;border-top:1px solid #141414;}
+
+/* ── AI warning ── */
+.ai-warn{background:#1c1400;border:1px solid #78350f;border-radius:8px;padding:10px 14px;color:#fbbf24;font-size:12px;margin-bottom:12px;}
+
+/* ── Exempt notice ── */
+.exempt-box{background:#1c1400;border:1px solid #92400e;border-radius:10px;padding:14px 18px;}
+.exempt-box .card-val{color:#f59e0b;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="brand">TIC</span>
+      <a class="back" href="/">← New Search</a>
+    </div>
+    <span class="timestamp" id="ts"></span>
+  </div>
+
+  <!-- ── HEADER ── -->
+  <div class="ticker-header">
+    <div class="ticker-meta">{{ d.ticker }} <span>·</span> {{ d.sector }} <span>·</span> {{ d.industry }}</div>
+    <div class="company-name">{{ d.company }}</div>
+    <div class="price-row">
+      <span class="price">${{ d.price }}</span>
+      <span class="change {{ d.change_dir }}">
+        {{ d.change_arrow }} ${{ d.change_val }} ({{ d.change_pct }}%)
+      </span>
+    </div>
+  </div>
+
+  <!-- ── TOP METRICS ── -->
+  <div class="section">Overview</div>
+  <div class="grid-5">
+
+    <!-- TicScore -->
+    {% if d.exempt %}
+    <div class="card yellow exempt-box">
+      <div class="card-label">TicScore</div>
+      <div class="card-val big yellow">EXEMPT</div>
+      <div class="card-sub">{{ d.exempt_reason }}</div>
+    </div>
+    {% else %}
+    <div class="card {{ d.tic_color }}">
+      <div class="card-label">TicScore &nbsp;
+        {% if d.tic_pass %}<span class="pill green">✓ Pass</span>{% else %}<span class="pill red">✗ Fail</span>{% endif %}
+      </div>
+      <div class="card-val big {{ d.tic_color }}">{{ d.tic_total }}</div>
+      <div class="card-sub">G:{{ d.tic_g }} · V:{{ d.tic_v }} · Q:{{ d.tic_q }} · S:{{ d.tic_s }}</div>
+    </div>
+    {% endif %}
+
+    <!-- TicStage -->
+    <div class="card blue">
+      <div class="card-label">TicStage</div>
+      <div class="card-val" style="font-size:17px;margin-bottom:4px;">{{ d.stage }}</div>
+      <span class="stage-badge {{ d.stage_color }}">{{ d.stage_sub }}</span>
+      <div class="card-sub" style="margin-top:6px;">{{ d.stage_desc }}</div>
+    </div>
+
+    <!-- ATR -->
+    <div class="card gray">
+      <div class="card-label">ATR (14)</div>
+      <div class="card-val">${{ d.atr }}</div>
+      <div class="card-sub">{{ d.atr_pct }}% daily range</div>
+      <div class="card-sub">vs 50SMA: {{ d.s50_pct }}</div>
+    </div>
+
+    <!-- ADX -->
+    <div class="card gray">
+      <div class="card-label">ADX (14)</div>
+      <div class="card-val">{{ d.adx }}</div>
+      <div class="card-sub">{{ d.adx_str }}</div>
+      <div class="card-sub">DI+ {{ d.di_plus }} / DI- {{ d.di_minus }}</div>
+    </div>
+
+    <!-- RS Rating -->
+    <div class="card gray">
+      <div class="card-label">RS Rating</div>
+      <div class="card-val {{ d.rs_color }}">{{ d.rs }}</div>
+      <div class="card-sub">{{ d.rs_label }}</div>
+      <div class="card-sub">
+        {% if d.full_stack %}✓ PowerStack Aligned{% else %}✗ Stack Unaligned{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TIC SIGNAL ── -->
+  <div class="section">TIC Signal</div>
+  <div class="signal-box">{{ d.tic_signal }}</div>
+
+  <!-- ── KEY LEVELS ── -->
+  <div class="section">Key Levels & Market Data</div>
+  <div class="grid-4">
+    <div class="card green">
+      <div class="card-label">Support</div>
+      <div class="card-val">${{ d.support }}</div>
+      <div class="card-sub">Swing low floor</div>
+    </div>
+    <div class="card red">
+      <div class="card-label">Resistance</div>
+      <div class="card-val">${{ d.resistance }}</div>
+      <div class="card-sub">Swing high ceiling</div>
+    </div>
+    <div class="card gray">
+      <div class="card-label">52W High</div>
+      <div class="card-val">${{ d.w52h }}</div>
+      <div class="card-sub">{{ d.w52h_pct }} from price</div>
+    </div>
+    <div class="card gray">
+      <div class="card-label">52W Low</div>
+      <div class="card-val">${{ d.w52l }}</div>
+      <div class="card-sub">{{ d.w52l_pct }} from price</div>
+    </div>
+  </div>
+
+  <div class="grid-4" style="margin-top:12px;">
+    <div class="card gray">
+      <div class="card-label">Market Cap</div>
+      <div class="card-val">{{ d.mkt_cap }}</div>
+      <div class="card-sub">Avg Vol {{ d.avg_vol }}</div>
+    </div>
+    <div class="card gray">
+      <div class="card-label">PE Ratios</div>
+      <div class="card-val" style="font-size:15px;">Trail {{ d.trail_pe }}</div>
+      <div class="card-sub">Fwd {{ d.fwd_pe }}</div>
+    </div>
+    <div class="card gray">
+      <div class="card-label">Beta · Consensus</div>
+      <div class="card-val" style="font-size:15px;">β {{ d.beta }}</div>
+      <div class="card-sub">{{ d.rec_key }}</div>
+    </div>
+    <div class="card gray">
+      <div class="card-label">Analyst Target</div>
+      <div class="card-val">${{ d.target }}</div>
+      <div class="card-sub">{{ d.target_pct }} from price</div>
+    </div>
+  </div>
+
+  <!-- ── QUARTERLY FINANCIALS ── -->
+  {% if d.quarterly %}
+  <div class="section">Quarterly Financials</div>
+  <div class="card gray" style="padding:0;overflow:hidden;">
+    <table class="fin-table">
+      <thead><tr><th>Quarter</th><th>Revenue</th><th>Net Income</th></tr></thead>
+      <tbody>
+        {% for row in d.quarterly %}
+        <tr>
+          <td style="font-weight:600;color:#9ca3af;">{{ row.quarter }}</td>
+          <td>{{ row.revenue }}</td>
+          <td>{{ row.net_income }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- ── THE TIC OF [TICKER] ── -->
+  <div class="section">The TIC of {{ d.ticker }}</div>
+  <div class="prose-box">{{ d.tic_stock }}</div>
+
+  <!-- ── INVESTMENT THESIS ── -->
+  {% if d.thesis %}
+  <div class="section">Investment Thesis</div>
+  <div class="card gray" style="padding:0 20px;">
+    {% for point in d.thesis %}
+    <div class="thesis-item">
+      <div class="thesis-num">0{{ loop.index }}.</div>
+      <div class="thesis-text">{{ point }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── BULL / BEAR ── -->
+  <div class="section">Bull / Bear Cases</div>
+  <div class="grid-2">
+    <div class="bull-box">
+      <div class="bb-title">▲ Bull Case</div>
+      {% for b in d.bull_cases %}
+      <div class="bb-item"><span class="bull-arrow">▲</span>{{ b }}</div>
+      {% endfor %}
+    </div>
+    <div class="bear-box">
+      <div class="bb-title">▼ Bear Case</div>
+      {% for b in d.bear_cases %}
+      <div class="bb-item"><span class="bear-arrow">▼</span>{{ b }}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ── CATALYST CALENDAR ── -->
+  {% if d.catalysts %}
+  <div class="section">Catalyst Calendar</div>
+  {% for cat in d.catalysts %}
+  <div class="catalyst-item">
+    <div class="catalyst-date">{{ cat.date }}</div>
+    <div class="catalyst-text">{{ cat.text }}</div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- ── POWERSTACK ── -->
+  <div class="section">Technical Analysis — PowerStack</div>
+  <div class="grid-2-1">
+
+    <!-- MAs -->
+    <div class="card gray" style="padding:0 18px;">
+      {% set mas = [
+        ("9 EMA",   d.e9,   d.e9_pct),
+        ("21 EMA",  d.e21,  d.e21_pct),
+        ("50 SMA",  d.s50,  d.s50_pct),
+        ("150 SMA", d.s150, d.s150_pct),
+        ("200 SMA", d.s200, d.s200_pct)
+      ] %}
+      {% for label, val, pct in mas %}
+      <div class="ma-row">
+        <div class="ma-label">{{ label }}</div>
+        <div class="ma-val">${{ val }}</div>
+        <div class="ma-pct {% if '-' in pct %}red{% elif '+5' in pct or '+6' in pct or '+7' in pct or '+8' in pct or '+9' in pct %}green{% elif pct.startswith('+') %}green{% else %}yellow{% endif %}">{{ pct }}</div>
+      </div>
+      {% endfor %}
+      <div style="padding:14px 0;display:flex;gap:10px;flex-wrap:wrap;">
+        <span class="pill {% if d.cross_type == 'death' %}red{% else %}green{% endif %}">
+          {% if d.cross_type == 'death' %}✗ Death Cross{% else %}✓ Golden Cross{% endif %}
+        </span>
+        <span class="pill {% if d.full_stack %}green{% else %}yellow{% endif %}">
+          {% if d.full_stack %}✓ Full Stack{% else %}⚠ Stack Unaligned{% endif %}
+        </span>
+      </div>
+    </div>
+
+    <!-- Indicators -->
+    <div class="card gray" style="padding:0 18px;">
+      <div class="ind-row">
+        <div class="ind-label">RSI (14)</div>
+        <div class="ind-val" style="color:{%if d.rsi_color=='red'%}#ef4444{%elif d.rsi_color=='green'%}#22c55e{%else%}#f59e0b{%endif%};">{{ d.rsi }}</div>
+        <div class="ind-sub">{{ d.rsi_label }}</div>
+      </div>
+      <div class="ind-row">
+        <div class="ind-label">MACD</div>
+        <div class="ind-val" style="color:{%if d.macd_color=='green'%}#22c55e{%else%}#ef4444{%endif%};">{{ d.macd }}</div>
+        <div class="ind-sub">{{ d.macd_dir }} · {{ d.hist }}</div>
+      </div>
+      <div class="ind-row">
+        <div class="ind-label">Volume</div>
+        <div class="ind-val">{{ d.vol_today }}</div>
+        <div class="ind-sub">{{ d.vol_ratio }} avg</div>
+      </div>
+      <div class="ind-row" style="border-bottom:none;">
+        <div class="ind-label">ATR</div>
+        <div class="ind-val">${{ d.atr }}</div>
+        <div class="ind-sub">{{ d.atr_pct }}% range</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PATTERNS ── -->
+  <div class="section">Active Patterns</div>
+  <div class="grid-3">
+    <div class="card {% if d.pocket_pivot %}green{% else %}gray{% endif %}">
+      <div class="card-label">Pocket Pivot</div>
+      <div class="card-val {% if d.pocket_pivot %}green{% else %}gray{% endif %}">
+        {% if d.pocket_pivot %}Active ✓{% else %}Not Active{% endif %}
+      </div>
+      <div class="card-sub">Volume vs prior down-day highs</div>
+    </div>
+    <div class="card {% if d.lower_highs %}red{% else %}gray{% endif %}">
+      <div class="card-label">Lower High Pattern</div>
+      <div class="card-val {% if d.lower_highs %}red{% else %}gray{% endif %}">
+        {% if d.lower_highs %}Detected ⚠{% else %}Not Detected{% endif %}
+      </div>
+      <div class="card-sub">
+        {% if d.lower_highs %}{{ d.lh_vals | join(' → ') }}{% else %}Swing highs not declining{% endif %}
+      </div>
+    </div>
+    <div class="card {% if d.active_gap %}blue{% else %}gray{% endif %}">
+      <div class="card-label">Gap Support Zone</div>
+      <div class="card-val {% if d.active_gap %}blue{% else %}gray{% endif %}">
+        {% if d.active_gap %}${{ "%.2f"|format(d.active_gap.bottom) }}–${{ "%.2f"|format(d.active_gap.top) }}{% else %}None Active{% endif %}
+      </div>
+      <div class="card-sub">Unfilled gap below current price</div>
+    </div>
+  </div>
+
+  <!-- ── METHODOLOGY ── -->
+  <details style="margin-top:32px;">
+    <summary style="cursor:pointer;font-size:12px;color:#4b5563;user-select:none;list-style:none;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;border:1px solid #222;border-radius:4px;padding:3px 8px;">▸ Methodology</span>
+    </summary>
+    <div style="margin-top:16px;background:#0f0f0f;border:1px solid #1a1a1a;border-radius:10px;padding:20px 24px;">
+      <p style="font-size:13px;color:#9ca3af;margin-bottom:12px;font-weight:700;">TicScore — CAN SLIM Scoring (100 pts)</p>
+      <table style="width:100%;font-size:12px;color:#6b7280;border-collapse:collapse;">
+        <tr><td style="padding:6px 0;border-bottom:1px solid #141414;color:#9ca3af;font-weight:600;width:120px;">G — Growth</td><td style="padding:6px 0 6px 12px;border-bottom:1px solid #141414;">0–40 pts · Current + annual EPS growth, revenue growth, earnings acceleration</td></tr>
+        <tr><td style="padding:6px 0;border-bottom:1px solid #141414;color:#9ca3af;font-weight:600;">V — Supply/Demand</td><td style="padding:6px 0 6px 12px;border-bottom:1px solid #141414;">0–20 pts · Float size, relative volume</td></tr>
+        <tr><td style="padding:6px 0;border-bottom:1px solid #141414;color:#9ca3af;font-weight:600;">Q — Quality</td><td style="padding:6px 0 6px 12px;border-bottom:1px solid #141414;">0–20 pts · ROE ≥17%, profit margins</td></tr>
+        <tr><td style="padding:6px 0;color:#9ca3af;font-weight:600;">S — Sponsorship</td><td style="padding:6px 0 6px 12px;">0–20 pts · Institutional ownership, analyst consensus</td></tr>
+      </table>
+      <p style="font-size:12px;color:#6b7280;margin-top:14px;">Pass threshold: ≥50. Exempt sectors: Financials, Real Estate, Energy, Mining, Clinical Biotech, Utilities.</p>
+      <p style="font-size:13px;color:#9ca3af;margin:16px 0 8px;font-weight:700;">TicStage — Stan Weinstein Stage Analysis</p>
+      <p style="font-size:12px;color:#6b7280;">Uses 150-day SMA proxy for the 30-week moving average. Stage 2 (Advancing) is the optimal swing trading environment. PowerStack override: Stage 2 confirmed early when 9EMA > 21EMA > 50SMA above the 150 SMA.</p>
+    </div>
+  </details>
+
+  <div class="report-footer">
+    TIC Research · CAN SLIM + Stage Analysis + AI Thesis · Data via Yahoo Finance · Not financial advice
+  </div>
+</div>
+
+<script>
+document.getElementById("ts").textContent = new Date().toLocaleString("en-US", {month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
+</script>
+</body>
+</html>

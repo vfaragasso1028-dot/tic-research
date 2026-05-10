@@ -1,0 +1,7 @@
+flask==3.1.1
+gunicorn==23.0.0
+yfinance==0.2.61
+anthropic==0.51.0
+pandas==2.2.3
+numpy==2.0.2
+requests==2.32.3
