@@ -48,39 +48,97 @@ def safe_float(val, default=0.0):
 
 def parse_quarterly(qf):
     rows = []
-    if qf is None or qf.empty:
-        return rows
-    rev_key = next((k for k in qf.index if "Revenue" in k), None)
-    ni_key  = next((k for k in qf.index if "Net Income" in k), None)
-    for i, col in enumerate(qf.columns[:4]):
-        rev = qf.loc[rev_key, col] if rev_key else None
-        ni  = qf.loc[ni_key,  col] if ni_key  else None
-        label = col.strftime("%b '%y") if hasattr(col, "strftime") else str(col)[:7]
-        rows.append({
-            "quarter":    label,
-            "revenue":    fmt_currency(rev) if rev is not None else "N/A",
-            "net_income": fmt_currency(ni)  if ni  is not None else "N/A",
-        })
+    try:
+        if qf is None or qf.empty:
+            return rows
+        idx = [str(i) for i in qf.index]
+        rev_key = next((k for k in qf.index if "Revenue" in str(k) or "revenue" in str(k)), None)
+        ni_key  = next((k for k in qf.index if "Net Income" in str(k) or "net income" in str(k).lower()), None)
+        for i, col in enumerate(qf.columns[:4]):
+            try:
+                rev = float(qf.loc[rev_key, col]) if rev_key is not None else None
+            except Exception:
+                rev = None
+            try:
+                ni = float(qf.loc[ni_key, col]) if ni_key is not None else None
+            except Exception:
+                ni = None
+            label = col.strftime("%b '%y") if hasattr(col, "strftime") else str(col)[:7]
+            rows.append({
+                "quarter":    label,
+                "revenue":    fmt_currency(rev) if rev is not None else "N/A",
+                "net_income": fmt_currency(ni)  if ni  is not None else "N/A",
+            })
+    except Exception:
+        pass
     return rows
 
 
+def get_financials(stock):
+    """Fetch quarterly + annual financials, handling yfinance API differences."""
+    import pandas as pd
+    qf = af = pd.DataFrame()
+    # quarterly — try multiple attribute names across yfinance versions
+    for attr in ("quarterly_income_stmt", "quarterly_financials"):
+        try:
+            data = getattr(stock, attr, None)
+            if data is not None and not data.empty:
+                qf = data
+                break
+        except Exception:
+            pass
+    # annual
+    for attr in ("income_stmt", "financials"):
+        try:
+            data = getattr(stock, attr, None)
+            if data is not None and not data.empty:
+                af = data
+                break
+        except Exception:
+            pass
+    return qf, af
+
+def safe_df(df):
+    """Flatten MultiIndex columns from yfinance if present."""
+    import pandas as pd
+    if df is None or df.empty:
+        return df
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(-1)
+    return df
+
 def analyze_ticker(ticker, api_key=""):
+    import pandas as pd
     stock = yf.Ticker(ticker)
-    df    = stock.history(period="2y", interval="1d")
-    info  = stock.info or {}
 
-    try: qf = stock.quarterly_financials
-    except Exception: qf = None
+    try:
+        df = stock.history(period="2y", interval="1d")
+        df = safe_df(df)
+    except Exception as e:
+        return None, f"Failed to fetch price data: {e}"
 
-    try: af = stock.financials
-    except Exception: af = None
+    try:
+        info = stock.info or {}
+    except Exception:
+        info = {}
 
-    if df.empty:
+    qf, af = get_financials(stock)
+
+    if df is None or df.empty:
         return None, "No price data found."
 
-    close = df["Close"]
-    price     = safe_float(info.get("currentPrice") or info.get("regularMarketPrice") or close.iloc[-1])
-    prev_close = safe_float(info.get("previousClose") or close.iloc[-2])
+    # Flatten Close if it's a DataFrame (MultiIndex yfinance response)
+    if hasattr(df["Close"], "squeeze"):
+        close = df["Close"].squeeze()
+    else:
+        close = df["Close"]
+    # Ensure it's a 1D Series
+    import pandas as pd
+    if isinstance(close, pd.DataFrame):
+        close = close.iloc[:, 0]
+
+    price      = safe_float(info.get("currentPrice") or info.get("regularMarketPrice") or close.iloc[-1])
+    prev_close = safe_float(info.get("previousClose") or (close.iloc[-2] if len(close) > 1 else close.iloc[-1]))
     change_val = price - prev_close
     change_pct = (change_val / prev_close * 100) if prev_close else 0
 
