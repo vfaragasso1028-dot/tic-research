@@ -384,6 +384,38 @@ def analyze():
     return render_template("report.html", d=result)
 
 
+@app.route("/healthcheck")
+def healthcheck():
+    """Quick diagnostic — shows env, package versions, and a live data test."""
+    import yfinance as yf
+    import pandas as pd
+    import sys
+
+    diag = {
+        "python": sys.version,
+        "yfinance": yf.__version__,
+        "pandas": pd.__version__,
+        "numpy": np.__version__,
+        "schwab_token_found": any(
+            __import__("os").path.exists(p) for p in [
+                r"C:\Users\vince\Desktop\orb_bot\schwab_token.json",
+                "/tmp/schwab_token.json"
+            ]
+        ),
+        "schwab_env_var": bool(__import__("os").environ.get("SCHWAB_TOKEN_JSON")),
+    }
+
+    # Quick yfinance data test
+    try:
+        test = yf.Ticker("SPY").history(period="5d", interval="1d")
+        diag["yfinance_test"] = "OK" if not test.empty else "EMPTY"
+        diag["yfinance_rows"] = len(test)
+    except Exception as e:
+        diag["yfinance_test"] = f"FAIL: {e}"
+
+    return jsonify(diag)
+
+
 @app.route("/api/analyze")
 def api_analyze():
     ticker  = request.args.get("ticker", "").strip().upper()

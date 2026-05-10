@@ -204,32 +204,27 @@ def supplement_with_yfinance(symbol, schwab_info):
     return schwab_info
 
 
-def yf_ticker_robust(symbol):
-    """
-    Create a yfinance Ticker with a curl_cffi session (required by yfinance 0.2+).
-    curl_cffi impersonates a real browser TLS fingerprint, bypassing Yahoo rate-limits.
-    """
-    import yfinance as yf
-    try:
-        from curl_cffi import requests as curl_requests
-        session = curl_requests.Session(impersonate="chrome124")
-        return yf.Ticker(symbol, session=session)
-    except Exception:
-        # Fallback: let yfinance manage its own session
-        return yf.Ticker(symbol)
-
-
 def yf_fetch_robust(symbol):
-    """Fetch history + info + financials with retry logic."""
+    """
+    Fetch history + info + financials from yfinance.
+    Uses yfinance's built-in session management (curl_cffi internally).
+    Includes retry logic for transient failures.
+    """
     import time
+    import yfinance as yf
     import pandas as pd
 
     for attempt in range(3):
         try:
-            stock = yf_ticker_robust(symbol)
+            # Let yfinance manage its own curl_cffi session — don't override it
+            stock = yf.Ticker(symbol)
             df    = stock.history(period="2y", interval="1d")
+
             if df is not None and not df.empty:
-                info = stock.info or {}
+                try:
+                    info = stock.info or {}
+                except Exception:
+                    info = {}
                 try:    qf = stock.quarterly_income_stmt
                 except: qf = getattr(stock, "quarterly_financials", pd.DataFrame())
                 try:    af = stock.income_stmt
@@ -237,10 +232,12 @@ def yf_fetch_robust(symbol):
                 if qf is None: qf = pd.DataFrame()
                 if af is None: af = pd.DataFrame()
                 return df, info, qf, af
+            else:
+                print(f"[YF] Empty data on attempt {attempt+1} for {symbol}")
         except Exception as e:
             print(f"[YF] Attempt {attempt+1} failed for {symbol}: {e}")
-            if attempt < 2:
-                time.sleep(1.5)
+        if attempt < 2:
+            time.sleep(2)
 
     return None, {}, pd.DataFrame(), pd.DataFrame()
 
