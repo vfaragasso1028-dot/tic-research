@@ -204,6 +204,47 @@ def supplement_with_yfinance(symbol, schwab_info):
     return schwab_info
 
 
+def yf_ticker_robust(symbol):
+    """
+    Create a yfinance Ticker with a curl_cffi session (required by yfinance 0.2+).
+    curl_cffi impersonates a real browser TLS fingerprint, bypassing Yahoo rate-limits.
+    """
+    import yfinance as yf
+    try:
+        from curl_cffi import requests as curl_requests
+        session = curl_requests.Session(impersonate="chrome124")
+        return yf.Ticker(symbol, session=session)
+    except Exception:
+        # Fallback: let yfinance manage its own session
+        return yf.Ticker(symbol)
+
+
+def yf_fetch_robust(symbol):
+    """Fetch history + info + financials with retry logic."""
+    import time
+    import pandas as pd
+
+    for attempt in range(3):
+        try:
+            stock = yf_ticker_robust(symbol)
+            df    = stock.history(period="2y", interval="1d")
+            if df is not None and not df.empty:
+                info = stock.info or {}
+                try:    qf = stock.quarterly_income_stmt
+                except: qf = getattr(stock, "quarterly_financials", pd.DataFrame())
+                try:    af = stock.income_stmt
+                except: af = getattr(stock, "financials", pd.DataFrame())
+                if qf is None: qf = pd.DataFrame()
+                if af is None: af = pd.DataFrame()
+                return df, info, qf, af
+        except Exception as e:
+            print(f"[YF] Attempt {attempt+1} failed for {symbol}: {e}")
+            if attempt < 2:
+                time.sleep(1.5)
+
+    return None, {}, pd.DataFrame(), pd.DataFrame()
+
+
 def fetch_stock_data(symbol):
     """
     Main entry point for TIC Research data fetching.
@@ -211,10 +252,10 @@ def fetch_stock_data(symbol):
 
     Priority:
       1. Schwab for OHLCV + real-time quote
-      2. yfinance supplemented for fundamentals Schwab doesn't carry
+      2. yfinance (with cloud-safe headers) for fundamentals + financials
       3. Full yfinance fallback if Schwab unavailable
     """
-    import yfinance as yf
+    import pandas as pd
 
     schwab_available = get_schwab_client() is not None
 
@@ -224,32 +265,17 @@ def fetch_stock_data(symbol):
         info = schwab_quote(symbol)
 
         if df is not None and info is not None:
-            # Supplement missing fundamentals from yfinance (quick call)
             info = supplement_with_yfinance(symbol, info)
 
-            # Get financials from yfinance (Schwab doesn't have income statements)
-            try:
-                stock = yf.Ticker(symbol)
-                try:    qf = stock.quarterly_income_stmt
-                except: qf = stock.quarterly_financials
-                try:    af = stock.income_stmt
-                except: af = stock.financials
-            except Exception:
-                import pandas as pd
-                qf = af = pd.DataFrame()
-
+            # Financials always from yfinance (Schwab has no income statements)
+            _, _, qf, af = yf_fetch_robust(symbol)
             return df, info, qf, af
 
-    # Full yfinance fallback
+    # Full yfinance fallback (cloud-safe)
     print(f"[Data] Schwab unavailable — using Yahoo Finance for {symbol}")
     try:
-        stock = yf.Ticker(symbol)
-        df    = stock.history(period="2y", interval="1d")
-        info  = stock.info or {}
-        try:    qf = stock.quarterly_income_stmt
-        except: qf = stock.quarterly_financials
-        try:    af = stock.income_stmt
-        except: af = stock.financials
+        df, info, qf, af = yf_fetch_robust(symbol)
         return df, info, qf, af
     except Exception as e:
-        return None, {}, None, None
+        import pandas as pd
+        return None, {}, pd.DataFrame(), pd.DataFrame()
