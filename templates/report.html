@@ -136,6 +136,29 @@ table.fin-table{width:100%;border-collapse:collapse;}
 .fin-table td{font-size:13px;color:#e5e7eb;padding:10px 12px;border-bottom:1px solid #141414;}
 .fin-table tr:hover td{background:#111;}
 
+/* ── News Confirmation ── */
+.news-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.news-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:0.3px;}
+.news-badge.green{background:#052e16;color:#22c55e;border:1px solid #16a34a;}
+.news-badge.red{background:#450a0a;color:#ef4444;border:1px solid #dc2626;}
+.news-badge.yellow{background:#451a03;color:#f59e0b;border:1px solid #d97706;}
+.news-badge.gray{background:#111827;color:#9ca3af;border:1px solid #374151;}
+.news-stat{font-size:11px;color:#6b7280;}
+.news-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #141414;}
+.news-item:last-child{border-bottom:none;}
+.news-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.news-dot.bull{background:#22c55e;}
+.news-dot.bear{background:#ef4444;}
+.news-dot.neutral{background:#374151;}
+.news-src{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;color:#4b5563;min-width:90px;padding-top:2px;}
+.news-title{font-size:13px;color:#d1d5db;line-height:1.5;flex:1;}
+.news-title a{color:#d1d5db;text-decoration:none;}
+.news-title a:hover{color:#60a5fa;text-decoration:underline;}
+.news-sent{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0;margin-top:2px;}
+.news-sent.bull{background:#052e16;color:#22c55e;}
+.news-sent.bear{background:#450a0a;color:#ef4444;}
+.news-sent.neutral{background:#111827;color:#6b7280;}
+
 /* ── Footer ── */
 .report-footer{text-align:center;color:#374151;font-size:11px;margin-top:48px;padding-top:16px;border-top:1px solid #141414;}
 
@@ -178,6 +201,11 @@ table.fin-table{width:100%;border-collapse:collapse;}
         {{ d.change_arrow }} ${{ d.change_val }} ({{ d.change_pct }}%)
       </span>
     </div>
+    {% if d.company_bio %}
+    <div style="margin-top:12px; background:#111; border:1px solid #1f2937; border-left:3px solid #3b82f6; border-radius:8px; padding:12px 16px; font-size:13px; color:#9ca3af; line-height:1.7; max-width:780px;">
+      <span style="color:#3b82f6; font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-right:8px;">About</span>{{ d.company_bio }}
+    </div>
+    {% endif %}
   </div>
 
   <!-- ── TOP METRICS ── -->
@@ -340,6 +368,36 @@ table.fin-table{width:100%;border-collapse:collapse;}
       {% endfor %}
     </div>
   </div>
+
+  <!-- ── NEWS CONFIRMATION ── -->
+  {% if d.news_headlines %}
+  <div class="section">News Confirmation</div>
+  <div class="card gray" style="padding:18px 20px;">
+    <div class="news-header">
+      <span class="news-badge {{ d.news_signal.color }}">{{ d.news_signal.label }}</span>
+      <span class="news-stat">
+        {{ d.news_signal.bull }} bullish · {{ d.news_signal.bear }} bearish · {{ d.news_signal.neutral }} neutral
+        &nbsp;|&nbsp; Sources: {{ d.news_sources | join(', ') }}
+      </span>
+    </div>
+    {% for h in d.news_headlines %}
+    <div class="news-item">
+      <div class="news-dot {{ h.sentiment }}"></div>
+      <div class="news-src">{{ h.source }}</div>
+      <div class="news-title">
+        {% if h.url and h.url != '#' %}
+          <a href="{{ h.url }}" target="_blank" rel="noopener">{{ h.title }}</a>
+        {% else %}
+          {{ h.title }}
+        {% endif %}
+      </div>
+      <span class="news-sent {{ h.sentiment }}">
+        {% if h.sentiment == 'bull' %}▲ Bull{% elif h.sentiment == 'bear' %}▼ Bear{% else %}— Neutral{% endif %}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <!-- ── CATALYST CALENDAR ── -->
   {% if d.catalysts %}

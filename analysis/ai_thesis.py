@@ -67,6 +67,7 @@ Write for sophisticated swing traders — maximize signal-to-noise ratio.
 
 Return ONLY a valid JSON object with these exact keys:
 {
+  "company_bio": "2-3 sentence plain-English description of what this company actually does, what sector it operates in, and what its core business model is. Written for someone who has never heard of the company. Start with the sector in brackets e.g. [Technology] then the description.",
   "tic_signal": "2-4 sentence technical signal. Cover active patterns, exact price levels, directional bias for aggressive vs conservative traders.",
   "tic_stock": "3-5 sentence holistic narrative. Valuation, revenue trend, net income trajectory, analyst positioning, beta implications. Balanced — name risks AND opportunity.",
   "thesis": ["point 1", "point 2", "point 3"],

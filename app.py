@@ -12,6 +12,7 @@ from analysis.technical import (
 from analysis.canslim import ticscore, is_exempt
 from analysis.stage import ticstage
 from analysis.ai_thesis import build_context, generate_thesis
+from analysis.news import fetch_news
 
 warnings.filterwarnings("ignore")
 
@@ -242,7 +243,18 @@ def analyze_ticker(ticker, api_key=""):
             + (f"Beta of {beta:.2f} — {'high-volatility vehicle, position sizing is the trade' if beta and beta > 1.5 else 'moderate-beta name'}." if beta else "")
         )
 
+        # Auto company bio from yfinance longBusinessSummary
+        raw_bio = info.get("longBusinessSummary", "")
+        if raw_bio:
+            # Trim to first 2 sentences
+            sentences = [s.strip() for s in raw_bio.replace("  ", " ").split(". ") if s.strip()]
+            bio_text = ". ".join(sentences[:2]) + "."
+        else:
+            bio_text = f"{company} operates in the {sector} sector ({industry})."
+        company_bio = f"[{sector}] {bio_text}"
+
         thesis_data = {
+            "company_bio": company_bio,
             "tic_signal": tic_signal,
             "tic_stock":  tic_stock,
             "thesis": [
@@ -262,6 +274,12 @@ def analyze_ticker(ticker, api_key=""):
             ],
             "catalysts": []
         }
+
+    # ── News confirmation ──────────────────────────────────────────────────
+    try:
+        news_data = fetch_news(ticker)
+    except Exception:
+        news_data = {"signal": {"label": "No Data", "color": "gray", "bull": 0, "bear": 0, "neutral": 0, "total": 0}, "headlines": [], "sources": []}
 
     def pct_vs(p, m): return f"{((p/m-1)*100):+.1f}%" if m else "N/A"
 
@@ -355,12 +373,18 @@ def analyze_ticker(ticker, api_key=""):
         "quarterly": quarterly_rows,
 
         # AI thesis
+        "company_bio": thesis_data.get("company_bio", f"[{sector}] {company} operates in the {industry} industry."),
         "tic_signal": thesis_data.get("tic_signal", ""),
         "tic_stock":  thesis_data.get("tic_stock", ""),
         "thesis":     thesis_data.get("thesis", []),
         "bull_cases": thesis_data.get("bull_cases", []),
         "bear_cases": thesis_data.get("bear_cases", []),
         "catalysts":  thesis_data.get("catalysts", []),
+        # News
+        "news_signal":    news_data["signal"],
+        "news_headlines": news_data["headlines"],
+        "news_sources":   news_data["sources"],
+
         "ai_error":   ai_error,
         "has_ai":     bool(effective_key and not ai_error),
     }
