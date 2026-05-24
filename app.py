@@ -244,17 +244,18 @@ def analyze_ticker(ticker, api_key=""):
             + (f"Beta of {beta:.2f} — {'high-volatility vehicle, position sizing is the trade' if beta and beta > 1.5 else 'moderate-beta name'}." if beta else "")
         )
 
-        # Auto company bio from yfinance longBusinessSummary
+        # Auto company bio — only show if we have real content
         raw_bio = info.get("longBusinessSummary", "") or ""
-        sector_label = sector if sector and sector != "N/A" else "Equity"
+        has_sector = sector and sector not in ("N/A", "", None)
         if raw_bio:
             sentences = [s.strip() for s in raw_bio.replace("  ", " ").split(". ") if s.strip()]
             bio_text = ". ".join(sentences[:2]) + "."
-        elif industry and industry != "N/A":
-            bio_text = f"{company} operates in the {industry} industry."
+            sector_label = sector if has_sector else "Equity"
+            company_bio = f"[{sector_label}] {bio_text}"
+        elif has_sector:
+            company_bio = f"[{sector}] {company} operates in the {industry} industry." if industry and industry != "N/A" else f"[{sector}] {company}."
         else:
-            bio_text = f"{company} is a publicly traded company."
-        company_bio = f"[{sector_label}] {bio_text}"
+            company_bio = ""  # nothing useful to show — hide the block
 
         thesis_data = {
             "company_bio": company_bio,
@@ -385,7 +386,7 @@ def analyze_ticker(ticker, api_key=""):
         "quarterly": quarterly_rows,
 
         # AI thesis
-        "company_bio": thesis_data.get("company_bio", f"[{sector}] {company} operates in the {industry} industry."),
+        "company_bio": thesis_data.get("company_bio", ""),
         "tic_signal": thesis_data.get("tic_signal", ""),
         "tic_stock":  thesis_data.get("tic_stock", ""),
         "thesis":     thesis_data.get("thesis", []),
