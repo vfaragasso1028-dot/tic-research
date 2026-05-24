@@ -159,6 +159,73 @@ table.fin-table{width:100%;border-collapse:collapse;}
 .news-sent.bear{background:#450a0a;color:#ef4444;}
 .news-sent.neutral{background:#111827;color:#6b7280;}
 
+/* ── Rotation ── */
+.rot-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.rot-signal{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;}
+.rot-signal.green{background:#052e16;color:#22c55e;border:1px solid #16a34a;}
+.rot-signal.yellow{background:#451a03;color:#f59e0b;border:1px solid #d97706;}
+.rot-signal.red{background:#450a0a;color:#ef4444;border:1px solid #dc2626;}
+.rot-signal.gray{background:#111827;color:#9ca3af;border:1px solid #374151;}
+.rot-meta{font-size:11px;color:#6b7280;}
+.rot-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:700px){.rot-cols{grid-template-columns:1fr;}}
+.rot-col-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #1a1a1a;}
+.rot-col-title.green{color:#22c55e;}
+.rot-col-title.red{color:#ef4444;}
+.rot-row{display:grid;grid-template-columns:52px 1fr 44px 70px 60px;align-items:center;gap:8px;
+  padding:10px 0;border-bottom:1px solid #141414;}
+.rot-row:last-child{border-bottom:none;}
+.rot-rank{font-size:12px;font-weight:700;color:#4b5563;}
+.rot-tick{font-size:14px;font-weight:800;color:#f9fafb;}
+.rot-rs{font-size:14px;font-weight:700;}
+.rot-rs.high{color:#22c55e;} .rot-rs.mid{color:#f59e0b;} .rot-rs.low{color:#ef4444;}
+.rot-cross{font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px;}
+.rot-cross.golden{background:#052e16;color:#22c55e;}
+.rot-cross.death{background:#450a0a;color:#ef4444;}
+.rot-chg{font-size:12px;font-weight:600;text-align:right;}
+.rot-chg.up{color:#22c55e;} .rot-chg.down{color:#ef4444;} .rot-chg.flat{color:#6b7280;}
+.rot-subject-row{background:#0c1a2e;border-radius:6px;padding:10px 12px;margin-bottom:12px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.rot-subject-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#3b82f6;font-weight:700;}
+
+/* ── Methodology ── */
+.meth-section{margin-bottom:24px;}
+.meth-title{font-size:12px;font-weight:800;color:#e5e7eb;text-transform:uppercase;letter-spacing:1px;
+  margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #1f2937;display:flex;align-items:center;gap:8px;}
+.meth-title-icon{font-size:14px;}
+.meth-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+@media(max-width:800px){.meth-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:500px){.meth-grid{grid-template-columns:1fr;}}
+.meth-card{background:#0f0f0f;border:1px solid #1a1a1a;border-radius:8px;padding:14px 16px;}
+.meth-card-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;}
+.meth-card-label.blue{color:#60a5fa;} .meth-card-label.green{color:#22c55e;}
+.meth-card-label.yellow{color:#f59e0b;} .meth-card-label.red{color:#ef4444;}
+.meth-card-label.purple{color:#a78bfa;} .meth-card-label.teal{color:#2dd4bf;}
+.meth-card-label.gray{color:#9ca3af;}
+.meth-card p{font-size:12px;color:#9ca3af;line-height:1.7;margin-bottom:6px;}
+.meth-card p:last-child{margin-bottom:0;}
+.meth-range{display:flex;flex-direction:column;gap:4px;margin-top:6px;}
+.meth-range-row{display:flex;align-items:center;gap:8px;font-size:11px;}
+.meth-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.meth-range-label{color:#6b7280;min-width:80px;}
+.meth-range-val{color:#d1d5db;font-weight:600;}
+.stage-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px;}
+@media(max-width:600px){.stage-grid{grid-template-columns:repeat(2,1fr);}}
+.stage-card{padding:10px 12px;border-radius:7px;border:1px solid;}
+.stage-card.s1{background:#0c1a3b;border-color:#1e40af;} .stage-card.s2{background:#052e16;border-color:#16a34a;}
+.stage-card.s3{background:#451a03;border-color:#d97706;} .stage-card.s4{background:#450a0a;border-color:#dc2626;}
+.stage-card-num{font-size:18px;font-weight:800;margin-bottom:2px;}
+.stage-card.s1 .stage-card-num{color:#60a5fa;} .stage-card.s2 .stage-card-num{color:#22c55e;}
+.stage-card.s3 .stage-card-num{color:#f59e0b;} .stage-card.s4 .stage-card-num{color:#ef4444;}
+.stage-card-name{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:6px;}
+.stage-card.s1 .stage-card-name{color:#93c5fd;} .stage-card.s2 .stage-card-name{color:#4ade80;}
+.stage-card.s3 .stage-card-name{color:#fbbf24;} .stage-card.s4 .stage-card-name{color:#fca5a5;}
+.stage-card-desc{font-size:11px;color:#9ca3af;line-height:1.5;}
+.stage-card-action{font-size:10px;font-weight:700;margin-top:6px;padding:3px 8px;border-radius:10px;display:inline-block;}
+.stage-card.s2 .stage-card-action{background:#052e16;color:#22c55e;}
+.stage-card.s4 .stage-card-action{background:#450a0a;color:#ef4444;}
+.stage-card.s1 .stage-card-action,.stage-card.s3 .stage-card-action{background:#111827;color:#9ca3af;}
+
 /* ── Footer ── */
 .report-footer{text-align:center;color:#374151;font-size:11px;margin-top:48px;padding-top:16px;border-top:1px solid #141414;}
 
@@ -493,22 +560,285 @@ table.fin-table{width:100%;border-collapse:collapse;}
     </div>
   </div>
 
+  <!-- ── SECTOR ROTATION ── -->
+  {% if d.rotation and d.rotation.total_peers > 0 %}
+  <div class="section">Sector Rotation — {{ d.rotation.sector }}</div>
+  <div class="card gray" style="padding:20px 22px;">
+
+    <!-- Header row -->
+    <div class="rot-header">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span class="rot-signal {{ d.rotation.sector_signal_color }}">
+          {% if d.rotation.sector_signal == 'Strong' %}▲{% elif d.rotation.sector_signal == 'Weak' %}▼{% else %}◆{% endif %}
+          Sector {{ d.rotation.sector_signal }}
+        </span>
+        <span class="rot-meta">
+          {{ d.rotation.golden_count }}/{{ d.rotation.total_peers }} Golden Cross
+          &nbsp;·&nbsp;
+          {{ d.rotation.stage2_count }}/{{ d.rotation.total_peers }} Stage 2
+        </span>
+      </div>
+      {% if d.rotation.ticker_rank %}
+      <span class="rot-meta" style="color:#9ca3af;">
+        <span style="color:#3b82f6;font-weight:700;">{{ d.ticker }}</span> ranks
+        <span style="color:#f9fafb;font-weight:700;">#{{ d.rotation.ticker_rank }}</span>
+        of {{ d.rotation.total_peers }} in sector
+      </span>
+      {% endif %}
+    </div>
+
+    <!-- Two column layout: Leaders | Laggers -->
+    <div class="rot-cols">
+
+      <!-- LEADERS -->
+      <div>
+        <div class="rot-col-title green">▲ Leaders — Strongest Rotation Candidates</div>
+        {% for p in d.rotation.leaders %}
+        <div class="rot-row">
+          <div class="rot-rank">#{{ p.rank }}</div>
+          <div>
+            <div class="rot-tick">{{ p.ticker }}</div>
+            <div style="font-size:11px;color:#6b7280;">S{{ p.stage_num }} · ${{ p.price }}</div>
+          </div>
+          <div class="rot-rs {% if p.rs >= 75 %}high{% elif p.rs >= 50 %}mid{% else %}low{% endif %}">{{ p.rs }}</div>
+          <span class="rot-cross {{ p.cross }}">
+            {% if p.cross == 'golden' %}▲ Gold{% else %}▼ Death{% endif %}
+          </span>
+          <div class="rot-chg {% if p.change_pct > 0 %}up{% elif p.change_pct < 0 %}down{% else %}flat{% endif %}">
+            {% if p.change_pct > 0 %}+{% endif %}{{ p.change_pct }}%
+          </div>
+        </div>
+        {% else %}
+        <div style="font-size:12px;color:#4b5563;padding:12px 0;">No leader data available</div>
+        {% endfor %}
+      </div>
+
+      <!-- LAGGERS -->
+      <div>
+        <div class="rot-col-title red">▼ Laggers — Weak Relative Strength</div>
+        {% for p in d.rotation.laggers %}
+        <div class="rot-row">
+          <div class="rot-rank">#{{ p.rank }}</div>
+          <div>
+            <div class="rot-tick">{{ p.ticker }}</div>
+            <div style="font-size:11px;color:#6b7280;">S{{ p.stage_num }} · ${{ p.price }}</div>
+          </div>
+          <div class="rot-rs {% if p.rs >= 75 %}high{% elif p.rs >= 50 %}mid{% else %}low{% endif %}">{{ p.rs }}</div>
+          <span class="rot-cross {{ p.cross }}">
+            {% if p.cross == 'golden' %}▲ Gold{% else %}▼ Death{% endif %}
+          </span>
+          <div class="rot-chg {% if p.change_pct > 0 %}up{% elif p.change_pct < 0 %}down{% else %}flat{% endif %}">
+            {% if p.change_pct > 0 %}+{% endif %}{{ p.change_pct }}%
+          </div>
+        </div>
+        {% else %}
+        <div style="font-size:12px;color:#4b5563;padding:12px 0;">No lagger data available</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #1a1a1a;font-size:11px;color:#4b5563;line-height:1.7;">
+      <span style="color:#6b7280;font-weight:700;">How to use:</span>
+      RS Rating ranks price position within 52-week range (0–99). Leaders show where institutional money is flowing <em>now</em>.
+      In a sector rotation trade, you sell laggers and buy leaders when the sector signal flips to Strong.
+      Stage 2 + Golden Cross + RS &gt; 75 = highest-conviction long setup within the sector.
+    </div>
+  </div>
+  {% endif %}
+
   <!-- ── METHODOLOGY ── -->
   <details style="margin-top:32px;">
-    <summary style="cursor:pointer;font-size:12px;color:#4b5563;user-select:none;list-style:none;display:flex;align-items:center;gap:8px;">
-      <span style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;border:1px solid #222;border-radius:4px;padding:3px 8px;">▸ Methodology</span>
+    <summary style="cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;
+        border:1px solid #222;border-radius:4px;padding:4px 10px;color:#6b7280;">▸ Methodology &amp; Signal Guide</span>
     </summary>
-    <div style="margin-top:16px;background:#0f0f0f;border:1px solid #1a1a1a;border-radius:10px;padding:20px 24px;">
-      <p style="font-size:13px;color:#9ca3af;margin-bottom:12px;font-weight:700;">TicScore — CAN SLIM Scoring (100 pts)</p>
-      <table style="width:100%;font-size:12px;color:#6b7280;border-collapse:collapse;">
-        <tr><td style="padding:6px 0;border-bottom:1px solid #141414;color:#9ca3af;font-weight:600;width:120px;">G — Growth</td><td style="padding:6px 0 6px 12px;border-bottom:1px solid #141414;">0–40 pts · Current + annual EPS growth, revenue growth, earnings acceleration</td></tr>
-        <tr><td style="padding:6px 0;border-bottom:1px solid #141414;color:#9ca3af;font-weight:600;">V — Supply/Demand</td><td style="padding:6px 0 6px 12px;border-bottom:1px solid #141414;">0–20 pts · Float size, relative volume</td></tr>
-        <tr><td style="padding:6px 0;border-bottom:1px solid #141414;color:#9ca3af;font-weight:600;">Q — Quality</td><td style="padding:6px 0 6px 12px;border-bottom:1px solid #141414;">0–20 pts · ROE ≥17%, profit margins</td></tr>
-        <tr><td style="padding:6px 0;color:#9ca3af;font-weight:600;">S — Sponsorship</td><td style="padding:6px 0 6px 12px;">0–20 pts · Institutional ownership, analyst consensus</td></tr>
-      </table>
-      <p style="font-size:12px;color:#6b7280;margin-top:14px;">Pass threshold: ≥50. Exempt sectors: Financials, Real Estate, Energy, Mining, Clinical Biotech, Utilities.</p>
-      <p style="font-size:13px;color:#9ca3af;margin:16px 0 8px;font-weight:700;">TicStage — Stan Weinstein Stage Analysis</p>
-      <p style="font-size:12px;color:#6b7280;">Uses 150-day SMA proxy for the 30-week moving average. Stage 2 (Advancing) is the optimal swing trading environment. PowerStack override: Stage 2 confirmed early when 9EMA > 21EMA > 50SMA above the 150 SMA.</p>
+    <div style="margin-top:20px;">
+
+      <!-- TICSCORE -->
+      <div class="meth-section">
+        <div class="meth-title">
+          <span class="meth-title-icon">📊</span> TicScore — CAN SLIM Scoring System (0–100 pts)
+        </div>
+        <p style="font-size:12px;color:#6b7280;margin-bottom:14px;line-height:1.7;">
+          TicScore is a quantitative screen derived from William O'Neil's CAN SLIM methodology — designed to identify
+          institutional-quality growth stocks before they make major price moves. Each component measures a distinct
+          dimension of stock quality. Pass threshold is ≥50 pts. Scores ≥70 indicate a high-conviction setup.
+          <br><br>
+          <strong style="color:#9ca3af;">Exempt sectors</strong> (Financials, Real Estate, Energy, Mining, Utilities, Clinical Biotech)
+          are excluded from scoring because their earnings cycles don't conform to the growth-stock model.
+        </p>
+        <div class="meth-grid">
+          <div class="meth-card">
+            <div class="meth-card-label green">G — Growth (0–40 pts)</div>
+            <p>The most heavily weighted component. Measures quarterly EPS growth (current quarter vs same quarter last year), annual EPS trend, and revenue acceleration.</p>
+            <p>CAN SLIM requires ≥25% quarterly EPS growth. Earnings acceleration — where each quarter beats the previous — is the strongest signal. A stock reporting 50%+ EPS growth with revenue confirmation is a Tier 1 setup.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label yellow">V — Supply &amp; Demand (0–20 pts)</div>
+            <p>Measures the float (tradeable shares) and recent relative volume. Smaller floats move more aggressively on institutional buying because supply is limited.</p>
+            <p>Relative volume above 1.5x average during a price breakout confirms institutional participation. High-volume up days with low-volume pullbacks is the ideal accumulation pattern.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label blue">Q — Quality (0–20 pts)</div>
+            <p>Return on Equity (ROE) ≥17% and profit margin expansion. ROE measures how efficiently management deploys capital — consistently high ROE is a moat indicator.</p>
+            <p>O'Neil specifically required ≥17% ROE as a minimum threshold. Stocks with expanding margins (gross, operating, net) in consecutive quarters signal pricing power.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label purple">S — Sponsorship (0–20 pts)</div>
+            <p>Institutional ownership percentage and analyst consensus. The "N" in CAN SLIM (New) — new institutional sponsors buying the stock create sustained demand.</p>
+            <p>Look for increasing institutional count quarter-over-quarter, not just high ownership. A stock going from 200 to 350 institutional holders in 2 quarters is accumulation in progress.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label teal">Score Interpretation</div>
+            <div class="meth-range">
+              <div class="meth-range-row"><div class="meth-dot" style="background:#22c55e;"></div><span class="meth-range-label">70–100 pts</span><span class="meth-range-val">High conviction. Institutional-grade setup.</span></div>
+              <div class="meth-range-row"><div class="meth-dot" style="background:#f59e0b;"></div><span class="meth-range-label">50–69 pts</span><span class="meth-range-val">Conditional pass. Check chart structure.</span></div>
+              <div class="meth-range-row"><div class="meth-dot" style="background:#ef4444;"></div><span class="meth-range-label">0–49 pts</span><span class="meth-range-val">Fail. Fundamentals don't support swing long.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TICSTAGE -->
+      <div class="meth-section">
+        <div class="meth-title">
+          <span class="meth-title-icon">📈</span> TicStage — Stan Weinstein Stage Analysis
+        </div>
+        <p style="font-size:12px;color:#6b7280;margin-bottom:14px;line-height:1.7;">
+          Every stock cycles through four stages. Weinstein's framework (from <em>Secrets for Profiting in Bull and Bear Markets</em>)
+          uses the 30-week moving average as the key dividing line. TIC Research uses the 150-day SMA as the direct proxy.
+          The stage determines whether you should be long, flat, or short — regardless of fundamentals.
+        </p>
+        <div class="stage-grid">
+          <div class="stage-card s1">
+            <div class="stage-card-num">1</div>
+            <div class="stage-card-name">Basing</div>
+            <div class="stage-card-desc">Price consolidating below or near a flattening 150 SMA. Volume drying up. Institutions accumulating quietly. Can last months.</div>
+            <span class="stage-card-action">Wait for breakout</span>
+          </div>
+          <div class="stage-card s2">
+            <div class="stage-card-num">2</div>
+            <div class="stage-card-name">Advancing</div>
+            <div class="stage-card-desc">Price above a rising 150 SMA. Higher highs, higher lows. This is the only stage where swing longs have structural tailwind.</div>
+            <span class="stage-card-action">Optimal long zone</span>
+          </div>
+          <div class="stage-card s3">
+            <div class="stage-card-num">3</div>
+            <div class="stage-card-name">Topping</div>
+            <div class="stage-card-desc">Price stalling near a flattening 150 SMA. Volume patterns diverging. Distribution — institutions selling into strength.</div>
+            <span class="stage-card-action">Reduce / avoid</span>
+          </div>
+          <div class="stage-card s4">
+            <div class="stage-card-num">4</div>
+            <div class="stage-card-name">Declining</div>
+            <div class="stage-card-desc">Price below a declining 150 SMA. Lower lows, lower highs. No matter how cheap it looks, the trend is against you.</div>
+            <span class="stage-card-action">No long setups</span>
+          </div>
+        </div>
+        <p style="font-size:11px;color:#4b5563;margin-top:10px;line-height:1.6;">
+          <strong style="color:#6b7280;">PowerStack Override:</strong> Stage 2 is confirmed early when 9EMA &gt; 21EMA &gt; 50SMA all aligned above the 150 SMA.
+          This stacking tells you the short, medium, and long-term trends are all pointing the same direction — the highest-probability continuation environment.
+        </p>
+      </div>
+
+      <!-- TECHNICAL INDICATORS -->
+      <div class="meth-section">
+        <div class="meth-title">
+          <span class="meth-title-icon">⚙️</span> Technical Indicators — What Each Signal Means
+        </div>
+        <div class="meth-grid">
+          <div class="meth-card">
+            <div class="meth-card-label blue">RSI (14) — Relative Strength Index</div>
+            <p>Measures momentum on a 0–100 scale. Calculated as average gain / average loss over 14 periods. Tells you if the stock is extended or has room to run.</p>
+            <div class="meth-range">
+              <div class="meth-range-row"><div class="meth-dot" style="background:#ef4444;"></div><span class="meth-range-label">70–100</span><span class="meth-range-val">Overbought — mean reversion risk</span></div>
+              <div class="meth-range-row"><div class="meth-dot" style="background:#f59e0b;"></div><span class="meth-range-label">40–70</span><span class="meth-range-val">Neutral — trending zone</span></div>
+              <div class="meth-range-row"><div class="meth-dot" style="background:#22c55e;"></div><span class="meth-range-label">0–30</span><span class="meth-range-val">Oversold — potential bounce zone</span></div>
+            </div>
+            <p style="margin-top:8px;">In a Stage 2 uptrend, RSI holding above 50 on pullbacks confirms trend strength. RSI dipping to 40–50 then bouncing = ideal swing entry.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label purple">MACD (12/26/9) — Trend Momentum</div>
+            <p>Plots the difference between 12-day and 26-day EMAs. The Signal line (9-day EMA of MACD) and Histogram show momentum direction and acceleration.</p>
+            <p><strong style="color:#22c55e;">Bullish:</strong> MACD line above Signal · Histogram expanding positive · Both above zero = trend acceleration.</p>
+            <p><strong style="color:#ef4444;">Bearish:</strong> MACD crosses below Signal · Histogram shrinking or negative · Divergence between price and MACD = distribution warning.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label teal">ADX (14) — Trend Strength</div>
+            <p>ADX measures how strong the current trend is, regardless of direction. DI+ measures upward directional pressure; DI− measures downward pressure.</p>
+            <div class="meth-range">
+              <div class="meth-range-row"><div class="meth-dot" style="background:#22c55e;"></div><span class="meth-range-label">ADX ≥ 40</span><span class="meth-range-val">Very strong trend</span></div>
+              <div class="meth-range-row"><div class="meth-dot" style="background:#f59e0b;"></div><span class="meth-range-label">ADX 25–40</span><span class="meth-range-val">Strong trend in progress</span></div>
+              <div class="meth-range-row"><div class="meth-dot" style="background:#ef4444;"></div><span class="meth-range-label">ADX &lt; 20</span><span class="meth-range-val">Trendless / choppy</span></div>
+            </div>
+            <p style="margin-top:8px;">DI+ crossing above DI− with ADX rising = trend initiation signal. ADX ≥ 25 with DI+ &gt; DI− = confirmed bull trend.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label yellow">ATR (14) — Average True Range</div>
+            <p>Measures average daily price range over 14 periods. The fundamental tool for position sizing and stop placement.</p>
+            <p><strong style="color:#9ca3af;">Stop placement:</strong> Initial stops are typically set at 1.5–2.0x ATR below the entry. This keeps you outside normal noise while limiting catastrophic loss.</p>
+            <p><strong style="color:#9ca3af;">Position sizing:</strong> Risk $ per trade ÷ (ATR × 1.5) = share size. Never risk more than 1–2% of portfolio on a single ATR stop.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label green">RS Rating — Relative Strength</div>
+            <p>Ranks price performance relative to the 52-week range (0–99 scale). This is not the same as RSI — it measures where the stock sits in its annual range.</p>
+            <div class="meth-range">
+              <div class="meth-range-row"><div class="meth-dot" style="background:#22c55e;"></div><span class="meth-range-label">80–99</span><span class="meth-range-val">Sector leader — buy zone</span></div>
+              <div class="meth-range-row"><div class="meth-dot" style="background:#f59e0b;"></div><span class="meth-range-label">60–79</span><span class="meth-range-val">Neutral — monitor</span></div>
+              <div class="meth-range-row"><div class="meth-dot" style="background:#ef4444;"></div><span class="meth-range-label">0–59</span><span class="meth-range-val">Laggard — avoid longs</span></div>
+            </div>
+            <p style="margin-top:8px;">IBD research shows the best breakout stocks have RS ≥ 85 <em>before</em> the breakout. Low RS on a breakout = likely false move.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label red">Moving Average Crosses</div>
+            <p><strong style="color:#22c55e;">Golden Cross:</strong> 50 SMA rises above 200 SMA. Signals that medium-term momentum has overtaken the long-term trend. Institutional algorithms trigger long signals on this event.</p>
+            <p><strong style="color:#ef4444;">Death Cross:</strong> 50 SMA falls below 200 SMA. The macro structure is bearish. Even good news can fail to hold gains in a death cross environment. Wait for recapture before going long.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PATTERNS -->
+      <div class="meth-section">
+        <div class="meth-title">
+          <span class="meth-title-icon">🔍</span> Pattern Recognition — What the System Detects
+        </div>
+        <div class="meth-grid">
+          <div class="meth-card">
+            <div class="meth-card-label green">Pocket Pivot</div>
+            <p>Developed by Chris Kacher &amp; Gil Morales. A Pocket Pivot occurs when today's volume on an up-day exceeds the highest volume of any down-day in the prior 10 sessions.</p>
+            <p>This signals institutional accumulation happening <em>quietly</em> — before a formal breakout. Pocket Pivots near the 10-day or 50-day MA are the highest-quality entries. Often precedes a 10–20% move.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label red">Lower High Pattern</div>
+            <p>Three consecutive swing highs where each peak is lower than the last. Classic distribution structure — sellers are more aggressive than buyers at each rally attempt.</p>
+            <p>When a Lower High pattern coincides with declining volume on bounces and ADX flattening, it's a warning that the uptrend is exhausted. The correct play is to tighten stops or reduce exposure.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label blue">Gap Support Zones</div>
+            <p>An upward price gap (today's low &gt; yesterday's high by 0.5%+) creates a zone of air between prior resistance and new support. These gaps often act as magnets when price pulls back.</p>
+            <p>Gap zones are structural support floors — institutions who bought the gap rarely let price fall back through it without defending. A gap fill that holds is a high-probability long re-entry.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label yellow">Support &amp; Resistance Levels</div>
+            <p>Computed from recent swing highs (resistance) and swing lows (support) using a 5-bar lookback. These are the price levels where supply and demand have historically reversed.</p>
+            <p>A close above resistance on above-average volume = breakout confirmation. A close below support with volume = breakdown. Price that oscillates at a level for 3+ sessions before breaking tends to see a stronger follow-through move.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label teal">Sector Rotation Logic</div>
+            <p>Capital doesn't disappear — it rotates between sectors based on the economic cycle. When Technology lags, Industrials or Energy may be leading. The Rotation section shows you which names within the sector have the most institutional momentum right now.</p>
+            <p>Trade toward the leaders, away from the laggers. If the subject ticker ranks in the bottom half of its sector, consider whether a higher-RS peer offers a better risk/reward entry in the same thesis.</p>
+          </div>
+          <div class="meth-card">
+            <div class="meth-card-label gray">News Confirmation Logic</div>
+            <p>Headlines are scored bullish/bearish/neutral via keyword pattern matching across two independent sources (Yahoo Finance, Finviz). The aggregate signal confirms or contradicts what the chart is saying.</p>
+            <p><strong style="color:#22c55e;">Confirming:</strong> ≥60% bullish headlines. <strong style="color:#ef4444;">Contradicting:</strong> ≥60% bearish. <strong style="color:#f59e0b;">Mixed:</strong> Split sentiment. Always verify headlines manually — the system flags direction, not magnitude.</p>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size:11px;color:#374151;margin-top:16px;line-height:1.6;padding-top:12px;border-top:1px solid #141414;">
+        TIC Research is a technical and fundamental analysis tool for educational purposes. All scores, signals, and AI-generated thesis content are informational only and do not constitute financial advice. Past performance of any indicator or pattern does not guarantee future results. Always manage risk with defined position sizing and stop losses.
+      </p>
     </div>
   </details>
 

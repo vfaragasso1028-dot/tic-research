@@ -13,6 +13,7 @@ from analysis.canslim import ticscore, is_exempt
 from analysis.stage import ticstage
 from analysis.ai_thesis import build_context, generate_thesis
 from analysis.news import fetch_news
+from analysis.rotation import get_rotation_data
 
 warnings.filterwarnings("ignore")
 
@@ -275,6 +276,15 @@ def analyze_ticker(ticker, api_key=""):
             "catalysts": []
         }
 
+    # ── Sector rotation ───────────────────────────────────────────────────
+    try:
+        rotation = get_rotation_data(ticker, sector)
+    except Exception:
+        rotation = {"sector": sector, "sector_signal": "No Data", "sector_signal_color": "gray",
+                    "leaders": [], "laggers": [], "all_peers": [],
+                    "ticker_rank": None, "total_peers": 0,
+                    "golden_count": 0, "death_count": 0, "stage2_count": 0}
+
     # ── News confirmation ──────────────────────────────────────────────────
     try:
         news_data = fetch_news(ticker)
@@ -380,6 +390,9 @@ def analyze_ticker(ticker, api_key=""):
         "bull_cases": thesis_data.get("bull_cases", []),
         "bear_cases": thesis_data.get("bear_cases", []),
         "catalysts":  thesis_data.get("catalysts", []),
+        # Rotation
+        "rotation":       rotation,
+
         # News
         "news_signal":    news_data["signal"],
         "news_headlines": news_data["headlines"],
