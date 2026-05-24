@@ -157,8 +157,8 @@ def schwab_quote(symbol):
             "beta":                  None,   # supplement from yfinance
             "targetMeanPrice":       None,   # supplement from yfinance
             "recommendationKey":     "N/A",
-            "sector":                ref.get("exchange", "N/A"),
-            "industry":              "N/A",
+            "sector":                None,   # supplement from yfinance
+            "industry":              None,   # supplement from yfinance
             "floatShares":           f.get("marketCapFloat", 0) or 0,
             "institutionPercentHeld": None,
             "returnOnEquity":        None,
@@ -184,14 +184,17 @@ def supplement_with_yfinance(symbol, schwab_info):
         stock = yf.Ticker(symbol)
         yf_info = stock.info or {}
 
-        # Only fill in what Schwab didn't provide
+        # Fill in what Schwab didn't provide — replace None OR bare "N/A" strings
         fill_keys = [
             "forwardPE", "beta", "targetMeanPrice", "recommendationKey",
             "recommendationMean", "sector", "industry", "longName",
             "institutionPercentHeld", "returnOnEquity", "profitMargins",
+            "longBusinessSummary",
         ]
         for k in fill_keys:
-            if schwab_info.get(k) is None and yf_info.get(k) is not None:
+            current = schwab_info.get(k)
+            is_missing = current is None or current == "N/A" or current == ""
+            if is_missing and yf_info.get(k) is not None:
                 schwab_info[k] = yf_info[k]
 
         # Keep Schwab longName if it's meaningful, else use yfinance

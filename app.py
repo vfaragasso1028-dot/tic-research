@@ -245,14 +245,16 @@ def analyze_ticker(ticker, api_key=""):
         )
 
         # Auto company bio from yfinance longBusinessSummary
-        raw_bio = info.get("longBusinessSummary", "")
+        raw_bio = info.get("longBusinessSummary", "") or ""
+        sector_label = sector if sector and sector != "N/A" else "Equity"
         if raw_bio:
-            # Trim to first 2 sentences
             sentences = [s.strip() for s in raw_bio.replace("  ", " ").split(". ") if s.strip()]
             bio_text = ". ".join(sentences[:2]) + "."
+        elif industry and industry != "N/A":
+            bio_text = f"{company} operates in the {industry} industry."
         else:
-            bio_text = f"{company} operates in the {sector} sector ({industry})."
-        company_bio = f"[{sector}] {bio_text}"
+            bio_text = f"{company} is a publicly traded company."
+        company_bio = f"[{sector_label}] {bio_text}"
 
         thesis_data = {
             "company_bio": company_bio,
