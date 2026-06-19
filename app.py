@@ -142,8 +142,18 @@ def analyze_ticker(ticker, api_key=""):
     if isinstance(close, pd.DataFrame):
         close = close.iloc[:, 0]
 
-    price      = safe_float(info.get("currentPrice") or info.get("regularMarketPrice") or close.iloc[-1])
-    prev_close = safe_float(info.get("previousClose") or (close.iloc[-2] if len(close) > 1 else close.iloc[-1]))
+    # Drop NaN so iloc[-1] never returns nan
+    close = close.dropna()
+
+    _raw_price = info.get("currentPrice") or info.get("regularMarketPrice")
+    if not _raw_price and not close.empty:
+        _raw_price = float(close.iloc[-1])
+    price = safe_float(_raw_price)
+
+    _raw_prev = info.get("previousClose")
+    if not _raw_prev and len(close) > 1:
+        _raw_prev = float(close.iloc[-2])
+    prev_close = safe_float(_raw_prev or price)
     change_val = price - prev_close
     change_pct = (change_val / prev_close * 100) if prev_close else 0
 
