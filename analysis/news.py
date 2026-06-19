@@ -43,6 +43,18 @@ def _score_headline(text: str) -> str:
     return "neutral"
 
 
+def _score_headline_numeric(text: str) -> float:
+    """Return a numeric sentiment score from -1.0 (very bearish) to +1.0 (very bullish)."""
+    t = text.lower()
+    words = set(re.findall(r'\b\w+\b', t))
+    bull_hits = len(words & BULL_WORDS)
+    bear_hits = len(words & BEAR_WORDS)
+    total = bull_hits + bear_hits
+    if total == 0:
+        return 0.0
+    return round((bull_hits - bear_hits) / total, 2)
+
+
 def _fetch_yfinance_news(symbol: str, max_items: int = 6) -> list:
     """Pull recent news from yfinance."""
     headlines = []
@@ -71,6 +83,7 @@ def _fetch_yfinance_news(symbol: str, max_items: int = 6) -> list:
                 "title":     title,
                 "url":       url,
                 "sentiment": _score_headline(title),
+                "score":     _score_headline_numeric(title),
             })
     except Exception as e:
         print(f"[News/YF] {e}")
@@ -113,6 +126,7 @@ def _fetch_finviz_news(symbol: str, max_items: int = 6) -> list:
                 "title":     title,
                 "url":       link,
                 "sentiment": _score_headline(title),
+                "score":     _score_headline_numeric(title),
             })
     except Exception as e:
         print(f"[News/Finviz] {e}")

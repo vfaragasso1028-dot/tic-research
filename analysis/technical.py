@@ -99,3 +99,65 @@ def rs_rating(price, week52_high, week52_low):
         return 50
     pct = (price - week52_low) / (week52_high - week52_low) * 100
     return max(0, min(99, int(pct * 0.9 + 5)))
+
+
+def _cluster_prices(prices, tolerance=0.015):
+    """Group nearby prices within tolerance % into clusters."""
+    prices = sorted(prices)
+    clusters = []
+    current = [prices[0]]
+    for p in prices[1:]:
+        if (p - current[0]) / current[0] <= tolerance:
+            current.append(p)
+        else:
+            clusters.append(current)
+            current = [p]
+    clusters.append(current)
+    return clusters
+
+
+def compute_sr_zones(close, atr_val, lookback=5, tolerance=0.015):
+    """
+    Cluster swing highs/lows into S/R zones with a price band and strength score.
+    Returns list of zone dicts sorted by price descending.
+    """
+    sh = swing_highs(close, lookback)
+    sl = swing_lows(close, lookback)
+    zones = []
+
+    res_prices = [v for _, v in sh]
+    if res_prices:
+        for cluster in _cluster_prices(res_prices, tolerance):
+            mid = sum(cluster) / len(cluster)
+            pad = atr_val * 0.15
+            strength = min(5, len(cluster) + 1)
+            label = {5: "Very Strong", 4: "Strong", 3: "Moderate", 2: "Weak"}.get(strength, "Weak")
+            zones.append({
+                "type": "resistance",
+                "low":  round(min(cluster) - pad, 2),
+                "high": round(max(cluster) + pad, 2),
+                "mid":  round(mid, 2),
+                "strength": strength,
+                "strength_label": label,
+                "touches": len(cluster),
+            })
+
+    sup_prices = [v for _, v in sl]
+    if sup_prices:
+        for cluster in _cluster_prices(sup_prices, tolerance):
+            mid = sum(cluster) / len(cluster)
+            pad = atr_val * 0.15
+            strength = min(5, len(cluster) + 1)
+            label = {5: "Very Strong", 4: "Strong", 3: "Moderate", 2: "Weak"}.get(strength, "Weak")
+            zones.append({
+                "type": "support",
+                "low":  round(min(cluster) - pad, 2),
+                "high": round(max(cluster) + pad, 2),
+                "mid":  round(mid, 2),
+                "strength": strength,
+                "strength_label": label,
+                "touches": len(cluster),
+            })
+
+    zones.sort(key=lambda z: z["mid"], reverse=True)
+    return zones[:8]

@@ -7,7 +7,8 @@ from analysis.schwab_data import fetch_stock_data, get_schwab_client
 from analysis.technical import (
     ema, sma, calc_atr, calc_rsi, calc_macd, calc_adx,
     swing_highs, swing_lows, detect_gap_zones,
-    detect_pocket_pivot, detect_lower_highs, rs_rating
+    detect_pocket_pivot, detect_lower_highs, rs_rating,
+    compute_sr_zones
 )
 from analysis.canslim import ticscore, is_exempt
 from analysis.stage import ticstage
@@ -170,6 +171,7 @@ def analyze_ticker(ticker, api_key=""):
     sl = swing_lows(close)
     resistance = sh[-1][1] if sh else float(close.rolling(20).max().iloc[-1])
     support    = sl[-1][1] if sl else float(close.rolling(20).min().iloc[-1])
+    sr_zones   = compute_sr_zones(close, atr_val)
 
     # Patterns
     gap_zones    = detect_gap_zones(df)
@@ -342,6 +344,9 @@ def analyze_ticker(ticker, api_key=""):
         # Key levels
         "support":    f"{support:,.2f}",
         "resistance": f"{resistance:,.2f}",
+        "sr_zones":   sr_zones,
+        "price_closes": [round(float(v), 2) for v in close.iloc[-60:].tolist()],
+        "price_raw":  round(price, 2),
         "w52h":       f"{w52h:,.2f}",
         "w52l":       f"{w52l:,.2f}",
         "w52h_pct":   pct_vs(price, w52h),

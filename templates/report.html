@@ -6,6 +6,7 @@
 <title>{{ d.ticker }} — TIC Research</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:#0a0a0a;color:#e8e8e8;line-height:1.5;}
@@ -137,13 +138,19 @@ table.fin-table{width:100%;border-collapse:collapse;}
 .fin-table tr:hover td{background:#111;}
 
 /* ── News Confirmation ── */
-.news-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.news-header{display:flex;align-items:center;gap:14px;margin-bottom:10px;flex-wrap:wrap;}
 .news-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:0.3px;}
 .news-badge.green{background:#052e16;color:#22c55e;border:1px solid #16a34a;}
 .news-badge.red{background:#450a0a;color:#ef4444;border:1px solid #dc2626;}
 .news-badge.yellow{background:#451a03;color:#f59e0b;border:1px solid #d97706;}
 .news-badge.gray{background:#111827;color:#9ca3af;border:1px solid #374151;}
 .news-stat{font-size:11px;color:#6b7280;}
+.news-sentiment-bar{display:flex;height:5px;border-radius:3px;overflow:hidden;margin-bottom:14px;}
+.nsb-bull{background:#22c55e;}
+.nsb-bear{background:#ef4444;}
+.nsb-neut{background:#1f2937;}
+.news-legend{display:flex;gap:14px;font-size:11px;color:#6b7280;margin-bottom:14px;}
+.news-legend-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;}
 .news-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #141414;}
 .news-item:last-child{border-bottom:none;}
 .news-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
@@ -158,6 +165,24 @@ table.fin-table{width:100%;border-collapse:collapse;}
 .news-sent.bull{background:#052e16;color:#22c55e;}
 .news-sent.bear{background:#450a0a;color:#ef4444;}
 .news-sent.neutral{background:#111827;color:#6b7280;}
+.news-score{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0;margin-top:2px;margin-left:4px;font-variant-numeric:tabular-nums;}
+.news-score.bull{background:#0a1f0a;color:#4ade80;}
+.news-score.bear{background:#1f0a0a;color:#f87171;}
+.news-score.neutral{background:#111827;color:#6b7280;}
+
+/* ── S/R Zone Table ── */
+.zone-table{width:100%;border-collapse:collapse;}
+.zone-table th{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#4b5563;
+  padding:7px 10px;text-align:left;border-bottom:1px solid #1f2937;font-weight:600;}
+.zone-table td{font-size:13px;color:#e5e7eb;padding:9px 10px;border-bottom:1px solid #141414;vertical-align:middle;}
+.zone-table tr:hover td{background:#111;}
+.zone-pill{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;}
+.zone-pill.resistance{background:#450a0a;color:#ef4444;border:1px solid #dc2626;}
+.zone-pill.support{background:#052e16;color:#22c55e;border:1px solid #16a34a;}
+.zone-strength{display:flex;gap:3px;align-items:center;}
+.zone-dot{width:7px;height:7px;border-radius:50%;}
+.zone-dot.filled{background:#3b82f6;}
+.zone-dot.empty{background:#1f2937;}
 
 /* ── Rotation ── */
 .rot-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
@@ -337,14 +362,71 @@ table.fin-table{width:100%;border-collapse:collapse;}
 
   <!-- ── KEY LEVELS ── -->
   <div class="section">Key Levels & Market Data</div>
+
+  <!-- S/R Zone Table -->
+  {% if d.sr_zones %}
+  <div class="card gray" style="padding:0;overflow:hidden;margin-bottom:12px;">
+    <table class="zone-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Zone</th>
+          <th>Mid</th>
+          <th>Strength</th>
+          <th>Touches</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for z in d.sr_zones %}
+        <tr>
+          <td><span class="zone-pill {{ z.type }}">{{ z.type | upper }}</span></td>
+          <td style="font-weight:600;">${{ "%.2f"|format(z.low) }} – ${{ "%.2f"|format(z.high) }}</td>
+          <td style="color:#9ca3af;">${{ "%.2f"|format(z.mid) }}</td>
+          <td>
+            <div class="zone-strength">
+              {% for i in range(5) %}
+                <div class="zone-dot {% if i < z.strength %}filled{% else %}empty{% endif %}"></div>
+              {% endfor %}
+              <span style="font-size:10px;color:#6b7280;margin-left:5px;">{{ z.strength_label }}</span>
+            </div>
+          </td>
+          <td style="color:#6b7280;">{{ z.touches }}×</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- S/R Chart -->
+  <div class="card gray" style="padding:18px 20px;margin-bottom:12px;">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#4b5563;font-weight:700;margin-bottom:12px;">
+      Price vs Support &amp; Resistance Zones — Last 60 Sessions
+    </div>
+    <div style="position:relative;height:220px;">
+      <canvas id="srChart"></canvas>
+    </div>
+    <div style="display:flex;gap:18px;margin-top:10px;flex-wrap:wrap;">
+      <span style="font-size:11px;color:#6b7280;display:flex;align-items:center;gap:5px;">
+        <span style="display:inline-block;width:14px;height:3px;background:#3b82f6;border-radius:2px;"></span> Price
+      </span>
+      <span style="font-size:11px;color:#6b7280;display:flex;align-items:center;gap:5px;">
+        <span style="display:inline-block;width:14px;height:8px;background:rgba(239,68,68,0.25);border-radius:2px;"></span> Resistance Zone
+      </span>
+      <span style="font-size:11px;color:#6b7280;display:flex;align-items:center;gap:5px;">
+        <span style="display:inline-block;width:14px;height:8px;background:rgba(34,197,94,0.2);border-radius:2px;"></span> Support Zone
+      </span>
+    </div>
+  </div>
+
   <div class="grid-4">
     <div class="card green">
-      <div class="card-label">Support</div>
+      <div class="card-label">Nearest Support</div>
       <div class="card-val">${{ d.support }}</div>
       <div class="card-sub">Swing low floor</div>
     </div>
     <div class="card red">
-      <div class="card-label">Resistance</div>
+      <div class="card-label">Nearest Resistance</div>
       <div class="card-val">${{ d.resistance }}</div>
       <div class="card-sub">Swing high ceiling</div>
     </div>
@@ -359,6 +441,108 @@ table.fin-table{width:100%;border-collapse:collapse;}
       <div class="card-sub">{{ d.w52l_pct }} from price</div>
     </div>
   </div>
+
+<script>
+(function() {
+  var closes = {{ d.price_closes | tojson }};
+  var currentPrice = {{ d.price_raw }};
+  var zones = {{ d.sr_zones | tojson }};
+  var labels = closes.map(function(_, i) { return ''; });
+
+  var allPrices = closes.concat(zones.map(function(z){ return z.high; })).concat(zones.map(function(z){ return z.low; }));
+  var minP = Math.min.apply(null, allPrices) * 0.985;
+  var maxP = Math.max.apply(null, allPrices) * 1.015;
+
+  var ctx = document.getElementById('srChart').getContext('2d');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Price',
+        data: closes,
+        borderColor: '#3b82f6',
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.3,
+        fill: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: function() { return ''; },
+            label: function(ctx) { return '$' + ctx.parsed.y.toFixed(2); }
+          }
+        }
+      },
+      scales: {
+        x: { display: false },
+        y: {
+          min: minP,
+          max: maxP,
+          grid: { color: '#1a1a1a' },
+          ticks: {
+            color: '#4b5563',
+            font: { size: 10 },
+            callback: function(v) { return '$' + v.toFixed(0); }
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'srZones',
+      beforeDraw: function(chart) {
+        var ctx2 = chart.ctx;
+        var area = chart.chartArea;
+        var yScale = chart.scales.y;
+        ctx2.save();
+
+        zones.forEach(function(z) {
+          var isRes = z.type === 'resistance';
+          var yTop = yScale.getPixelForValue(z.high);
+          var yBot = yScale.getPixelForValue(z.low);
+          ctx2.fillStyle = isRes ? 'rgba(239,68,68,0.18)' : 'rgba(34,197,94,0.15)';
+          ctx2.fillRect(area.left, yTop, area.right - area.left, yBot - yTop);
+
+          // Zone label
+          ctx2.font = '9px Inter, sans-serif';
+          ctx2.fillStyle = isRes ? 'rgba(239,68,68,0.75)' : 'rgba(34,197,94,0.75)';
+          ctx2.fillText(
+            (isRes ? 'RES ' : 'SUP ') + '$' + z.mid.toFixed(2),
+            area.left + 5,
+            yTop + 11
+          );
+        });
+
+        // Current price dashed line
+        var py = yScale.getPixelForValue(currentPrice);
+        ctx2.strokeStyle = '#3b82f6';
+        ctx2.lineWidth = 1;
+        ctx2.setLineDash([5, 4]);
+        ctx2.beginPath();
+        ctx2.moveTo(area.left, py);
+        ctx2.lineTo(area.right, py);
+        ctx2.stroke();
+        ctx2.setLineDash([]);
+
+        // Price label
+        ctx2.fillStyle = '#3b82f6';
+        ctx2.font = 'bold 10px Inter, sans-serif';
+        ctx2.fillText('$' + currentPrice.toFixed(2), area.right - 55, py - 4);
+
+        ctx2.restore();
+      }
+    }]
+  });
+})();
+</script>
 
   <div class="grid-4" style="margin-top:12px;">
     <div class="card gray">
@@ -447,6 +631,22 @@ table.fin-table{width:100%;border-collapse:collapse;}
         &nbsp;|&nbsp; Sources: {{ d.news_sources | join(', ') }}
       </span>
     </div>
+    <!-- Sentiment bar -->
+    {% if d.news_signal.total > 0 %}
+    {% set bull_pct = (d.news_signal.bull / d.news_signal.total * 100) | round | int %}
+    {% set bear_pct = (d.news_signal.bear / d.news_signal.total * 100) | round | int %}
+    {% set neut_pct = 100 - bull_pct - bear_pct %}
+    <div class="news-sentiment-bar">
+      <div class="nsb-bull" style="width:{{ bull_pct }}%"></div>
+      <div class="nsb-bear" style="width:{{ bear_pct }}%"></div>
+      <div class="nsb-neut" style="width:{{ neut_pct }}%"></div>
+    </div>
+    <div class="news-legend">
+      <span><span class="news-legend-dot" style="background:#22c55e;"></span>{{ d.news_signal.bull }} Bullish</span>
+      <span><span class="news-legend-dot" style="background:#ef4444;"></span>{{ d.news_signal.bear }} Bearish</span>
+      <span><span class="news-legend-dot" style="background:#374151;"></span>{{ d.news_signal.neutral }} Neutral</span>
+    </div>
+    {% endif %}
     {% for h in d.news_headlines %}
     <div class="news-item">
       <div class="news-dot {{ h.sentiment }}"></div>
@@ -461,6 +661,11 @@ table.fin-table{width:100%;border-collapse:collapse;}
       <span class="news-sent {{ h.sentiment }}">
         {% if h.sentiment == 'bull' %}▲ Bull{% elif h.sentiment == 'bear' %}▼ Bear{% else %}— Neutral{% endif %}
       </span>
+      {% if h.score is defined %}
+      <span class="news-score {{ h.sentiment }}">
+        {% if h.score > 0 %}+{% endif %}{{ "%.2f"|format(h.score) }}
+      </span>
+      {% endif %}
     </div>
     {% endfor %}
   </div>
