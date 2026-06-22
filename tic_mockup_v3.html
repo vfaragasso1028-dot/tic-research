@@ -565,6 +565,30 @@ input:focus,select:focus{border-color:#3b82f6}
       </div>
     </div>
 
+    <!-- LEADING / LAGGING SPY SECTORS -->
+    <div class="section">SPY Sector Rotation — Leading vs Lagging</div>
+    <div class="card" style="padding:14px 16px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+        <div style="font-size:11px;color:#6b7280">RS performance vs SPY over the last <strong style="color:#d1d5db">4 weeks · 13 weeks · 26 weeks</strong>. Green = outperforming · Red = underperforming.</div>
+        <div style="display:flex;gap:5px" id="spy-tf-tabs">
+          <button class="ctab active" onclick="switchSpyTF(this,'4w')">4W</button>
+          <button class="ctab" onclick="switchSpyTF(this,'13w')">13W</button>
+          <button class="ctab" onclick="switchSpyTF(this,'26w')">26W</button>
+        </div>
+      </div>
+
+      <!-- HEATMAP GRID -->
+      <div id="spy-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:14px"></div>
+
+      <!-- BAR CHART -->
+      <div style="position:relative;height:140px;margin-top:4px">
+        <canvas id="spyChart" role="img" aria-label="SPY sector relative strength bar chart"></canvas>
+      </div>
+      <div style="font-size:11px;color:#374151;margin-top:8px;text-align:center">
+        Numbers = % outperformance vs SPY · Zero line = SPY benchmark · Your ticker's sector highlighted in blue
+      </div>
+    </div>
+
     <!-- NEWS -->
     <div class="section">News Confirmation</div>
     <div class="card" style="padding:16px 18px">
@@ -1493,7 +1517,121 @@ function buildPeerChart(){
   });
 }
 
-setTimeout(()=>{buildChart();buildEpsChart();buildRevChart();buildPeerChart();},400);
+// ── SPY SECTOR ROTATION ──
+const spyData = {
+  '4w':[
+    {sector:'Energy',etf:'XLE',rs:+6.8,rank:1,yours:false},
+    {sector:'Technology',etf:'XLK',rs:+5.2,rank:2,yours:true},
+    {sector:'Industrials',etf:'XLI',rs:+3.1,rank:3,yours:false},
+    {sector:'Healthcare',etf:'XLV',rs:+2.4,rank:4,yours:false},
+    {sector:'Financials',etf:'XLF',rs:+1.8,rank:5,yours:false},
+    {sector:'Materials',etf:'XLB',rs:+0.6,rank:6,yours:false},
+    {sector:'Comm. Services',etf:'XLC',rs:-0.4,rank:7,yours:false},
+    {sector:'Consumer Disc.',etf:'XLY',rs:-1.2,rank:8,yours:false},
+    {sector:'Consumer Stap.',etf:'XLP',rs:-2.1,rank:9,yours:false},
+    {sector:'Real Estate',etf:'XLRE',rs:-3.8,rank:10,yours:false},
+    {sector:'Utilities',etf:'XLU',rs:-5.4,rank:11,yours:false},
+  ],
+  '13w':[
+    {sector:'Technology',etf:'XLK',rs:+12.4,rank:1,yours:true},
+    {sector:'Energy',etf:'XLE',rs:+9.1,rank:2,yours:false},
+    {sector:'Healthcare',etf:'XLV',rs:+5.8,rank:3,yours:false},
+    {sector:'Industrials',etf:'XLI',rs:+4.2,rank:4,yours:false},
+    {sector:'Financials',etf:'XLF',rs:+2.9,rank:5,yours:false},
+    {sector:'Materials',etf:'XLB',rs:+1.1,rank:6,yours:false},
+    {sector:'Comm. Services',etf:'XLC',rs:-0.8,rank:7,yours:false},
+    {sector:'Consumer Stap.',etf:'XLP',rs:-2.4,rank:8,yours:false},
+    {sector:'Consumer Disc.',etf:'XLY',rs:-3.6,rank:9,yours:false},
+    {sector:'Real Estate',etf:'XLRE',rs:-6.2,rank:10,yours:false},
+    {sector:'Utilities',etf:'XLU',rs:-9.8,rank:11,yours:false},
+  ],
+  '26w':[
+    {sector:'Technology',etf:'XLK',rs:+22.1,rank:1,yours:true},
+    {sector:'Energy',etf:'XLE',rs:+14.8,rank:2,yours:false},
+    {sector:'Industrials',etf:'XLI',rs:+8.4,rank:3,yours:false},
+    {sector:'Healthcare',etf:'XLV',rs:+6.2,rank:4,yours:false},
+    {sector:'Financials',etf:'XLF',rs:+4.1,rank:5,yours:false},
+    {sector:'Materials',etf:'XLB',rs:+0.8,rank:6,yours:false},
+    {sector:'Comm. Services',etf:'XLC',rs:-1.4,rank:7,yours:false},
+    {sector:'Consumer Disc.',etf:'XLY',rs:-4.8,rank:8,yours:false},
+    {sector:'Consumer Stap.',etf:'XLP',rs:-7.2,rank:9,yours:false},
+    {sector:'Real Estate',etf:'XLRE',rs:-11.4,rank:10,yours:false},
+    {sector:'Utilities',etf:'XLU',rs:-16.8,rank:11,yours:false},
+  ]
+};
+let currentSpyTF='4w';
+let spyChart=null;
+
+function buildSpySectors(tf){
+  const data=spyData[tf];
+  const grid=document.getElementById('spy-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+  data.forEach(s=>{
+    const isPos=s.rs>=0;
+    const isYours=s.yours;
+    const intensity=Math.min(Math.abs(s.rs)/15,1);
+    const bg=isYours?'#0c1a2e':isPos?`rgba(34,197,94,${0.08+intensity*0.18})`:`rgba(239,68,68,${0.08+intensity*0.18})`;
+    const border=isYours?'#1e3a5f':isPos?`rgba(34,197,94,${0.3+intensity*0.4})`:`rgba(239,68,68,${0.3+intensity*0.4})`;
+    const rsColor=isPos?'#22c55e':'#ef4444';
+    const rankColor=isYours?'#60a5fa':isPos?'#22c55e':'#ef4444';
+    grid.innerHTML+=`<div style="background:${bg};border:1px solid ${border};border-radius:8px;padding:10px 12px;${isYours?'border-left:3px solid #3b82f6;':isPos?'':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:10px;font-weight:700;color:#9ca3af">${s.etf}</span>
+        <span style="font-size:10px;color:${rankColor};font-weight:700">#${s.rank}</span>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:${isYours?'#60a5fa':'#d1d5db'};margin-bottom:4px">${s.sector}${isYours?' ★':''}</div>
+      <div style="font-size:16px;font-weight:800;color:${rsColor}">${isPos?'+':''}${s.rs.toFixed(1)}%</div>
+      <div style="font-size:10px;color:#4b5563;margin-top:2px">vs SPY · ${tf==='4w'?'4-week':tf==='13w'?'13-week':'26-week'}</div>
+      <div style="height:3px;border-radius:2px;background:${border};margin-top:6px;width:${Math.min(Math.abs(s.rs)/20*100,100)}%"></div>
+    </div>`;
+  });
+
+  // Bar chart
+  const canvas=document.getElementById('spyChart');
+  if(!canvas) return;
+  if(spyChart){spyChart.destroy();spyChart=null;}
+  const sorted=[...data].sort((a,b)=>b.rs-a.rs);
+  spyChart=new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:sorted.map(s=>s.etf),
+      datasets:[{
+        label:'vs SPY %',
+        data:sorted.map(s=>s.rs),
+        backgroundColor:sorted.map(s=>s.yours?'rgba(59,130,246,0.85)':s.rs>=0?'rgba(34,197,94,0.75)':'rgba(239,68,68,0.75)'),
+        borderRadius:4,
+        borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>` ${c.parsed.y>=0?'+':''}${c.parsed.y.toFixed(1)}% vs SPY`}}
+      },
+      scales:{
+        x:{ticks:{font:{size:10},color:'#9ca3af'},grid:{display:false}},
+        y:{
+          position:'right',
+          ticks:{font:{size:9},color:'#6b7280',callback:v=>(v>=0?'+':'')+v+'%'},
+          grid:{color:'rgba(255,255,255,0.06)'},
+          border:{dash:[4,3]},
+        }
+      },
+      plugins:{annotation:{annotations:{zero:{type:'line',yMin:0,yMax:0,borderColor:'rgba(255,255,255,0.3)',borderWidth:1,borderDash:[4,3]}}}}
+    }
+  });
+}
+
+function switchSpyTF(btn,tf){
+  document.querySelectorAll('#spy-tf-tabs .ctab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentSpyTF=tf;
+  buildSpySectors(tf);
+}
+
+setTimeout(()=>{buildChart();buildEpsChart();buildRevChart();buildPeerChart();buildSpySectors('4w');},400);
 
 function setFilter(btn) {
   const bar = btn.parentElement;
