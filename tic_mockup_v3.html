@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TIC Research — Full Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0a0a0a;color:#e8e8e8;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── GLOBAL ── */
+.green{color:#22c55e}.red{color:#ef4444}.blue{color:#60a5fa}.yellow{color:#f59e0b}.muted{color:#6b7280}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.pg{background:#052e16;color:#22c55e;border:1px solid #16a34a}
+.pr{background:#450a0a;color:#ef4444;border:1px solid #dc2626}
+.py{background:#451a03;color:#f59e0b;border:1px solid #d97706}
+.pb{background:#0c1a3b;color:#60a5fa;border:1px solid #2563eb}
+.pgr{background:#111827;color:#9ca3af;border:1px solid #374151}
+.card{background:#111;border:1px solid #1f2937;border-radius:10px;padding:16px 18px}
+.section{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#374151;font-weight:700;margin:24px 0 12px;padding-bottom:6px;border-bottom:1px solid #1a1a1a}
+.btn{font-size:12px;padding:8px 14px;border-radius:7px;border:1px solid #1f2937;background:#111;cursor:pointer;color:#d1d5db;font-family:inherit;font-weight:500}
+.btn:hover{background:#151515;border-color:#374151}
+.btn-blue{background:#1e40af;color:#93c5fd;border-color:#1e40af}
+.btn-blue:hover{background:#1d4ed8}
+table.t{width:100%;border-collapse:collapse}
+.t th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:9px 12px;text-align:left;border-bottom:1px solid #1f2937;font-weight:600}
+.t td{font-size:13px;color:#e5e7eb;padding:10px 12px;border-bottom:1px solid #141414;vertical-align:middle}
+.t tr:last-child td{border-bottom:none}
+.t tr:hover td{background:#141414;cursor:pointer}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.ma-toggle{font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid #374151;background:transparent;cursor:pointer;font-family:inherit;font-weight:600;opacity:.45;transition:.15s}
+.ma-toggle.active{opacity:1}
+.ma-toggle:hover{opacity:.8}
+.lock{display:flex;align-items:center;gap:8px;font-size:11px;color:#6b7280;background:#0f0f0f;border:1px solid #1f2937;border-radius:6px;padding:8px 12px;margin-top:8px}
+.lock a{margin-left:auto;color:#60a5fa;cursor:pointer;font-weight:600;text-decoration:none}
+.lock a:hover{color:#93c5fd}
+input,select{background:#111;border:1px solid #1f2937;border-radius:7px;padding:9px 12px;color:#e5e7eb;font-size:13px;font-family:inherit;outline:none;width:100%}
+input:focus,select:focus{border-color:#3b82f6}
+.toast{position:fixed;bottom:24px;right:24px;background:#1e40af;color:#93c5fd;font-size:13px;font-weight:600;padding:12px 20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.6);display:none;z-index:999;animation:slideIn .3s ease}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ── LAYOUT ── */
+.app{display:flex;flex:1;overflow:hidden}
+.sidebar{width:210px;background:#111;border-right:1px solid #1f2937;display:flex;flex-direction:column;flex-shrink:0}
+.logo{padding:18px 18px 14px;font-size:17px;font-weight:800;letter-spacing:2px;color:#f9fafb;border-bottom:1px solid #1f2937}
+.logo span{color:#3b82f6}
+.nav{padding:8px 0;flex:1;overflow-y:auto}
+.ni{display:flex;align-items:center;gap:11px;padding:10px 18px;font-size:13px;color:#6b7280;cursor:pointer;transition:.12s;border-left:3px solid transparent}
+.ni:hover{background:#151515;color:#d1d5db}
+.ni.active{background:#0c1a2e;color:#60a5fa;border-left-color:#3b82f6;font-weight:600}
+.ni svg{width:17px;height:17px;flex-shrink:0}
+.ni-badge{font-size:10px;padding:1px 6px;border-radius:3px;margin-left:auto;font-weight:700}
+.badge-pro{background:#1e3a5f;color:#60a5fa}
+.badge-free{background:#1f2937;color:#6b7280}
+.upgrade-box{padding:14px 16px;border-top:1px solid #1f2937;background:#0a0a0a}
+.plan-label{font-size:10px;color:#374151;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.plan-name{font-size:13px;font-weight:700;color:#f9fafb;margin-bottom:10px}
+.up-btn{display:block;width:100%;text-align:center;background:#1e40af;color:#93c5fd;font-size:12px;font-weight:700;padding:9px;border-radius:7px;cursor:pointer;border:none;font-family:inherit}
+.up-btn:hover{background:#1d4ed8}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.page{padding:22px 26px;flex:1}
+.page{display:none}
+.page.active{display:block}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;gap:10px;padding:14px 26px;border-bottom:1px solid #1a1a1a;background:#0d0d0d;flex-shrink:0}
+.search-wrap{flex:1;position:relative;max-width:420px}
+.search-wrap input{padding-left:36px}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#4b5563;pointer-events:none}
+.page-title{font-size:15px;font-weight:700;color:#f9fafb}
+
+/* ── DASHBOARD ── */
+.metric-card{background:#111;border:1px solid #1f2937;border-radius:10px;padding:16px 18px}
+.mc-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#4b5563;font-weight:700;margin-bottom:6px}
+.mc-val{font-size:24px;font-weight:800;color:#f9fafb}
+.mc-sub{font-size:12px;color:#6b7280;margin-top:3px}
+.quick-ticker{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #141414;cursor:pointer}
+.quick-ticker:hover{background:#141414}
+.quick-ticker:last-child{border-bottom:none}
+.qt-sym{font-size:14px;font-weight:800;color:#f9fafb;width:55px}
+.qt-name{font-size:12px;color:#6b7280;flex:1}
+.qt-price{font-size:13px;font-weight:600;width:70px;text-align:right}
+.qt-chg{font-size:12px;font-weight:600;width:65px;text-align:right}
+
+/* ── CHART ── */
+.chart-tabs{display:flex;gap:5px;margin-bottom:12px}
+.ctab{font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #1f2937;background:#0f0f0f;cursor:pointer;color:#6b7280;font-weight:500;font-family:inherit}
+.ctab.active{background:#0c1a2e;color:#60a5fa;border-color:#1e40af}
+.ctab:hover:not(.active){background:#151515}
+.chart-box{position:relative;height:220px;overflow:hidden;background:#0a0a0a;border-radius:8px}
+.chart-box svg{width:100%;height:100%}
+.chart-legend{display:flex;gap:16px;font-size:11px;color:#6b7280;margin-top:8px;flex-wrap:wrap}
+.cl-item{display:flex;align-items:center;gap:5px}
+
+/* ── SCREENER ── */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.fc{font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid #1f2937;background:#0f0f0f;color:#9ca3af;cursor:pointer;font-family:inherit}
+.fc.active{background:#0c1a2e;color:#60a5fa;border-color:#1e40af}
+.fc:hover:not(.active){background:#151515}
+.fl{font-size:11px;color:#4b5563;font-weight:700;white-space:nowrap}
+.result-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.result-count{font-size:13px;color:#9ca3af}
+.result-count strong{color:#f9fafb}
+
+/* ── ALERTS ── */
+.al-row{display:grid;grid-template-columns:10px 75px 1fr auto auto auto;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid #141414;font-size:13px}
+.al-row:last-child{border-bottom:none}
+.al-dot{width:8px;height:8px;border-radius:50%}
+.al-sym{font-weight:800;color:#f9fafb}
+.al-desc{color:#9ca3af;font-size:12px}
+.toggle{width:36px;height:20px;background:#1f2937;border-radius:10px;position:relative;cursor:pointer;flex-shrink:0}
+.toggle.on{background:#1e40af}
+.toggle::after{content:'';position:absolute;width:14px;height:14px;background:#e5e7eb;border-radius:50%;top:3px;left:3px;transition:.2s}
+.toggle.on::after{left:19px}
+.ch-tag{font-size:10px;background:#0f0f0f;border:1px solid #1f2937;color:#6b7280;padding:2px 8px;border-radius:4px}
+
+/* ── WATCHLIST ── */
+.wl-controls{display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap}
+.wl-sort{font-size:11px;padding:6px 12px;border-radius:6px;border:1px solid #1f2937;background:#0f0f0f;cursor:pointer;color:#6b7280;font-family:inherit}
+.wl-sort.active{background:#0c1a2e;color:#60a5fa;border-color:#1e40af}
+
+/* ── PDF ── */
+.pdf-page{background:#fff;color:#111;border-radius:10px;padding:28px 32px;max-width:680px;margin:0 auto;font-family:'Inter',sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+.pdf-brand{font-size:10px;font-weight:800;letter-spacing:2px;color:#1e40af;margin-bottom:4px}
+.pdf-h1{font-size:28px;font-weight:800;color:#0f172a}
+.pdf-co{font-size:13px;color:#64748b;margin-top:2px}
+.pdf-price-row{display:flex;align-items:baseline;gap:12px;margin:10px 0 16px}
+.pdf-pr{font-size:32px;font-weight:800;color:#0f172a}
+.pdf-chg{font-size:14px;color:#16a34a;font-weight:600}
+.pdf-sec{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;font-weight:700;margin:14px 0 6px;border-bottom:1px solid #e2e8f0;padding-bottom:4px}
+.pdf-kv{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;color:#374151}
+.pdf-kv span:last-child{font-weight:700;color:#0f172a}
+.pdf-signal-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:10px 12px;font-size:11px;color:#1e40af;line-height:1.7;margin:8px 0}
+.pdf-bull-box{background:#f0fdf4;border-radius:6px;padding:8px 12px;font-size:11px;color:#166534;line-height:1.7;margin-bottom:6px}
+.pdf-bear-box{background:#fef2f2;border-radius:6px;padding:8px 12px;font-size:11px;color:#991b1b;line-height:1.7}
+.pdf-footer{font-size:9px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:10px;margin-top:16px;text-align:center;line-height:1.7}
+.pdf-divider{border:none;border-top:2px solid #1e40af;margin-bottom:16px}
+.pdf-g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* ── PRICING ── */
+.pricing-g{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:860px;margin:0 auto}
+.pc{background:#111;border:1px solid #1f2937;border-radius:12px;padding:24px}
+.pc.featured{border:2px solid #1e40af;background:#060e1f}
+.pc-tier{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px}
+.pc-amt{font-size:38px;font-weight:800;color:#f9fafb}
+.pc-per{font-size:12px;color:#6b7280;margin-bottom:16px}
+.pc-div{border:none;border-top:1px solid #1f2937;margin:14px 0}
+.pc-feat{display:flex;align-items:center;gap:8px;font-size:12px;color:#d1d5db;padding:4px 0}
+.pc-btn{display:block;width:100%;text-align:center;padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:18px;border:none;font-family:inherit}
+.pop-badge{display:inline-block;font-size:10px;background:#0c1a3b;color:#60a5fa;border:1px solid #1e40af;padding:3px 10px;border-radius:4px;font-weight:700;margin-bottom:8px}
+
+/* ── ANALYZE PAGE ── */
+.analyze-form{background:#111;border:1px solid #1f2937;border-radius:10px;padding:20px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-end}
+.analyze-form .form-g{display:flex;flex-direction:column;gap:5px;flex:1}
+.analyze-form label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;font-weight:600}
+.report-section{display:none}
+.report-section.show{display:block}
+.sr-zone-table th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:8px 12px;text-align:left;border-bottom:1px solid #1f2937;font-weight:600}
+.sr-zone-table td{font-size:13px;color:#e5e7eb;padding:9px 12px;border-bottom:1px solid #141414;vertical-align:middle}
+.zone-dots{display:flex;gap:3px;align-items:center}
+.zd{width:7px;height:7px;border-radius:50%}
+.zd-on{background:#3b82f6}.zd-off{background:#1f2937}
+.ma-row{display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #141414}
+.ind-row{display:grid;grid-template-columns:80px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #141414}
+.bull-box{background:#052e16;border:1px solid #16a34a;border-radius:10px;padding:16px 18px}
+.bear-box{background:#450a0a;border:1px solid #dc2626;border-radius:10px;padding:16px 18px}
+.bb-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:12px}
+.bb-item{font-size:13px;line-height:1.7;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.05)}
+.bb-item:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+
+/* ── SETTINGS ── */
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #141414;font-size:13px}
+.settings-row:last-child{border-bottom:none}
+.settings-label{color:#d1d5db;font-weight:500}
+.settings-desc{font-size:11px;color:#6b7280;margin-top:3px}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="page-title" id="topbar-title">Dashboard</div>
+  <div class="search-wrap">
+    <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2" stroke-linecap="round"/></svg>
+    <input type="text" placeholder="Search any ticker — NVDA, TSLA, AAPL..." id="global-search" onkeydown="if(event.key==='Enter'){goAnalyze(this.value)}"/>
+  </div>
+  <button class="btn btn-blue" onclick="nav('alerts');toast('Alert builder opened')">+ New Alert</button>
+  <button class="btn" onclick="nav('pdf');toast('Opening PDF report...')">Export PDF</button>
+</div>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo"><span>TIC</span> Research</div>
+  <nav class="nav">
+    <div class="ni active" id="nav-dashboard" onclick="nav('dashboard')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+      Dashboard
+    </div>
+    <div class="ni" id="nav-analyze" onclick="nav('analyze')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Analyze
+      <span class="ni-badge badge-free">Free</span>
+    </div>
+    <div class="ni" id="nav-scanner" onclick="nav('scanner')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2" stroke-linecap="round"/></svg>
+      Scanner
+      <span class="ni-badge badge-pro">Pro</span>
+    </div>
+    <div class="ni" id="nav-watchlist" onclick="nav('watchlist')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" stroke-width="2"/></svg>
+      Watchlist
+      <span class="ni-badge badge-pro">Pro</span>
+    </div>
+    <div class="ni" id="nav-alerts" onclick="nav('alerts')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-width="2"/><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke-width="2"/></svg>
+      Alerts
+      <span class="ni-badge badge-pro">Pro</span>
+    </div>
+    <div class="ni" id="nav-pdf" onclick="nav('pdf')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-width="2"/><polyline points="14,2 14,8 20,8" stroke-width="2"/></svg>
+      PDF Reports
+      <span class="ni-badge badge-pro">Pro</span>
+    </div>
+    <div class="ni" id="nav-pricing" onclick="nav('pricing')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23" stroke-width="2"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke-width="2" stroke-linecap="round"/></svg>
+      Pricing
+    </div>
+    <div class="ni" id="nav-methodology" onclick="nav('methodology')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Methodology
+    </div>
+    <div class="ni" id="nav-settings" onclick="nav('settings')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-width="2"/></svg>
+      Settings
+    </div>
+  </nav>
+  <div class="upgrade-box">
+    <div class="plan-label">Current plan</div>
+    <div class="plan-name">Free Tier</div>
+    <button class="up-btn" onclick="nav('pricing');toast('Viewing upgrade options...')">Upgrade to Pro →</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ══ DASHBOARD ══ -->
+<div class="page active" id="page-dashboard">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <div>
+      <div style="font-size:11px;color:#374151;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Good morning, Vince</div>
+      <div style="font-size:20px;font-weight:800;color:#f9fafb">Markets open · June 19, 2026</div>
+    </div>
+    <button class="btn btn-blue" onclick="nav('analyze');toast('Opening analyzer...')">Analyze a Ticker →</button>
+  </div>
+
+  <div class="g4" style="margin-bottom:20px">
+    <div class="metric-card"><div class="mc-label">S&P 500</div><div class="mc-val green">5,841</div><div class="mc-sub green">▲ +0.82% today</div></div>
+    <div class="metric-card"><div class="mc-label">Nasdaq</div><div class="mc-val green">19,204</div><div class="mc-sub green">▲ +1.14% today</div></div>
+    <div class="metric-card"><div class="mc-label">VIX</div><div class="mc-val yellow">14.2</div><div class="mc-sub muted">Low fear — risk on</div></div>
+    <div class="metric-card"><div class="mc-label">Analyses Today</div><div class="mc-val blue">2 / 3</div><div class="mc-sub muted">1 remaining (Free)</div></div>
+  </div>
+
+  <div class="g2">
+    <div>
+      <div class="section">Recent Analyses</div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="quick-ticker" onclick="goAnalyze('NVDA')">
+          <div class="qt-sym">NVDA</div><div class="qt-name">Nvidia · <span class="pill pg">S2A</span></div>
+          <div class="qt-price">$134.21</div><div class="qt-chg green">▲ +1.78%</div>
+        </div>
+        <div class="quick-ticker" onclick="goAnalyze('AMZN')">
+          <div class="qt-sym">AMZN</div><div class="qt-name">Amazon · <span class="pill pr">S4A</span></div>
+          <div class="qt-price">$261.42</div><div class="qt-chg red">▼ -0.83%</div>
+        </div>
+        <div class="quick-ticker" onclick="nav('analyze')">
+          <div style="width:100%;text-align:center;font-size:12px;color:#374151;padding:4px 0">+ Analyze new ticker (1 free left today)</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section">Watchlist Snapshot</div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="quick-ticker" onclick="nav('watchlist')">
+          <div class="qt-sym">NVDA</div><div class="qt-name"><span class="pill pg">Stage 2</span></div>
+          <div class="qt-price">$134.21</div><div class="qt-chg green">▲ +1.78%</div>
+        </div>
+        <div class="quick-ticker" onclick="nav('watchlist')">
+          <div class="qt-sym">TSLA</div><div class="qt-name"><span class="pill pg">Stage 2</span></div>
+          <div class="qt-price">$248.10</div><div class="qt-chg green">▲ +3.14%</div>
+        </div>
+        <div class="quick-ticker" onclick="nav('watchlist')">
+          <div class="qt-sym">AMZN</div><div class="qt-name"><span class="pill pr">Stage 4</span></div>
+          <div class="qt-price">$261.42</div><div class="qt-chg red">▼ -0.83%</div>
+        </div>
+        <div class="quick-ticker" onclick="nav('watchlist')">
+          <div style="width:100%;text-align:center;font-size:12px;color:#374151;padding:4px 0">View full watchlist →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">Recent Alerts Fired</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="t">
+      <thead><tr><th>Date</th><th>Ticker</th><th>Alert</th><th>Price</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr onclick="goAnalyze('NVDA')"><td class="muted">Today 4:02pm</td><td style="font-weight:800;color:#f9fafb">NVDA</td><td>Closed above resistance $132.00</td><td class="green" style="font-weight:700">$132.48</td><td><span class="pill pg">▲ +1.8% next day</span></td></tr>
+        <tr onclick="goAnalyze('META')"><td class="muted">Jun 17</td><td style="font-weight:800;color:#f9fafb">META</td><td>Pocket Pivot detected</td><td class="green" style="font-weight:700">$622.10</td><td><span class="pill pg">▲ +3.2% next day</span></td></tr>
+        <tr onclick="goAnalyze('TSLA')"><td class="muted">Jun 15</td><td style="font-weight:800;color:#f9fafb">TSLA</td><td>TicScore rose above 70</td><td style="font-weight:700">$241.30</td><td><span class="pill pg">▲ +5.1% / 3 days</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ ANALYZE ══ -->
+<div class="page" id="page-analyze">
+  <div class="analyze-form">
+    <div class="form-g"><label>Ticker Symbol</label><input type="text" id="analyze-ticker" placeholder="e.g. NVDA" value="NVDA"/></div>
+    <div class="form-g" style="flex:0 0 180px"><label>API Key (optional)</label><input type="text" placeholder="Anthropic key for AI thesis"/></div>
+    <button class="btn btn-blue" style="height:40px;align-self:flex-end;white-space:nowrap" onclick="runAnalyze()">Run Analysis →</button>
+  </div>
+
+  <div class="report-section show" id="report-output">
+    <!-- HEADER -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;color:#6b7280;margin-bottom:4px" id="r-meta">NVDA · Technology · Semiconductors · <span class="pill pg" style="font-size:9px">Schwab API</span> <span style="color:#374151;font-size:9px">Real-time · 15s delay</span></div>
+      <div style="font-size:22px;font-weight:800;color:#f9fafb" id="r-company">Nvidia Corporation</div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-top:6px">
+        <span style="font-size:34px;font-weight:800;color:#f9fafb" id="r-price">$134.21</span>
+        <span style="font-size:16px;font-weight:600" id="r-chg" class="green">▲ +$2.34 (+1.78%)</span>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="g4" style="margin-bottom:6px">
+      <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">TicScore <span class="pill pg" style="margin-left:4px">✓ Pass</span></div><div class="mc-val green" id="r-score">82</div><div class="mc-sub" id="r-bd">G:40 · V:20 · Q:14 · S:8</div></div>
+      <div class="card" style="border-left:3px solid #3b82f6"><div class="mc-label">TicStage</div><div class="mc-val blue" style="font-size:17px" id="r-stage">Stage 2A</div><div class="mc-sub green" id="r-stage-desc">Advancing — optimal long zone</div></div>
+      <div class="card"><div class="mc-label">ADX (14)</div><div class="mc-val" id="r-adx">38.4</div><div class="mc-sub" id="r-adx-str">Strong trend</div></div>
+      <div class="card"><div class="mc-label">RS Rating</div><div class="mc-val green" id="r-rs">91</div><div class="mc-sub green" id="r-rs-l">Leader · Stack Aligned ✓</div></div>
+    </div>
+
+    <div class="section">TIC Signal</div>
+    <div style="background:#0b1320;border:1px solid #1e3a5f;border-radius:10px;padding:16px 20px;font-size:14px;line-height:1.8;color:#cbd5e1" id="r-signal">Pocket Pivot active — volume confirms institutional accumulation. Golden Cross (50 SMA above 200 SMA) supports bullish macro structure. Stage 2A — optimal long exposure on pullback to $126.80 support zone.</div>
+
+    <!-- CHART V3 — Full TA -->
+    <div class="section">Price Chart — Technical Analysis</div>
+    <div class="card" style="padding:14px 16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div style="display:flex;gap:5px" id="tf-tabs">
+          <button class="ctab active" onclick="switchTF(this,'daily')">Daily</button>
+          <button class="ctab" onclick="switchTF(this,'weekly')">Weekly</button>
+          <button class="ctab" onclick="switchTF(this,'monthly')">Monthly</button>
+        </div>
+        <div style="display:flex;gap:5px">
+          <button class="ctab active" id="ct-line" onclick="switchChartType('line')">Line</button>
+          <button class="ctab" id="ct-candle" onclick="switchChartType('candle')">Candlestick</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+        <span style="font-size:10px;color:#4b5563;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Overlays:</span>
+        <button class="ma-toggle active" data-ma="ema9" onclick="toggleMA(this,'ema9')" style="border-color:#f59e0b;color:#f59e0b;background:rgba(245,158,11,.15)">9 EMA</button>
+        <button class="ma-toggle active" data-ma="ema21" onclick="toggleMA(this,'ema21')" style="border-color:#a78bfa;color:#a78bfa;background:rgba(167,139,250,.15)">21 EMA</button>
+        <button class="ma-toggle active" data-ma="sma50" onclick="toggleMA(this,'sma50')" style="border-color:#34d399;color:#34d399;background:rgba(52,211,153,.15)">50 SMA</button>
+        <button class="ma-toggle active" data-ma="sma150" onclick="toggleMA(this,'sma150')" style="border-color:#f87171;color:#f87171;background:rgba(248,113,113,.15)">150 SMA</button>
+        <button class="ma-toggle active" data-ma="sma200" onclick="toggleMA(this,'sma200')" style="border-color:#60a5fa;color:#60a5fa;background:rgba(96,165,250,.15)">200 SMA</button>
+        <button class="ma-toggle" data-ma="vol" onclick="toggleMA(this,'vol')" style="border-color:#6b7280;color:#6b7280">Vol Bars</button>
+      </div>
+      <div style="position:relative;height:260px;width:100%">
+        <canvas id="priceChart" role="img" aria-label="NVDA price chart with MA overlays"></canvas>
+      </div>
+      <div style="position:relative;height:60px;width:100%;margin-top:3px" id="vol-panel">
+        <canvas id="volChart" role="img" aria-label="Volume bars"></canvas>
+      </div>
+      <div class="chart-legend" style="margin-top:10px;flex-wrap:wrap;gap:8px">
+        <div class="cl-item"><span style="width:20px;height:2px;background:#f59e0b;display:inline-block;vertical-align:middle"></span> 9 EMA</div>
+        <div class="cl-item"><span style="width:20px;height:2px;background:#a78bfa;display:inline-block;vertical-align:middle"></span> 21 EMA</div>
+        <div class="cl-item"><span style="width:20px;height:2px;background:#34d399;display:inline-block;vertical-align:middle"></span> 50 SMA</div>
+        <div class="cl-item"><span style="width:20px;height:2px;background:#f87171;display:inline-block;vertical-align:middle"></span> 150 SMA</div>
+        <div class="cl-item"><span style="width:20px;height:2px;background:#60a5fa;display:inline-block;vertical-align:middle"></span> 200 SMA</div>
+        <div class="cl-item"><span style="width:16px;height:8px;background:rgba(239,68,68,0.25);border-radius:2px;display:inline-block"></span> Resistance</div>
+        <div class="cl-item"><span style="width:16px;height:8px;background:rgba(34,197,94,0.2);border-radius:2px;display:inline-block"></span> Support</div>
+      </div>
+    </div>
+
+    <!-- KEY LEVELS -->
+    <div class="section">Key Levels &amp; Market Data</div>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
+      <table class="t" style="border-collapse:collapse">
+        <thead><tr><th>Type</th><th>Zone</th><th>Mid</th><th>Strength</th><th>Touches</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill pr">RESISTANCE</span></td><td style="font-weight:700">$138.50 – $140.00</td><td class="muted">$139.25</td><td><div class="zone-dots"><div class="zd zd-on"></div><div class="zd zd-on"></div><div class="zd zd-on"></div><div class="zd zd-on"></div><div class="zd zd-off"></div><span style="font-size:10px;color:#6b7280;margin-left:4px">Strong</span></div></td><td class="muted">3×</td></tr>
+          <tr><td><span class="pill pg">SUPPORT</span></td><td style="font-weight:700">$126.80 – $128.50</td><td class="muted">$127.65</td><td><div class="zone-dots"><div class="zd zd-on"></div><div class="zd zd-on"></div><div class="zd zd-on"></div><div class="zd zd-on"></div><div class="zd zd-on"></div><span style="font-size:10px;color:#6b7280;margin-left:4px">Very Strong</span></div></td><td class="muted">5×</td></tr>
+          <tr><td><span class="pill pg">SUPPORT</span></td><td style="font-weight:700">$118.00 – $119.50</td><td class="muted">$118.75</td><td><div class="zone-dots"><div class="zd zd-on"></div><div class="zd zd-on"></div><div class="zd zd-on"></div><div class="zd zd-off"></div><div class="zd zd-off"></div><span style="font-size:10px;color:#6b7280;margin-left:4px">Moderate</span></div></td><td class="muted">2×</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="g4">
+      <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">Support</div><div class="mc-val">$126.80</div><div class="mc-sub">Swing low floor</div></div>
+      <div class="card" style="border-left:3px solid #ef4444"><div class="mc-label">Resistance</div><div class="mc-val">$138.50</div><div class="mc-sub">Swing high ceiling</div></div>
+      <div class="card"><div class="mc-label">52W High</div><div class="mc-val">$153.13</div><div class="mc-sub red">-12.4% from price</div></div>
+      <div class="card"><div class="mc-label">52W Low</div><div class="mc-val">$86.41</div><div class="mc-sub green">+55.3% from price</div></div>
+    </div>
+
+    <!-- BULL BEAR -->
+    <div class="section">Bull / Bear Cases</div>
+    <div class="g2">
+      <div class="bull-box">
+        <div class="bb-title" style="color:#16a34a">▲ Bull Case</div>
+        <div class="bb-item" style="color:#86efac">▲ Breakout above $138.50 with volume confirms Stage 2 continuation — 14.1% upside to 52W high of $153.13.</div>
+        <div class="bb-item" style="color:#86efac">▲ Golden Cross + Full PowerStack aligned — institutional tailwind confirmed across all timeframes.</div>
+        <div style="color:#86efac;font-size:13px;line-height:1.7">▲ Pocket Pivot active — volume exceeds all down-day highs from prior 10 sessions. Institutional accumulation in progress.</div>
+      </div>
+      <div class="bear-box">
+        <div class="bb-title" style="color:#dc2626">▼ Bear Case</div>
+        <div class="bb-item" style="color:#fca5a5">▼ ADX at 38.4 — approaching exhaustion zone, susceptible to mean reversion if broad market rotates.</div>
+        <div class="bb-item" style="color:#fca5a5">▼ RSI at 61.2 approaching elevated territory — extended run increases pullback probability near resistance.</div>
+        <div style="color:#fca5a5;font-size:13px;line-height:1.7">▼ Break below $126.80 support invalidates setup and opens path to $118 zone — a -10.6% drawdown scenario.</div>
+      </div>
+    </div>
+
+    <!-- TECHNICAL -->
+    <div class="section">Technical Analysis — PowerStack</div>
+    <div class="g2">
+      <div class="card" style="padding:0 18px">
+        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">9 EMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb">$131.44</span><span class="green" style="font-weight:600">+2.1%</span></div>
+        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">21 EMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb">$128.90</span><span class="green" style="font-weight:600">+4.1%</span></div>
+        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">50 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb">$122.18</span><span class="green" style="font-weight:600">+9.9%</span></div>
+        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">150 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb">$108.44</span><span class="green" style="font-weight:600">+23.8%</span></div>
+        <div class="ma-row" style="border-bottom:none"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">200 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb">$101.20</span><span class="green" style="font-weight:600">+32.6%</span></div>
+        <div style="padding:12px 0;display:flex;gap:8px;flex-wrap:wrap">
+          <span class="pill pg">✓ Golden Cross</span>
+          <span class="pill pg">✓ Full Stack Aligned</span>
+        </div>
+      </div>
+      <div class="card" style="padding:0 18px">
+        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">RSI (14)</span><span style="font-size:18px;font-weight:700;color:#f59e0b">61.2</span><span class="muted" style="font-size:12px">Elevated</span></div>
+        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">MACD</span><span style="font-size:18px;font-weight:700;color:#22c55e">+2.14</span><span class="muted" style="font-size:12px">Bullish</span></div>
+        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">ADX</span><span style="font-size:18px;font-weight:700;color:#f9fafb">38.4</span><span class="muted" style="font-size:12px">Strong</span></div>
+        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">ATR</span><span style="font-size:18px;font-weight:700;color:#f9fafb">$4.82</span><span class="muted" style="font-size:12px">3.6% range</span></div>
+        <div class="ind-row" style="border-bottom:none"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">Volume</span><span style="font-size:18px;font-weight:700;color:#f9fafb">312M</span><span class="muted" style="font-size:12px">1.4× avg</span></div>
+      </div>
+    </div>
+
+    <!-- EARNINGS HISTORY -->
+    <div class="section">Earnings History — EPS &amp; Revenue Growth</div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="card" style="padding:14px 16px">
+        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Quarterly EPS (Last 8 Quarters)</div>
+        <div style="position:relative;height:160px"><canvas id="epsChart" role="img" aria-label="Quarterly EPS chart"></canvas></div>
+        <div style="display:flex;gap:12px;margin-top:8px;font-size:11px;color:#6b7280">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#22c55e;border-radius:2px;margin-right:4px;vertical-align:middle"></span>EPS Beat</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#374151;border-radius:2px;margin-right:4px;vertical-align:middle"></span>EPS Miss</span>
+          <span style="margin-left:auto;color:#22c55e;font-weight:700">+184% YoY avg growth</span>
+        </div>
+      </div>
+      <div class="card" style="padding:14px 16px">
+        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Quarterly Revenue ($B)</div>
+        <div style="position:relative;height:160px"><canvas id="revChart" role="img" aria-label="Quarterly revenue chart"></canvas></div>
+        <div style="display:flex;gap:12px;margin-top:8px;font-size:11px;color:#6b7280">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#3b82f6;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Revenue</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border:1px solid #374151;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Estimate</span>
+          <span style="margin-left:auto;color:#22c55e;font-weight:700">+122% YoY avg growth</span>
+        </div>
+      </div>
+    </div>
+    <div class="g4" style="margin-bottom:6px">
+      <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">EPS Growth (YoY)</div><div class="mc-val green">+168%</div><div class="mc-sub">Q1 2026 vs Q1 2025</div></div>
+      <div class="card" style="border-left:3px solid #3b82f6"><div class="mc-label">Revenue Growth</div><div class="mc-val blue">+69%</div><div class="mc-sub">$44.1B vs $26.0B</div></div>
+      <div class="card" style="border-left:3px solid #f59e0b"><div class="mc-label">EPS Acceleration</div><div class="mc-val yellow">4 of 4</div><div class="mc-sub">Consecutive quarters</div></div>
+      <div class="card" style="border-left:3px solid #a78bfa"><div class="mc-label">Beat Rate</div><div class="mc-val" style="color:#a78bfa">8 / 8</div><div class="mc-sub green">Perfect beat record</div></div>
+    </div>
+
+    <!-- PEER COMPARISON -->
+    <div class="section">Peer Comparison — Semiconductor Group</div>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
+      <table class="t">
+        <thead><tr><th>Ticker</th><th>Company</th><th>Price</th><th>TicScore</th><th>Stage</th><th>RS</th><th>EPS Growth</th><th>Rev Growth</th><th>Mkt Cap</th><th>vs Group</th></tr></thead>
+        <tbody>
+          <tr style="background:#0c1a2e"><td style="font-weight:800;color:#60a5fa;font-size:14px">NVDA ★</td><td style="color:#9ca3af">Nvidia</td><td style="font-weight:700">$134.21</td><td class="green" style="font-weight:800">82</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:800">91</td><td class="green">+168%</td><td class="green">+69%</td><td class="muted">$3.29T</td><td><span class="pill pg">Leader</span></td></tr>
+          <tr><td style="font-weight:800;color:#f9fafb">AVGO</td><td class="muted">Broadcom</td><td style="font-weight:600">$248.80</td><td class="green" style="font-weight:700">74</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:700">82</td><td class="green">+44%</td><td class="green">+51%</td><td class="muted">$1.16T</td><td><span class="pill pg">Strong</span></td></tr>
+          <tr><td style="font-weight:800;color:#f9fafb">AMD</td><td class="muted">Adv. Micro Devices</td><td style="font-weight:600">$168.40</td><td class="yellow" style="font-weight:700">61</td><td><span class="pill pg">S2B</span></td><td class="yellow" style="font-weight:700">68</td><td class="yellow">+18%</td><td class="yellow">+36%</td><td class="muted">$272B</td><td><span class="pill py">Neutral</span></td></tr>
+          <tr><td style="font-weight:800;color:#f9fafb">QCOM</td><td class="muted">Qualcomm</td><td style="font-weight:600">$178.20</td><td class="yellow" style="font-weight:700">55</td><td><span class="pill py">S3A</span></td><td class="yellow" style="font-weight:700">58</td><td class="yellow">+12%</td><td class="yellow">+17%</td><td class="muted">$198B</td><td><span class="pill py">Weak</span></td></tr>
+          <tr><td style="font-weight:800;color:#f9fafb">INTC</td><td class="muted">Intel</td><td style="font-weight:600">$22.10</td><td class="red" style="font-weight:700">18</td><td><span class="pill pr">S4A</span></td><td class="red" style="font-weight:700">12</td><td class="red">-42%</td><td class="red">-8%</td><td class="muted">$93B</td><td><span class="pill pr">Avoid</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="padding:14px 16px;margin-bottom:6px">
+      <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Peer TicScore Comparison</div>
+      <div style="position:relative;height:120px"><canvas id="peerChart" role="img" aria-label="Peer TicScore comparison bar chart"></canvas></div>
+    </div>
+
+    <!-- INDUSTRY GROUP RANKING -->
+    <div class="section">Industry Group Ranking — Sector Rotation</div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="card" style="padding:14px 16px">
+        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">S&amp;P 500 Sector Rankings (RS-Based)</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
+            <span class="green" style="font-weight:800">1</span><span style="color:#d1d5db">Energy</span><div style="height:6px;background:#22c55e;border-radius:3px;width:92%"></div><span class="green" style="font-weight:700">RS 92</span>
+          </div>
+          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px;background:#0c1a2e;padding:4px 6px;border-radius:5px;border-left:3px solid #3b82f6">
+            <span class="blue" style="font-weight:800">2</span><span style="color:#60a5fa;font-weight:700">Technology ★</span><div style="height:6px;background:#3b82f6;border-radius:3px;width:88%"></div><span class="blue" style="font-weight:700">RS 88</span>
+          </div>
+          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
+            <span style="color:#6b7280">3</span><span style="color:#9ca3af">Industrials</span><div style="height:6px;background:#4b5563;border-radius:3px;width:74%"></div><span style="color:#9ca3af">RS 74</span>
+          </div>
+          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
+            <span style="color:#6b7280">4</span><span style="color:#9ca3af">Healthcare</span><div style="height:6px;background:#4b5563;border-radius:3px;width:70%"></div><span style="color:#9ca3af">RS 70</span>
+          </div>
+          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
+            <span style="color:#6b7280">5</span><span style="color:#9ca3af">Financials</span><div style="height:6px;background:#4b5563;border-radius:3px;width:66%"></div><span style="color:#9ca3af">RS 66</span>
+          </div>
+          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
+            <span style="color:#6b7280">6</span><span style="color:#9ca3af">Comm. Services</span><div style="height:6px;background:#4b5563;border-radius:3px;width:61%"></div><span style="color:#9ca3af">RS 61</span>
+          </div>
+          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
+            <span class="red">9</span><span style="color:#9ca3af">Real Estate</span><div style="height:6px;background:#374151;border-radius:3px;width:38%"></div><span class="red">RS 38</span>
+          </div>
+          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
+            <span class="red">11</span><span style="color:#9ca3af">Utilities</span><div style="height:6px;background:#374151;border-radius:3px;width:22%"></div><span class="red">RS 22</span>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px 16px">
+        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Semiconductor Sub-Industry Breakdown</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="background:#0c1a2e;border:1px solid #1e3a5f;border-radius:7px;padding:10px 12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span style="font-size:12px;font-weight:700;color:#60a5fa">AI Chips / Data Center</span>
+              <span class="pill pg">Rank #1</span>
+            </div>
+            <div style="font-size:11px;color:#6b7280">NVDA, AVGO — 92% avg RS · Strongest money flow</div>
+          </div>
+          <div style="background:#111;border:1px solid #1f2937;border-radius:7px;padding:10px 12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span style="font-size:12px;font-weight:700;color:#9ca3af">Mobile / Wireless Chips</span>
+              <span class="pill py">Rank #3</span>
+            </div>
+            <div style="font-size:11px;color:#6b7280">QCOM, MRVL — 60% avg RS · Neutral rotation</div>
+          </div>
+          <div style="background:#111;border:1px solid #1f2937;border-radius:7px;padding:10px 12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span style="font-size:12px;font-weight:700;color:#9ca3af">Legacy / PC Chips</span>
+              <span class="pill pr">Rank #6</span>
+            </div>
+            <div style="font-size:11px;color:#6b7280">INTC — 12% avg RS · Capital outflow confirmed</div>
+          </div>
+          <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px">
+            <div style="font-size:11px;color:#22c55e;line-height:1.7">
+              <strong>Rotation signal:</strong> Money is flowing INTO AI chip names and OUT OF legacy semiconductor. NVDA is in the #1 sub-industry group within the #2 sector — ideal positioning.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEWS -->
+    <div class="section">News Confirmation</div>
+    <div class="card" style="padding:16px 18px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap">
+        <span class="pill pg" style="font-size:12px;padding:4px 12px">✅ Confirming</span>
+        <span class="muted" style="font-size:11px">4 bullish · 1 bearish · 5 neutral · Sources: Yahoo Finance, Finviz</span>
+      </div>
+      <div style="display:flex;height:5px;border-radius:3px;overflow:hidden;margin-bottom:12px">
+        <div style="width:40%;background:#22c55e"></div>
+        <div style="width:10%;background:#ef4444"></div>
+        <div style="width:50%;background:#1f2937"></div>
+      </div>
+      <div style="display:flex;gap:14px;font-size:11px;color:#6b7280;margin-bottom:12px">
+        <span><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;margin-right:4px;vertical-align:middle"></span>4 Bullish</span>
+        <span><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#ef4444;margin-right:4px;vertical-align:middle"></span>1 Bearish</span>
+        <span><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#374151;margin-right:4px;vertical-align:middle"></span>5 Neutral</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #141414"><div style="width:8px;height:8px;border-radius:50%;background:#22c55e;margin-top:4px;flex-shrink:0"></div><div style="font-size:12px;color:#6b7280;min-width:80px">Yahoo Finance</div><div style="font-size:13px;color:#d1d5db;flex:1">Nvidia's Blackwell GPU demand exceeds supply — hyperscalers front-loading orders through Q3 2026</div><span class="pill pg" style="margin-left:8px;flex-shrink:0">▲ +0.81</span></div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #141414"><div style="width:8px;height:8px;border-radius:50%;background:#22c55e;margin-top:4px;flex-shrink:0"></div><div style="font-size:12px;color:#6b7280;min-width:80px">Finviz</div><div style="font-size:13px;color:#d1d5db;flex:1">NVDA upgraded to Strong Buy at Morgan Stanley — price target raised to $160</div><span class="pill pg" style="margin-left:8px;flex-shrink:0">▲ +0.72</span></div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #141414"><div style="width:8px;height:8px;border-radius:50%;background:#ef4444;margin-top:4px;flex-shrink:0"></div><div style="font-size:12px;color:#6b7280;min-width:80px">Yahoo Finance</div><div style="font-size:13px;color:#d1d5db;flex:1">DOJ investigation into Nvidia's AI chip export compliance procedures</div><span class="pill pr" style="margin-left:8px;flex-shrink:0">▼ -0.60</span></div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0"><div style="width:8px;height:8px;border-radius:50%;background:#374151;margin-top:4px;flex-shrink:0"></div><div style="font-size:12px;color:#6b7280;min-width:80px">Finviz</div><div style="font-size:13px;color:#d1d5db;flex:1">Nvidia reports Q1 revenue in line with analyst estimates — guidance maintained</div><span class="pill pgr" style="margin-left:8px;flex-shrink:0">— 0.00</span></div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px">
+      <button class="btn btn-blue" onclick="nav('watchlist');toast('NVDA added to watchlist!')">+ Add to Watchlist</button>
+      <button class="btn" onclick="nav('alerts');toast('Alert created for NVDA!')">Set Alert</button>
+      <button class="btn" onclick="nav('pdf');toast('Generating PDF...')">Export PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCANNER ══ -->
+<div class="page" id="page-scanner">
+  <div style="margin-bottom:16px">
+    <div style="font-size:18px;font-weight:800;color:#f9fafb;margin-bottom:4px">Market Scanner</div>
+    <div style="font-size:13px;color:#6b7280">Filter the S&P 500, Nasdaq 100, or Russell 2000 by TicScore, Stage, RS and more. Results ranked by RS Rating.</div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px;padding:16px 18px">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:12px">Universe</div>
+    <div class="filter-bar">
+      <button class="fc active" onclick="setFilter(this)">S&amp;P 500 (503)</button>
+      <button class="fc" onclick="setFilter(this)">Nasdaq 100</button>
+      <button class="fc" onclick="setFilter(this)">Russell 2000</button>
+      <button class="fc" onclick="setFilter(this)">My Watchlist</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Stage</div>
+    <div class="filter-bar">
+      <button class="fc active" onclick="setFilter(this)">Stage 2 Only</button>
+      <button class="fc" onclick="setFilter(this)">All Stages</button>
+      <button class="fc" onclick="setFilter(this)">Stage 1 (Basing)</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">TicScore</div>
+    <div class="filter-bar">
+      <button class="fc" onclick="setFilter(this)">Any</button>
+      <button class="fc active" onclick="setFilter(this)">≥ 50 Pass</button>
+      <button class="fc" onclick="setFilter(this)">≥ 70 High Conviction</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Moving Average Filters</div>
+    <div class="filter-bar">
+      <button class="fc active" onclick="setFilter(this)">Price > 50 SMA</button>
+      <button class="fc active" onclick="setFilter(this)">Price > 200 SMA</button>
+      <button class="fc" onclick="setFilter(this)">Price > 150 SMA</button>
+      <button class="fc" onclick="setFilter(this)">50 SMA > 200 SMA</button>
+      <button class="fc" onclick="setFilter(this)">150 SMA Rising</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Price Patterns</div>
+    <div class="filter-bar">
+      <button class="fc active" onclick="setFilter(this)">Golden Cross</button>
+      <button class="fc" onclick="setFilter(this)">Pocket Pivot</button>
+      <button class="fc" onclick="setFilter(this)">Cup &amp; Handle</button>
+      <button class="fc" onclick="setFilter(this)">Flat Base</button>
+      <button class="fc" onclick="setFilter(this)">Double Bottom</button>
+      <button class="fc" onclick="setFilter(this)">Bull Flag</button>
+      <button class="fc" onclick="setFilter(this)">High Tight Flag</button>
+      <button class="fc" onclick="setFilter(this)">Ascending Triangle</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Relative Strength</div>
+    <div class="filter-bar">
+      <button class="fc active" onclick="setFilter(this)">RS ≥ 80</button>
+      <button class="fc" onclick="setFilter(this)">RS ≥ 90</button>
+      <button class="fc" onclick="setFilter(this)">RS Improving</button>
+      <button class="fc" onclick="setFilter(this)">RS New High</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Fundamental Filters</div>
+    <div class="filter-bar">
+      <button class="fc" onclick="setFilter(this)">EPS Growth > 25%</button>
+      <button class="fc" onclick="setFilter(this)">Sales Growth > 20%</button>
+      <button class="fc" onclick="setFilter(this)">ROE > 17%</button>
+      <button class="fc" onclick="setFilter(this)">Low Debt</button>
+      <button class="fc" onclick="setFilter(this)">Accelerating EPS</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Volume</div>
+    <div class="filter-bar">
+      <button class="fc" onclick="setFilter(this)">Volume Surge 1.5×+</button>
+      <button class="fc" onclick="setFilter(this)">Volume Surge 2×+</button>
+      <button class="fc" onclick="setFilter(this)">Up Day on Heavy Vol</button>
+    </div>
+    <button class="btn btn-blue" style="margin-top:12px" onclick="toast('Scanner ran — 47 results found matching filters!')">Run Scanner →</button>
+    <button class="btn" style="margin-top:12px;margin-left:8px" onclick="toast('Filters cleared')">Clear All</button>
+  </div>
+
+  <div class="result-bar">
+    <div class="result-count">Showing <strong>5 of 47 results</strong> · S&P 500 · Stage 2 · TicScore ≥ 50 · Golden Cross · Last run: today 4:02pm ET</div>
+    <button class="btn" onclick="toast('Upgrade to Pro to export all 47 results to CSV')">Export CSV</button>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="t">
+      <thead><tr><th>#</th><th>Ticker</th><th>Company</th><th>Price</th><th>TicScore</th><th>Stage</th><th>RS</th><th>Cross</th><th>Pattern</th><th>Support</th><th></th></tr></thead>
+      <tbody>
+        <tr onclick="goAnalyze('NVDA')"><td class="blue" style="font-weight:800">1</td><td style="font-weight:800;color:#f9fafb;font-size:14px">NVDA</td><td class="muted">Nvidia</td><td style="font-weight:600">$134.21</td><td class="green" style="font-weight:800">82</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:800">91</td><td><span class="pill pg">Golden</span></td><td><span class="pill pb">Pocket Pivot</span></td><td class="green">$126.80</td><td><button class="btn btn-blue" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();goAnalyze('NVDA')">Analyze</button></td></tr>
+        <tr onclick="goAnalyze('META')"><td class="blue" style="font-weight:800">2</td><td style="font-weight:800;color:#f9fafb;font-size:14px">META</td><td class="muted">Meta Platforms</td><td style="font-weight:600">$622.40</td><td class="green" style="font-weight:800">76</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:800">84</td><td><span class="pill pg">Golden</span></td><td><span class="pill pgr">None</span></td><td class="green">$598.00</td><td><button class="btn btn-blue" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();goAnalyze('META')">Analyze</button></td></tr>
+        <tr onclick="goAnalyze('MSFT')"><td class="blue" style="font-weight:800">3</td><td style="font-weight:800;color:#f9fafb;font-size:14px">MSFT</td><td class="muted">Microsoft</td><td style="font-weight:600">$458.20</td><td class="yellow" style="font-weight:800">71</td><td><span class="pill pg">S2B</span></td><td class="yellow" style="font-weight:800">74</td><td><span class="pill pg">Golden</span></td><td><span class="pill pb">Pocket Pivot</span></td><td class="green">$440.00</td><td><button class="btn btn-blue" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();goAnalyze('MSFT')">Analyze</button></td></tr>
+        <tr onclick="goAnalyze('LLY')"><td class="blue" style="font-weight:800">4</td><td style="font-weight:800;color:#f9fafb;font-size:14px">LLY</td><td class="muted">Eli Lilly</td><td style="font-weight:600">$892.10</td><td class="green" style="font-weight:800">78</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:800">88</td><td><span class="pill pg">Golden</span></td><td><span class="pill py">Cup &amp; Handle</span></td><td class="green">$860.00</td><td><button class="btn btn-blue" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();goAnalyze('LLY')">Analyze</button></td></tr>
+        <tr onclick="goAnalyze('AVGO')"><td class="blue" style="font-weight:800">5</td><td style="font-weight:800;color:#f9fafb;font-size:14px">AVGO</td><td class="muted">Broadcom</td><td style="font-weight:600">$248.80</td><td class="green" style="font-weight:800">74</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:800">82</td><td><span class="pill pg">Golden</span></td><td><span class="pill pb">Pocket Pivot</span></td><td class="green">$236.00</td><td><button class="btn btn-blue" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();goAnalyze('AVGO')">Analyze</button></td></tr>
+        <tr style="opacity:.3;filter:blur(2.5px);pointer-events:none"><td>6</td><td>GEV</td><td>GE Vernova</td><td>$412.00</td><td>69</td><td><span class="pill pg">S2</span></td><td>80</td><td><span class="pill pg">Golden</span></td><td>Cup &amp; Handle</td><td>$392.00</td><td>—</td></tr>
+        <tr style="opacity:.3;filter:blur(2.5px);pointer-events:none"><td>7</td><td>AMGN</td><td>Amgen</td><td>$318.40</td><td>65</td><td><span class="pill pg">S2</span></td><td>78</td><td><span class="pill pg">Golden</span></td><td>Bull Flag</td><td>$304.00</td><td>—</td></tr>
+        <tr style="opacity:.3;filter:blur(2.5px);pointer-events:none"><td>8</td><td>ORCL</td><td>Oracle</td><td>$188.20</td><td>71</td><td><span class="pill pg">S2</span></td><td>85</td><td><span class="pill pg">Golden</span></td><td>Flat Base</td><td>$178.00</td><td>—</td></tr>
+        <tr style="opacity:.3;filter:blur(2.5px);pointer-events:none"><td>9</td><td>NOW</td><td>ServiceNow</td><td>$1,041.00</td><td>73</td><td><span class="pill pg">S2</span></td><td>83</td><td><span class="pill pg">Golden</span></td><td>Asc. Triangle</td><td>$998.00</td><td>—</td></tr>
+      </tbody>
+    </table>
+    <div class="lock"><svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" stroke-width="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-width="2"/></svg> Showing 5 of 47 — upgrade to Pro to unlock all results + CSV export<a onclick="nav('pricing')">Upgrade →</a></div>
+  </div>
+</div>
+
+<!-- ══ WATCHLIST ══ -->
+<div class="page" id="page-watchlist">
+  <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:18px;font-weight:800;color:#f9fafb">Watchlist <span style="font-size:13px;color:#6b7280;font-weight:400">(6 tickers)</span></div>
+    <button class="btn btn-blue" onclick="toast('Ticker added to watchlist!')">+ Add Ticker</button>
+  </div>
+  <div class="wl-controls">
+    <button class="wl-sort active" onclick="setSortBtn(this)">All</button>
+    <button class="wl-sort" onclick="setSortBtn(this)">Stage 2 Only</button>
+    <button class="wl-sort" onclick="setSortBtn(this)">Alerts On</button>
+    <button class="wl-sort" onclick="setSortBtn(this)">TicScore ≥ 70</button>
+    <button class="wl-sort" onclick="setSortBtn(this)">Sort: RS ↓</button>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="t">
+      <thead><tr><th>Ticker</th><th>Company</th><th>Price</th><th>Change</th><th>TicScore</th><th>Stage</th><th>RS</th><th>Support</th><th>Resistance</th><th>Alert</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr onclick="goAnalyze('NVDA')"><td style="font-weight:800;color:#f9fafb;font-size:14px">NVDA</td><td class="muted">Nvidia</td><td style="font-weight:600">$134.21</td><td class="green">▲ +1.78%</td><td class="green" style="font-weight:800">82</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:700">91</td><td class="green">$126.80</td><td class="red">$138.50</td><td><span class="pill pb">Active</span></td><td><span class="blue" style="font-size:12px;cursor:pointer">Analyze →</span></td></tr>
+        <tr onclick="goAnalyze('META')"><td style="font-weight:800;color:#f9fafb;font-size:14px">META</td><td class="muted">Meta Platforms</td><td style="font-weight:600">$622.40</td><td class="green">▲ +2.14%</td><td class="green" style="font-weight:800">76</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:700">84</td><td class="green">$598.00</td><td class="red">$641.00</td><td><span class="pill pb">Active</span></td><td><span class="blue" style="font-size:12px;cursor:pointer">Analyze →</span></td></tr>
+        <tr onclick="goAnalyze('TSLA')"><td style="font-weight:800;color:#f9fafb;font-size:14px">TSLA</td><td class="muted">Tesla</td><td style="font-weight:600">$248.10</td><td class="green">▲ +3.14%</td><td class="yellow" style="font-weight:800">72</td><td><span class="pill pg">S2B</span></td><td class="yellow" style="font-weight:700">74</td><td class="green">$232.00</td><td class="red">$265.00</td><td><span class="pill py">Watch</span></td><td><span class="blue" style="font-size:12px;cursor:pointer">Analyze →</span></td></tr>
+        <tr onclick="goAnalyze('MSFT')"><td style="font-weight:800;color:#f9fafb;font-size:14px">MSFT</td><td class="muted">Microsoft</td><td style="font-weight:600">$458.20</td><td class="red">▼ -0.44%</td><td class="yellow" style="font-weight:800">71</td><td><span class="pill pg">S2B</span></td><td class="yellow" style="font-weight:700">74</td><td class="green">$440.00</td><td class="red">$470.00</td><td><span class="pill pgr">None</span></td><td><span class="blue" style="font-size:12px;cursor:pointer">Analyze →</span></td></tr>
+        <tr onclick="goAnalyze('AMZN')"><td style="font-weight:800;color:#f9fafb;font-size:14px">AMZN</td><td class="muted">Amazon</td><td style="font-weight:600">$261.42</td><td class="red">▼ -0.83%</td><td class="red" style="font-weight:800">25</td><td><span class="pill pr">S4A</span></td><td class="red" style="font-weight:700">50</td><td class="green">$259.34</td><td class="red">$274.00</td><td><span class="pill pb">Active</span></td><td><span class="blue" style="font-size:12px;cursor:pointer">Analyze →</span></td></tr>
+        <tr onclick="goAnalyze('AAPL')"><td style="font-weight:800;color:#f9fafb;font-size:14px">AAPL</td><td class="muted">Apple</td><td style="font-weight:600">$211.30</td><td class="green">▲ +0.44%</td><td class="yellow" style="font-weight:800">58</td><td><span class="pill py">S3A</span></td><td class="yellow" style="font-weight:700">62</td><td class="green">$200.00</td><td class="red">$224.00</td><td><span class="pill pgr">None</span></td><td><span class="blue" style="font-size:12px;cursor:pointer">Analyze →</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-top:10px;font-size:11px;color:#6b7280;background:#0f0f0f;border:1px solid #1f2937;border-radius:6px;padding:10px 14px">
+    💡 Watchlist auto-refreshes at market close (4pm ET daily). Click any row to run a full analysis. Color-coded by stage — green = Stage 2, yellow = Stage 1/3, red = Stage 4.
+  </div>
+</div>
+
+<!-- ══ ALERTS ══ -->
+<div class="page" id="page-alerts">
+  <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:18px;font-weight:800;color:#f9fafb">Alerts <span style="font-size:13px;color:#6b7280;font-weight:400">(6 active)</span></div>
+  </div>
+  <div class="card" style="padding:16px 18px;margin-bottom:14px">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:12px">Create New Alert</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:flex-end">
+      <div style="display:flex;flex-direction:column;gap:5px"><label style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;font-weight:600">Ticker</label><input type="text" placeholder="e.g. NVDA" value=""/></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><label style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;font-weight:600">Alert Type</label>
+        <select><option>Price breaks above resistance</option><option>Price drops below support</option><option>TicScore changes</option><option>Stage changes</option><option>Pocket Pivot detected</option><option>Golden / Death Cross</option></select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px"><label style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;font-weight:600">Notify via</label>
+        <select><option>Email only</option><option>Email + SMS</option><option>SMS only</option></select>
+      </div>
+      <button class="btn btn-blue" style="height:38px" onclick="toast('Alert created successfully!')">+ Add Alert</button>
+    </div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="al-row" style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;border-bottom:1px solid #1f2937">
+      <span></span><span>Ticker</span><span>Condition</span><span>Type</span><span>Channel</span><span>On/Off</span>
+    </div>
+    <div class="al-row"><div class="al-dot" style="background:#22c55e"></div><div class="al-sym">NVDA</div><div class="al-desc">Price closes above resistance zone $138.50 — breakout confirmation</div><span class="pill pb">Breakout</span><span class="ch-tag">Email + SMS</span><div class="toggle on" onclick="this.classList.toggle('on');showToast(this.classList.contains('on')?'Alert activated':'Alert paused')"></div></div>
+    <div class="al-row"><div class="al-dot" style="background:#22c55e"></div><div class="al-sym">AMZN</div><div class="al-desc">Price closes below support $259.34 — breakdown warning</div><span class="pill pr">S/R Break</span><span class="ch-tag">Email</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="al-row"><div class="al-dot" style="background:#22c55e"></div><div class="al-sym">TSLA</div><div class="al-desc">TicScore rises above 70 — passes fundamental threshold</div><span class="pill pg">Score</span><span class="ch-tag">Email</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="al-row"><div class="al-dot" style="background:#3b82f6"></div><div class="al-sym">META</div><div class="al-desc">Pocket Pivot detected — institutional accumulation signal</div><span class="pill pb">Pattern</span><span class="ch-tag">Email + SMS</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="al-row"><div class="al-dot" style="background:#374151"></div><div class="al-sym">AAPL</div><div class="al-desc">Stage changes from Stage 3 → Stage 2 — re-entry signal</div><span class="pill pgr">Stage</span><span class="ch-tag">Email</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+    <div class="al-row"><div class="al-dot" style="background:#374151"></div><div class="al-sym">MSTR</div><div class="al-desc">Death Cross detected — 50 SMA crosses below 200 SMA</div><span class="pill pr">Cross</span><span class="ch-tag">SMS</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+  </div>
+  <div class="section">Alert History — Last 7 Days</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="t">
+      <thead><tr><th>Date / Time</th><th>Ticker</th><th>Alert Triggered</th><th>Price</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr onclick="goAnalyze('NVDA')"><td class="muted">Today 4:02pm</td><td style="font-weight:800;color:#f9fafb">NVDA</td><td>Closed above resistance $132.00</td><td class="green" style="font-weight:700">$132.48</td><td><span class="pill pg">▲ +1.8% next day</span></td></tr>
+        <tr onclick="goAnalyze('META')"><td class="muted">Jun 17 4:00pm</td><td style="font-weight:800;color:#f9fafb">META</td><td>Pocket Pivot detected</td><td class="green" style="font-weight:700">$622.10</td><td><span class="pill pg">▲ +3.2% next day</span></td></tr>
+        <tr onclick="goAnalyze('AMZN')"><td class="muted">Jun 15 4:01pm</td><td style="font-weight:800;color:#f9fafb">AMZN</td><td>Price approached support $260.00</td><td style="font-weight:700">$260.88</td><td><span class="pill py">◆ Held support</span></td></tr>
+        <tr onclick="goAnalyze('TSLA')"><td class="muted">Jun 14 4:00pm</td><td style="font-weight:800;color:#f9fafb">TSLA</td><td>TicScore rose from 45 → 72</td><td style="font-weight:700">$241.30</td><td><span class="pill pg">▲ +5.1% / 3 days</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ PDF ══ -->
+<div class="page" id="page-pdf">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="font-size:18px;font-weight:800;color:#f9fafb">PDF Report — NVDA</div>
+    <button class="btn btn-blue" onclick="toast('PDF downloaded — NVDA_TIC_Report_Jun19.pdf')">⬇ Download PDF</button>
+  </div>
+  <div style="background:#1a1a1a;border-radius:12px;padding:20px">
+    <div class="pdf-page">
+      <div class="pdf-brand">TIC RESEARCH</div>
+      <div class="pdf-h1">NVDA</div>
+      <div class="pdf-co">Nvidia Corporation · Technology · Semiconductors</div>
+      <div class="pdf-price-row"><span class="pdf-pr">$134.21</span><span class="pdf-chg">▲ +$2.34 (+1.78%)</span></div>
+      <hr class="pdf-divider"/>
+      <div class="pdf-g2">
+        <div>
+          <div class="pdf-sec">TicScore &amp; Stage</div>
+          <div class="pdf-kv"><span>TicScore</span><span style="color:#16a34a">82 / 100 ✓ Pass</span></div>
+          <div class="pdf-kv"><span>Growth (G)</span><span>40 pts</span></div>
+          <div class="pdf-kv"><span>Volume (V)</span><span>20 pts</span></div>
+          <div class="pdf-kv"><span>Quality (Q)</span><span>14 pts</span></div>
+          <div class="pdf-kv"><span>Sponsorship (S)</span><span>8 pts</span></div>
+          <div class="pdf-kv"><span>TicStage</span><span style="color:#16a34a">Stage 2A — Advancing</span></div>
+          <div class="pdf-kv"><span>RS Rating</span><span style="color:#16a34a">91 — Leader</span></div>
+          <div class="pdf-kv"><span>Cross Type</span><span style="color:#16a34a">Golden Cross ✓</span></div>
+          <div class="pdf-kv"><span>PowerStack</span><span style="color:#16a34a">Fully Aligned ✓</span></div>
+          <div class="pdf-sec">Key Levels</div>
+          <div class="pdf-kv"><span>Support Zone</span><span>$126.80 – $128.50</span></div>
+          <div class="pdf-kv"><span>Resistance Zone</span><span>$138.50 – $140.00</span></div>
+          <div class="pdf-kv"><span>52-Week High</span><span>$153.13</span></div>
+          <div class="pdf-kv"><span>52-Week Low</span><span>$86.41</span></div>
+          <div class="pdf-kv"><span>Analyst Target</span><span>$160.00</span></div>
+        </div>
+        <div>
+          <div class="pdf-sec">PowerStack</div>
+          <div class="pdf-kv"><span>9 EMA</span><span>$131.44</span></div>
+          <div class="pdf-kv"><span>21 EMA</span><span>$128.90</span></div>
+          <div class="pdf-kv"><span>50 SMA</span><span>$122.18</span></div>
+          <div class="pdf-kv"><span>150 SMA</span><span>$108.44</span></div>
+          <div class="pdf-kv"><span>200 SMA</span><span>$101.20</span></div>
+          <div class="pdf-sec">Indicators</div>
+          <div class="pdf-kv"><span>RSI (14)</span><span style="color:#d97706">61.2 — Elevated</span></div>
+          <div class="pdf-kv"><span>MACD</span><span style="color:#16a34a">+2.14 — Bullish</span></div>
+          <div class="pdf-kv"><span>ADX (14)</span><span>38.4 — Strong</span></div>
+          <div class="pdf-kv"><span>ATR (14)</span><span>$4.82 (3.6%)</span></div>
+          <div class="pdf-kv"><span>Volume</span><span>312M (1.4× avg)</span></div>
+          <div class="pdf-sec">News Sentiment</div>
+          <div class="pdf-kv"><span>Signal</span><span style="color:#16a34a">✅ Confirming</span></div>
+          <div class="pdf-kv"><span>Bullish</span><span>4 headlines</span></div>
+          <div class="pdf-kv"><span>Bearish</span><span>1 headline</span></div>
+          <div class="pdf-kv"><span>Neutral</span><span>5 headlines</span></div>
+        </div>
+      </div>
+      <!-- MINI CHART -->
+      <div class="pdf-sec">Price Chart — S/R Zones (60-day Daily)</div>
+      <svg viewBox="0 0 680 110" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;background:#fafafa;margin-bottom:10px">
+        <rect x="0" y="4" width="680" height="18" fill="rgba(239,68,68,0.12)"/>
+        <text x="4" y="16" font-size="8" fill="#dc2626" font-family="Inter,sans-serif" font-weight="600">RES $138.50–$140.00 · Strong</text>
+        <rect x="0" y="68" width="680" height="16" fill="rgba(34,197,94,0.12)"/>
+        <text x="4" y="79" font-size="8" fill="#16a34a" font-family="Inter,sans-serif" font-weight="600">SUP $126.80–$128.50 · Very Strong</text>
+        <rect x="0" y="88" width="680" height="12" fill="rgba(34,197,94,0.06)"/>
+        <text x="4" y="97" font-size="8" fill="#16a34a" font-family="Inter,sans-serif">SUP $118.00–$119.50 · Moderate</text>
+        <polyline points="0,102 20,98 40,92 60,86 80,80 100,74 120,70 140,66 160,60 180,54 200,48 220,54 240,46 260,40 280,34 300,38 320,30 340,24 360,18 380,26 400,20 420,14 440,22 460,16 480,10 500,18 520,12 540,8 560,16 580,10 600,14 620,10 640,8 660,10 680,8" fill="none" stroke="#2563eb" stroke-width="2"/>
+        <line x1="0" y1="8" x2="680" y2="8" stroke="#2563eb" stroke-width="1" stroke-dasharray="4,3" opacity=".5"/>
+        <text x="620" y="6" font-size="8" fill="#1d4ed8" font-weight="700" font-family="Inter,sans-serif">$134.21</text>
+      </svg>
+
+      <div class="pdf-sec">TIC Signal</div>
+      <div class="pdf-signal-box">Pocket Pivot active — volume confirms institutional accumulation. Golden Cross (50 SMA above 200 SMA) supports bullish macro structure. Stage 2A — optimal long exposure on pullback to $126.80 support zone. Confirmed breakout above $138.50 targets $153.13 52-week high.</div>
+
+      <!-- ENTRY SETUP CARD -->
+      <div class="pdf-sec">Entry Setup</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 10px">
+          <div style="font-size:9px;color:#16a34a;font-weight:700;text-transform:uppercase;margin-bottom:3px">Entry Zone</div>
+          <div style="font-size:14px;font-weight:800;color:#14532d">$126.80</div>
+          <div style="font-size:9px;color:#16a34a">–$128.50</div>
+        </div>
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 10px">
+          <div style="font-size:9px;color:#dc2626;font-weight:700;text-transform:uppercase;margin-bottom:3px">Stop Loss</div>
+          <div style="font-size:14px;font-weight:800;color:#7f1d1d">$119.60</div>
+          <div style="font-size:9px;color:#dc2626">1.5× ATR below sup.</div>
+        </div>
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 10px">
+          <div style="font-size:9px;color:#1d4ed8;font-weight:700;text-transform:uppercase;margin-bottom:3px">Price Target</div>
+          <div style="font-size:14px;font-weight:800;color:#1e3a5f">$138.50</div>
+          <div style="font-size:9px;color:#1d4ed8">Resistance zone</div>
+        </div>
+        <div style="background:#fefce8;border:1px solid #fef08a;border-radius:6px;padding:8px 10px">
+          <div style="font-size:9px;color:#a16207;font-weight:700;text-transform:uppercase;margin-bottom:3px">Risk / Reward</div>
+          <div style="font-size:14px;font-weight:800;color:#713f12">2.0 : 1</div>
+          <div style="font-size:9px;color:#a16207">Min. threshold met ✓</div>
+        </div>
+      </div>
+
+      <!-- POSITION SIZING -->
+      <div class="pdf-sec">Position Sizing Guide (ATR Stop = $7.20)</div>
+      <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;margin-bottom:10px">
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead><tr style="background:#f9fafb"><th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">Portfolio Size</th><th style="padding:6px 10px;text-align:right;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">1% Risk</th><th style="padding:6px 10px;text-align:right;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">2% Risk</th><th style="padding:6px 10px;text-align:right;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">5% Risk</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 10px;color:#374151">$25,000</td><td style="padding:6px 10px;text-align:right;font-weight:700">35 sh.</td><td style="padding:6px 10px;text-align:right;font-weight:700">69 sh.</td><td style="padding:6px 10px;text-align:right;font-weight:700">174 sh.</td></tr>
+            <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 10px;color:#374151">$50,000</td><td style="padding:6px 10px;text-align:right;font-weight:700">69 sh.</td><td style="padding:6px 10px;text-align:right;font-weight:700">139 sh.</td><td style="padding:6px 10px;text-align:right;font-weight:700">347 sh.</td></tr>
+            <tr><td style="padding:6px 10px;color:#374151">$100,000</td><td style="padding:6px 10px;text-align:right;font-weight:700">139 sh.</td><td style="padding:6px 10px;text-align:right;font-weight:700">278 sh.</td><td style="padding:6px 10px;text-align:right;font-weight:700">694 sh.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pdf-sec">Bull / Bear Cases</div>
+      <div class="pdf-bull-box">▲ Breakout above $138.50 with volume confirms Stage 2 continuation — 14.1% upside to 52W high $153.13.<br/>▲ Golden Cross + Full PowerStack aligned — institutional tailwind confirmed across all timeframes.<br/>▲ Pocket Pivot active — volume exceeds all down-day highs from prior 10 sessions.</div>
+      <div class="pdf-bear-box">▼ ADX at 38.4 approaching exhaustion — susceptible to reversal if broad market rotates.<br/>▼ RSI at 61.2 approaching elevated territory near resistance zone.<br/>▼ Break below $126.80 opens path to $118 zone — a -10.6% drawdown scenario.</div>
+
+      <!-- CATALYST CALENDAR -->
+      <div class="pdf-sec">Catalyst Calendar</div>
+      <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;margin-bottom:10px">
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead><tr style="background:#f9fafb"><th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">Date</th><th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">Event</th><th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">Impact</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 10px;font-weight:700;color:#374151">Aug 20, 2026</td><td style="padding:6px 10px;color:#374151">Q2 Earnings (est.)</td><td style="padding:6px 10px"><span style="background:#fef3c7;color:#92400e;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600">High</span></td></tr>
+            <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 10px;font-weight:700;color:#374151">Jul 30, 2026</td><td style="padding:6px 10px;color:#374151">FOMC Rate Decision</td><td style="padding:6px 10px"><span style="background:#eff6ff;color:#1e40af;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600">Medium</span></td></tr>
+            <tr><td style="padding:6px 10px;font-weight:700;color:#374151">Jul 10, 2026</td><td style="padding:6px 10px;color:#374151">CPI Inflation Data</td><td style="padding:6px 10px"><span style="background:#eff6ff;color:#1e40af;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600">Medium</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECTOR ROTATION -->
+      <div class="pdf-sec">Sector Rotation Context</div>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:11px">
+        <div style="font-weight:700;color:#14532d;margin-bottom:4px">Technology ranks #2 of 11 sectors this week</div>
+        <div style="color:#16a34a">Sector RS improving · Institutional money flowing in · Overweight recommended</div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+          <span style="background:#dcfce7;color:#166534;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">#1 Energy</span>
+          <span style="background:#1d4ed8;color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">#2 Technology ← YOU</span>
+          <span style="background:#f3f4f6;color:#374151;font-size:10px;padding:2px 8px;border-radius:4px">#3 Industrials</span>
+          <span style="background:#f3f4f6;color:#374151;font-size:10px;padding:2px 8px;border-radius:4px">#4 Healthcare</span>
+          <span style="background:#f3f4f6;color:#9ca3af;font-size:10px;padding:2px 8px;border-radius:4px">#5–11 ···</span>
+        </div>
+      </div>
+
+      <div class="pdf-footer" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
+        <div>
+          TIC Research · Generated June 19, 2026 at 4:12pm ET<br/>
+          For educational purposes only. Not financial advice. Powered by Schwab API · Real-time data.<br/>
+          S/R zones from swing high/low clustering with ATR padding. Position sizing assumes 1.5× ATR stop.
+        </div>
+        <div style="flex-shrink:0;width:56px;height:56px;background:#e5e7eb;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#6b7280;text-align:center;line-height:1.3">QR<br/>Live<br/>Report</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PRICING ══ -->
+<div class="page" id="page-pricing">
+  <div style="text-align:center;margin-bottom:28px">
+    <div style="font-size:20px;font-weight:800;color:#f9fafb;margin-bottom:6px">Upgrade Your Edge</div>
+    <div style="font-size:13px;color:#6b7280;max-width:500px;margin:0 auto">Professional-grade stock analysis tools used by serious traders. Cancel anytime.</div>
+  </div>
+  <div class="pricing-g">
+    <div class="pc">
+      <div class="pc-tier">Free</div>
+      <div class="pc-amt">$0</div>
+      <div class="pc-per">forever · no card needed</div>
+      <hr class="pc-div"/>
+      <div class="pc-feat"><span class="green">✓</span> 3 analyses per day</div>
+      <div class="pc-feat"><span class="green">✓</span> Daily chart with S/R zones</div>
+      <div class="pc-feat"><span class="green">✓</span> TicScore + TicStage + RS</div>
+      <div class="pc-feat"><span class="green">✓</span> News sentiment</div>
+      <div class="pc-feat"><span class="red">✗</span> No AI thesis</div>
+      <div class="pc-feat"><span class="red">✗</span> No scanner</div>
+      <div class="pc-feat"><span class="red">✗</span> No watchlist or alerts</div>
+      <div class="pc-feat"><span class="red">✗</span> No PDF export</div>
+      <button class="pc-btn" style="background:#1f2937;color:#9ca3af">Current Plan</button>
+    </div>
+    <div class="pc featured">
+      <div class="pop-badge">Most Popular</div>
+      <div class="pc-tier">Trader</div>
+      <div class="pc-amt">$29</div>
+      <div class="pc-per">per month</div>
+      <hr class="pc-div"/>
+      <div class="pc-feat"><span class="green">✓</span> Unlimited analyses</div>
+      <div class="pc-feat"><span class="green">✓</span> Daily + Weekly charts</div>
+      <div class="pc-feat"><span class="green">✓</span> Full AI thesis</div>
+      <div class="pc-feat"><span class="green">✓</span> Watchlist (20 tickers)</div>
+      <div class="pc-feat"><span class="green">✓</span> 10 price alerts (email)</div>
+      <div class="pc-feat"><span class="green">✓</span> PDF export</div>
+      <div class="pc-feat"><span class="green">✓</span> Sector rotation dashboard</div>
+      <div class="pc-feat"><span class="red">✗</span> No scanner</div>
+      <button class="pc-btn" style="background:#1e40af;color:#93c5fd" onclick="toast('Starting 7-day free trial — Trader Plan!')">Start Free Trial →</button>
+    </div>
+    <div class="pc">
+      <div class="pc-tier">Pro</div>
+      <div class="pc-amt">$79</div>
+      <div class="pc-per">per month</div>
+      <hr class="pc-div"/>
+      <div class="pc-feat"><span class="green">✓</span> Everything in Trader</div>
+      <div class="pc-feat"><span class="green">✓</span> All 3 chart timeframes</div>
+      <div class="pc-feat"><span class="green">✓</span> Full scanner (S&amp;P 500, Nasdaq, Russell)</div>
+      <div class="pc-feat"><span class="green">✓</span> Unlimited watchlist</div>
+      <div class="pc-feat"><span class="green">✓</span> Unlimited alerts</div>
+      <div class="pc-feat"><span class="green">✓</span> Email + SMS alerts</div>
+      <div class="pc-feat"><span class="green">✓</span> CSV export</div>
+      <div class="pc-feat"><span class="green">✓</span> API access</div>
+      <button class="pc-btn" style="background:#1f2937;color:#d1d5db;border:1px solid #374151" onclick="toast('Upgrading to Pro — welcome!')">Get Pro →</button>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:20px;font-size:12px;color:#374151">All plans include a 7-day free trial · No contracts · Cancel anytime · Billed monthly</div>
+</div>
+
+<!-- ══ METHODOLOGY ══ -->
+<div class="page" id="page-methodology">
+  <div style="font-size:20px;font-weight:800;color:#f9fafb;margin-bottom:4px">Methodology & Guide</div>
+  <div style="font-size:13px;color:#6b7280;margin-bottom:22px">How TIC Research scores, stages, and analyzes every stock — and how to read your report.</div>
+
+  <style>
+    details{background:#111;border:1px solid #1f2937;border-radius:10px;margin-bottom:10px;overflow:hidden}
+    details[open]{border-color:#1e40af}
+    summary{padding:16px 18px;font-size:14px;font-weight:700;color:#f9fafb;cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none;user-select:none}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:'▾';margin-left:auto;font-size:16px;color:#6b7280;transition:transform .2s}
+    details[open] summary::after{transform:rotate(-180deg);color:#60a5fa}
+    summary:hover{background:#141414}
+    .mbox{padding:0 18px 18px}
+    .mbox p{font-size:13px;color:#9ca3af;line-height:1.8;margin-bottom:12px}
+    .mbox p:last-child{margin-bottom:0}
+    .score-row{display:grid;grid-template-columns:130px 60px 1fr;gap:12px;align-items:start;padding:10px 0;border-bottom:1px solid #141414;font-size:13px}
+    .score-row:last-child{border-bottom:none}
+    .sc-label{color:#d1d5db;font-weight:600}
+    .sc-pts{color:#60a5fa;font-weight:800}
+    .sc-desc{color:#6b7280;line-height:1.6}
+    .stage-row{display:grid;grid-template-columns:110px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #141414;font-size:13px}
+    .stage-row:last-child{border-bottom:none}
+    .tip-box{background:#0c1a2e;border:1px solid #1e3a5f;border-radius:8px;padding:12px 14px;font-size:12px;color:#93c5fd;line-height:1.7;margin-top:10px}
+    .tip-box strong{color:#60a5fa}
+    .ma-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+    .ma-card{background:#0a0a0a;border:1px solid #1f2937;border-radius:8px;padding:12px 14px}
+    .ma-name{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#374151;font-weight:700;margin-bottom:4px}
+    .ma-desc{font-size:12px;color:#6b7280;line-height:1.6}
+    .guide-step{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #141414}
+    .guide-step:last-child{border-bottom:none}
+    .gs-num{width:28px;height:28px;border-radius:50%;background:#0c1a2e;border:1px solid #1e3a5f;color:#60a5fa;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+    .gs-title{font-size:13px;font-weight:700;color:#f9fafb;margin-bottom:3px}
+    .gs-desc{font-size:12px;color:#6b7280;line-height:1.6}
+  </style>
+
+  <!-- 1. OVERVIEW -->
+  <details open>
+    <summary><span style="font-size:16px">📋</span> What is TIC Research?</summary>
+    <div class="mbox">
+      <p>TIC Research is a stock analysis platform built on two proven institutional frameworks — William O'Neil's CAN SLIM methodology and Stan Weinstein's Stage Analysis. Every report combines fundamental quality scoring, technical structure, and news sentiment into a single, actionable signal.</p>
+      <p>The goal is simple: surface stocks that are fundamentally strong <em>and</em> technically set up for a move — the same way professional fund managers evaluate positions — and present it clearly so you can make your own informed decision.</p>
+      <div class="tip-box"><strong>Important:</strong> TIC Research is an educational research tool. Nothing on this platform constitutes financial advice or a recommendation to buy or sell any security. Always conduct your own due diligence and consult a licensed financial advisor before investing.</div>
+    </div>
+  </details>
+
+  <!-- 2. TICSCORE -->
+  <details>
+    <summary><span style="font-size:16px">🏆</span> TicScore — how it's calculated (0–100)</summary>
+    <div class="mbox">
+      <p>The TicScore is a composite score from 0–100 based on four pillars of the CAN SLIM framework. A score of <strong style="color:#22c55e">50 or above = Pass</strong>. Below 50 = Fail. The higher the score, the stronger the fundamental and technical setup.</p>
+      <div class="score-row"><span class="sc-label">Growth (G)</span><span class="sc-pts">0–40 pts</span><span class="sc-desc">Quarterly EPS growth rate vs. prior year same quarter. 25%+ growth = full points. Accelerating growth earns bonus. Derived from reported financials via Yahoo Finance.</span></div>
+      <div class="score-row"><span class="sc-label">Volume (V)</span><span class="sc-pts">0–20 pts</span><span class="sc-desc">Relative volume vs. 50-day average on up-days. Unusually high volume on advancing days signals institutional accumulation — the "smart money" footprint.</span></div>
+      <div class="score-row"><span class="sc-label">Quality (Q)</span><span class="sc-pts">0–20 pts</span><span class="sc-desc">Return on Equity (ROE) ≥ 17% scores full marks. Also factors in debt-to-equity ratio. Based on CAN SLIM's emphasis on financial efficiency over growth alone.</span></div>
+      <div class="score-row"><span class="sc-label">Sponsorship (S)</span><span class="sc-pts">0–20 pts</span><span class="sc-desc">Institutional ownership percentage and trend. Rising institutional ownership = fund managers are loading — a powerful confirmation signal that the thesis is institutional-grade.</span></div>
+      <div class="tip-box"><strong>How to use it:</strong> Focus on scores 70+ for highest conviction setups. Scores of 50–70 are worth watching. Below 50, wait for fundamentals to improve before considering a long position.</div>
+    </div>
+  </details>
+
+  <!-- 3. TICSTAGE -->
+  <details>
+    <summary><span style="font-size:16px">📈</span> TicStage — Stan Weinstein Stage Analysis</summary>
+    <div class="mbox">
+      <p>Every stock cycles through four stages. TicStage identifies where a stock is in that cycle using the 150-day simple moving average (150 SMA) — the institutional benchmark. Only Stage 2 offers the optimal long risk/reward.</p>
+      <div class="stage-row"><span class="pill py">Stage 1</span><span class="sc-desc" style="color:#6b7280">Basing — price consolidating sideways above flat or rising 150 SMA. Accumulation in progress. <em>Watch but don't buy yet.</em></span><span class="pill py">Wait</span></div>
+      <div class="stage-row"><span class="pill pg">Stage 2</span><span class="sc-desc" style="color:#6b7280">Advancing — price trending above rising 150 SMA. This is the <strong style="color:#22c55e">only stage to buy</strong>. Institutions are in control. PowerStack aligned. 2A = early advance, 2B = late/extended.</span><span class="pill pg">Buy zone</span></div>
+      <div class="stage-row"><span class="pill py">Stage 3</span><span class="sc-desc" style="color:#6b7280">Topping — price stalling near resistance, 150 SMA flattening. Distribution begins. <em>Reduce or exit long positions.</em></span><span class="pill py">Exit</span></div>
+      <div class="stage-row"><span class="pill pr">Stage 4</span><span class="sc-desc" style="color:#6b7280">Declining — price below falling 150 SMA. Downtrend confirmed. <em>Capital preservation mode. No long positions.</em></span><span class="pill pr">Avoid</span></div>
+      <div class="tip-box"><strong>Key rule:</strong> Never fight the stage. A 90-scoring stock in Stage 4 is still a losing trade. Stage determines direction — TicScore determines quality within that direction.</div>
+    </div>
+  </details>
+
+  <!-- 4. POWERSTACK -->
+  <details>
+    <summary><span style="font-size:16px">⚡</span> PowerStack — moving average alignment</summary>
+    <div class="mbox">
+      <p>The PowerStack is five moving averages stacked in order from fastest to slowest. When all five are aligned (9 EMA > 21 EMA > 50 SMA > 150 SMA > 200 SMA) and price is above all of them, the stock is in its strongest institutional trend state.</p>
+      <div class="ma-grid">
+        <div class="ma-card"><div class="ma-name">9 EMA</div><div class="ma-desc">Fastest line. Shows short-term momentum. Price dipping to 9 EMA and bouncing is a high-quality entry in a strong trend.</div></div>
+        <div class="ma-card"><div class="ma-name">21 EMA</div><div class="ma-desc">Short-term institutional support. A healthy Stage 2 stock typically stays above this during pullbacks.</div></div>
+        <div class="ma-card"><div class="ma-name">50 SMA</div><div class="ma-desc">Medium-term trend. The most-watched line on Wall Street. Breaks below the 50 SMA on heavy volume are early warning signals.</div></div>
+        <div class="ma-card"><div class="ma-name">150 SMA</div><div class="ma-desc">The Stage Analysis line. Stan Weinstein's primary trend identifier. Rising 150 SMA = Stage 2. Flat or falling = Stage 1 or 3/4.</div></div>
+      </div>
+      <div class="ma-card" style="background:#0a0a0a;border:1px solid #1f2937;border-radius:8px;padding:12px 14px;margin-bottom:10px"><div class="ma-name">200 SMA</div><div class="ma-desc" style="font-size:12px;color:#6b7280;line-height:1.6">Long-term institutional anchor. Golden Cross = 50 SMA crosses above 200 SMA (bullish). Death Cross = 50 SMA crosses below 200 SMA (bearish).</div></div>
+      <div class="tip-box"><strong>Full Stack Aligned</strong> means all five are in perfect order and price is above all of them — the strongest possible technical structure for a long position.</div>
+    </div>
+  </details>
+
+  <!-- 5. S/R ZONES -->
+  <details>
+    <summary><span style="font-size:16px">🎯</span> Support & Resistance zones — how they're built</summary>
+    <div class="mbox">
+      <p>Support and resistance zones are price ranges — not single lines — built by clustering swing highs and swing lows from recent price history. A zone is stronger when more price points cluster near it.</p>
+      <div class="score-row"><span class="sc-label">Swing detection</span><span class="sc-pts" style="font-size:11px;color:#6b7280">Step 1</span><span class="sc-desc">The algorithm identifies swing highs (local peaks) and swing lows (local troughs) over a 5-bar lookback window across 120 days of price data.</span></div>
+      <div class="score-row"><span class="sc-label">Clustering</span><span class="sc-pts" style="font-size:11px;color:#6b7280">Step 2</span><span class="sc-desc">Swing points within 1.5% of each other are grouped into a single zone. The zone low = lowest point in the cluster, zone high = highest + ATR padding.</span></div>
+      <div class="score-row"><span class="sc-label">Strength rating</span><span class="sc-pts" style="font-size:11px;color:#6b7280">Step 3</span><span class="sc-desc">2 touches = Weak · 3 touches = Moderate · 4 touches = Strong · 5+ touches = Very Strong. More touches = price has respected that level repeatedly = more reliable.</span></div>
+      <div class="tip-box"><strong>How to trade them:</strong> Buy near Strong/Very Strong support zones with a stop just below the zone low. Target the nearest resistance zone. The zone width tells you how precise price needs to be — wider zones = more tolerance.</div>
+    </div>
+  </details>
+
+  <!-- 6. INDICATORS -->
+  <details>
+    <summary><span style="font-size:16px">📊</span> Technical indicators explained</summary>
+    <div class="mbox">
+      <div class="score-row"><span class="sc-label">RSI (14)</span><span class="sc-pts" style="color:#f59e0b;font-size:11px">Momentum</span><span class="sc-desc">Relative Strength Index. Above 70 = overbought (pullback risk). Below 30 = oversold (bounce opportunity). 50–70 in a Stage 2 stock = healthy momentum zone.</span></div>
+      <div class="score-row"><span class="sc-label">MACD</span><span class="sc-pts" style="color:#22c55e;font-size:11px">Trend</span><span class="sc-desc">Moving Average Convergence Divergence. Positive = bullish momentum. Negative = bearish. A MACD crossover (line crossing signal line upward) is an early entry signal.</span></div>
+      <div class="score-row"><span class="sc-label">ADX (14)</span><span class="sc-pts" style="color:#60a5fa;font-size:11px">Trend strength</span><span class="sc-desc">Average Directional Index. Below 20 = no trend (choppy). 20–25 = developing. 25–40 = strong trend. Above 40 = very strong, but watch for exhaustion near 50+.</span></div>
+      <div class="score-row"><span class="sc-label">ATR (14)</span><span class="sc-pts" style="color:#9ca3af;font-size:11px">Volatility</span><span class="sc-desc">Average True Range. Daily dollar range the stock typically moves. Use for stop placement: a 1.5× ATR stop below your entry gives the trade room to breathe without being stopped out on noise.</span></div>
+      <div class="score-row"><span class="sc-label">RS Rating</span><span class="sc-pts" style="color:#22c55e;font-size:11px">Rank</span><span class="sc-desc">Relative Strength vs. the S&P 500 over the past 12 months, scored 1–99. 80+ = top 20% of stocks. O'Neil required RS ≥ 80 before any CAN SLIM buy. Leaders lead — laggards lag.</span></div>
+    </div>
+  </details>
+
+  <!-- 7. PATTERNS -->
+  <details>
+    <summary><span style="font-size:16px">🔍</span> Active patterns — what to look for</summary>
+    <div class="mbox">
+      <div class="score-row"><span class="sc-label" style="color:#60a5fa">Pocket Pivot</span><span class="sc-pts" style="color:#9ca3af;font-size:11px">Bullish</span><span class="sc-desc">Volume on an up-day exceeds the highest volume of any down-day over the prior 10 sessions. Signals institutional accumulation — funds are quietly loading shares before a breakout.</span></div>
+      <div class="score-row"><span class="sc-label" style="color:#ef4444">Lower High</span><span class="sc-pts" style="color:#9ca3af;font-size:11px">Bearish</span><span class="sc-desc">Each rally peak is lower than the previous one — distribution in progress. Combined with falling volume on up-days = institutions selling into strength. Warning signal.</span></div>
+      <div class="score-row"><span class="sc-label" style="color:#22c55e">Gap Support</span><span class="sc-pts" style="color:#9ca3af;font-size:11px">Bullish</span><span class="sc-desc">A gap-up day (open above prior day's high) on heavy volume creates a support zone at the gap area. Stocks often retest the gap and hold — a high-quality re-entry point.</span></div>
+      <div class="score-row"><span class="sc-label" style="color:#22c55e">Golden Cross</span><span class="sc-pts" style="color:#9ca3af;font-size:11px">Bullish</span><span class="sc-desc">50 SMA crosses above 200 SMA. Long-term institutional signal that the trend has shifted from bearish to bullish. Often precedes significant multi-month advances.</span></div>
+      <div class="score-row"><span class="sc-label" style="color:#ef4444">Death Cross</span><span class="sc-pts" style="color:#9ca3af;font-size:11px">Bearish</span><span class="sc-desc">50 SMA crosses below 200 SMA. Confirms a long-term trend reversal to the downside. Avoid long exposure until a Golden Cross recurs.</span></div>
+    </div>
+  </details>
+
+  <!-- 8. NEWS -->
+  <details>
+    <summary><span style="font-size:16px">📰</span> News sentiment — how scores work</summary>
+    <div class="mbox">
+      <p>Each headline is scored from <strong style="color:#ef4444">-1.0 (fully bearish)</strong> to <strong style="color:#22c55e">+1.0 (fully bullish)</strong> using keyword analysis against curated bullish and bearish word lists. The score is the ratio of bullish vs. bearish keyword hits.</p>
+      <div class="score-row"><span class="sc-label">+0.50 to +1.0</span><span class="pill pg" style="font-size:10px">Bullish</span><span class="sc-desc">Strong positive language — upgrade, surge, beat, record, growth, breakout, buy, strong, momentum, partnership.</span></div>
+      <div class="score-row"><span class="sc-label">-0.10 to +0.49</span><span class="pill pgr" style="font-size:10px">Neutral</span><span class="sc-desc">Mixed or no strong sentiment keywords. Factual reporting without directional bias. Treated as noise.</span></div>
+      <div class="score-row"><span class="sc-label">-1.0 to -0.11</span><span class="pill pr" style="font-size:10px">Bearish</span><span class="sc-desc">Negative language — downgrade, miss, decline, warning, risk, sell, weak, lawsuit, investigation, loss, cut.</span></div>
+      <p style="margin-top:12px">The overall news signal (✅ Confirming / ⚠️ Mixed / ❌ Conflicting) is based on the ratio of bullish to bearish headlines. Sources: Yahoo Finance and Finviz, pulled fresh on every report.</p>
+      <div class="tip-box"><strong>Important:</strong> News sentiment is a <em>confirmation tool</em>, not a primary signal. A great technical setup with confirming news is stronger than either alone. Contradicting news on a strong chart is a yellow flag — not necessarily a reason to avoid, but worth monitoring.</div>
+    </div>
+  </details>
+
+  <!-- 9. HOW TO READ -->
+  <details>
+    <summary><span style="font-size:16px">📖</span> How to read your report — step by step</summary>
+    <div class="mbox">
+      <div class="guide-step"><div class="gs-num">1</div><div><div class="gs-title">Check TicStage first</div><div class="gs-desc">If Stage 4 — stop. Capital preservation. No long setup exists regardless of score. If Stage 2 — continue to step 2.</div></div></div>
+      <div class="guide-step"><div class="gs-num">2</div><div><div class="gs-title">Check TicScore</div><div class="gs-desc">70+ = high conviction. 50–69 = acceptable. Under 50 = wait for fundamentals to improve. Score 70+ in Stage 2A is the sweet spot.</div></div></div>
+      <div class="guide-step"><div class="gs-num">3</div><div><div class="gs-title">Check RS Rating</div><div class="gs-desc">RS ≥ 80 confirms the stock is outperforming the market. Leaders lead. If RS is below 60, the stock is a laggard — avoid even with a good TicScore.</div></div></div>
+      <div class="guide-step"><div class="gs-num">4</div><div><div class="gs-title">Read the TIC Signal</div><div class="gs-desc">The summary box at the top of the report gives you the key thesis — what the data says about where the stock stands and what level to watch.</div></div></div>
+      <div class="guide-step"><div class="gs-num">5</div><div><div class="gs-title">Identify your entry zone</div><div class="gs-desc">Look at the S/R chart. The nearest Strong or Very Strong support zone below current price is your entry area. ATR tells you how much stop room you need.</div></div></div>
+      <div class="guide-step"><div class="gs-num">6</div><div><div class="gs-title">Confirm with news</div><div class="gs-desc">✅ Confirming news on a Stage 2 / TicScore 70+ setup = highest conviction. ❌ Conflicting news = monitor but reduce position size until news resolves.</div></div></div>
+      <div class="guide-step"><div class="gs-num">7</div><div><div class="gs-title">Set your stop and target</div><div class="gs-desc">Stop = just below the support zone low. Target = nearest resistance zone. Risk/reward should be at least 2:1 before entering any position.</div></div></div>
+      <div class="tip-box" style="margin-top:10px"><strong>The ideal setup:</strong> Stage 2A · TicScore 70+ · RS ≥ 80 · Full PowerStack aligned · Pocket Pivot active · News confirming · Price near Strong support zone. Not every report will have all seven — the more that align, the higher your conviction.</div>
+    </div>
+  </details>
+
+  <div style="margin-top:18px;font-size:12px;color:#374151;text-align:center;line-height:1.8">
+    TIC Research · Educational platform only · Not financial advice · Data sourced from Yahoo Finance & Finviz<br/>
+    Methodology based on William O'Neil's CAN SLIM® and Stan Weinstein's Stage Analysis frameworks.
+  </div>
+</div>
+
+<!-- ══ SETTINGS ══ -->
+<div class="page" id="page-settings">
+  <div style="font-size:18px;font-weight:800;color:#f9fafb;margin-bottom:20px">Settings</div>
+  <div class="g2">
+    <div>
+      <div class="section">Account</div>
+      <div class="card">
+        <div class="settings-row"><div><div class="settings-label">Email</div><div class="settings-desc">vfaragasso1028@gmail.com</div></div><button class="btn" onclick="toast('Email updated!')">Change</button></div>
+        <div class="settings-row"><div><div class="settings-label">Password</div><div class="settings-desc">Last changed 30 days ago</div></div><button class="btn" onclick="toast('Password reset email sent!')">Reset</button></div>
+        <div class="settings-row"><div><div class="settings-label">Plan</div><div class="settings-desc">Free tier · 3 analyses/day</div></div><button class="btn btn-blue" onclick="nav('pricing')">Upgrade</button></div>
+        <div class="settings-row" style="border:none"><div><div class="settings-label">API Key</div><div class="settings-desc">Add Anthropic key for AI thesis</div></div><button class="btn" onclick="toast('API key saved!')">Add Key</button></div>
+      </div>
+      <div class="section">Notifications</div>
+      <div class="card">
+        <div class="settings-row"><div><div class="settings-label">Email Alerts</div><div class="settings-desc">Receive alerts via email</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div><div class="settings-label">SMS Alerts</div><div class="settings-desc">Text message notifications (Pro)</div></div><div class="toggle" onclick="toast('SMS alerts require Pro plan');"></div></div>
+        <div class="settings-row" style="border:none"><div><div class="settings-label">Daily Summary</div><div class="settings-desc">Watchlist recap every market close</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+    </div>
+    <div>
+      <div class="section">Data &amp; Display</div>
+      <div class="card">
+        <div class="settings-row"><div><div class="settings-label">Default Universe</div><div class="settings-desc">Scanner default stock pool</div></div><select style="width:140px"><option>S&amp;P 500</option><option>Nasdaq 100</option><option>Russell 2000</option></select></div>
+        <div class="settings-row"><div><div class="settings-label">Default Chart</div><div class="settings-desc">Timeframe shown on load</div></div><select style="width:140px"><option>Daily</option><option>Weekly (Pro)</option><option>Monthly (Pro)</option></select></div>
+        <div class="settings-row" style="border:none"><div><div class="settings-label">ATR Stop Multiplier</div><div class="settings-desc">Used in position sizing</div></div><select style="width:140px"><option>1.5× ATR</option><option>2.0× ATR</option><option>2.5× ATR</option></select></div>
+      </div>
+      <div class="section">Usage</div>
+      <div class="card">
+        <div class="settings-row"><div><div class="settings-label">Analyses Today</div><div class="settings-desc">Resets at midnight ET</div></div><span style="font-size:16px;font-weight:700;color:#f59e0b">2 / 3</span></div>
+        <div class="settings-row"><div><div class="settings-label">Watchlist Slots</div><div class="settings-desc">Upgrade for unlimited</div></div><span style="font-size:16px;font-weight:700;color:#f59e0b">3 / 3</span></div>
+        <div class="settings-row" style="border:none"><div><div class="settings-label">Active Alerts</div></div><span style="font-size:16px;font-weight:700;color:#22c55e">4 active</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end main -->
+</div><!-- end app -->
+
+<script>
+const pages = {
+  dashboard:'Dashboard', analyze:'Analyze Ticker',
+  scanner:'Scanner', watchlist:'Watchlist',
+  alerts:'Alerts', pdf:'PDF Report',
+  pricing:'Pricing', methodology:'Methodology & Guide', settings:'Settings'
+};
+
+function nav(p) {
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  const ni = document.getElementById('nav-'+p);
+  if(ni) ni.classList.add('active');
+  document.getElementById('topbar-title').textContent = pages[p]||p;
+}
+
+function goAnalyze(ticker) {
+  const data = {
+    NVDA:{co:'Nvidia Corporation',meta:'NVDA · Technology · Semiconductors',price:'$134.21',chg:'▲ +$2.34 (+1.78%)',chgClass:'green',score:'82',bd:'G:40 · V:20 · Q:14 · S:8',stage:'Stage 2A',stageDesc:'Advancing — optimal long zone',adx:'38.4',adxStr:'Strong trend',rs:'91',rsL:'Leader · Stack Aligned ✓',signal:'Pocket Pivot active — volume confirms institutional accumulation. Golden Cross (50 SMA above 200 SMA) supports bullish macro structure. Stage 2A — optimal long exposure on pullback to $126.80 support zone.'},
+    AMZN:{co:'Amazon.com Inc',meta:'AMZN · Consumer Discretionary · E-Commerce',price:'$261.42',chg:'▼ -$2.18 (-0.83%)',chgClass:'red',score:'25',bd:'G:25 · V:0 · Q:0 · S:0',stage:'Stage 4A',stageDesc:'Early Decline — capital preservation',adx:'51.1',adxStr:'Very Strong',rs:'50',rsL:'Laggard · Stack Unaligned ✗',signal:'Stage 4A — price below falling 150 SMA. Death Cross structure remains headwind. Break below $259.34 support accelerates decline. Capital preservation mode — no long setups until confirmed breakout above $274.00.'},
+    TSLA:{co:'Tesla Inc',meta:'TSLA · Consumer Discretionary · Auto',price:'$248.10',chg:'▲ +$7.54 (+3.14%)',chgClass:'green',score:'72',bd:'G:30 · V:20 · Q:12 · S:10',stage:'Stage 2B',stageDesc:'Advancing — momentum phase',adx:'29.8',adxStr:'Developing',rs:'74',rsL:'Neutral · Stack Unaligned',signal:'Stage 2B momentum phase. Breakout above $265.00 resistance with volume confirms continuation. Golden Cross intact but PowerStack unaligned — wait for stack alignment before adding exposure.'},
+    META:{co:'Meta Platforms Inc',meta:'META · Technology · Social Media',price:'$622.40',chg:'▲ +$13.04 (+2.14%)',chgClass:'green',score:'76',bd:'G:35 · V:20 · Q:13 · S:8',stage:'Stage 2A',stageDesc:'Advancing — optimal long zone',adx:'32.1',adxStr:'Strong',rs:'84',rsL:'Leader · Stack Aligned ✓',signal:'Pocket Pivot detected — institutional accumulation confirms Stage 2A structure. Golden Cross + Full Stack aligned. Pullback to $598 support offers optimal long entry. Target $641 resistance.'},
+    MSFT:{co:'Microsoft Corporation',meta:'MSFT · Technology · Software',price:'$458.20',chg:'▼ -$2.02 (-0.44%)',chgClass:'red',score:'71',bd:'G:28 · V:18 · Q:15 · S:10',stage:'Stage 2B',stageDesc:'Advancing — momentum phase',adx:'24.8',adxStr:'Developing',rs:'74',rsL:'Neutral · Partial Stack',signal:'Stage 2B with developing ADX. Golden Cross confirmed. Consolidation near $458 — breakout above $470 resistance triggers next leg. Support at $440 is key risk level.'},
+    LLY:{co:'Eli Lilly and Company',meta:'LLY · Healthcare · Pharmaceuticals',price:'$892.10',chg:'▲ +$9.80 (+1.11%)',chgClass:'green',score:'78',bd:'G:38 · V:18 · Q:14 · S:8',stage:'Stage 2A',stageDesc:'Advancing — optimal long zone',adx:'35.4',adxStr:'Strong',rs:'88',rsL:'Leader · Stack Aligned ✓',signal:'Stage 2A advancing with RS 88. GLP-1 demand cycle driving institutional accumulation. Breakout above $920 resistance targets $950+. Support at $860 is key risk level.'},
+    AVGO:{co:'Broadcom Inc',meta:'AVGO · Technology · Semiconductors',price:'$248.80',chg:'▲ +$3.20 (+1.30%)',chgClass:'green',score:'74',bd:'G:32 · V:20 · Q:14 · S:8',stage:'Stage 2A',stageDesc:'Advancing — optimal long zone',adx:'28.4',adxStr:'Developing',rs:'82',rsL:'Leader · Stack Aligned ✓',signal:'AI networking chip demand driving Stage 2A structure. Pocket Pivot confirms institutional buying. Breakout above $260 resistance targets $280. Support at $236 is key risk level.'},
+    AAPL:{co:'Apple Inc',meta:'AAPL · Technology · Consumer Electronics',price:'$211.30',chg:'▲ +$0.93 (+0.44%)',chgClass:'green',score:'58',bd:'G:20 · V:15 · Q:15 · S:8',stage:'Stage 3A',stageDesc:'Topping — reduce exposure',adx:'18.2',adxStr:'Weak trend',rs:'62',rsL:'Neutral · Stack Unaligned',signal:'Stage 3A topping — 150 SMA flattening. ADX weak at 18. No actionable long setup. Wait for confirmed Stage 2 re-entry above $224 resistance or re-test of $200 support for positioning.'},
+  };
+  const d = data[ticker.toUpperCase()] || data.NVDA;
+  document.getElementById('r-meta').innerHTML = d.meta + ' <span class="pill pb" style="font-size:9px">Yahoo Finance</span>';
+  document.getElementById('r-company').textContent = d.co;
+  document.getElementById('r-price').textContent = d.price;
+  document.getElementById('r-chg').textContent = d.chg;
+  document.getElementById('r-chg').className = d.chgClass;
+  document.getElementById('r-score').textContent = d.score;
+  document.getElementById('r-bd').textContent = d.bd;
+  document.getElementById('r-stage').textContent = d.stage;
+  document.getElementById('r-stage-desc').textContent = d.stageDesc;
+  document.getElementById('r-adx').textContent = d.adx;
+  document.getElementById('r-adx-str').textContent = d.adxStr;
+  document.getElementById('r-rs').textContent = d.rs;
+  document.getElementById('r-rs-l').textContent = d.rsL;
+  document.getElementById('r-signal').textContent = d.signal;
+  document.getElementById('analyze-ticker').value = ticker.toUpperCase();
+  nav('analyze');
+  document.querySelector('.main').scrollTop = 0;
+  toast('Analysis loaded: ' + ticker.toUpperCase());
+}
+
+function runAnalyze() {
+  const t = document.getElementById('analyze-ticker').value.trim().toUpperCase();
+  if(!t){toast('Please enter a ticker symbol');return;}
+  goAnalyze(t);
+}
+
+function switchChart(btn, tf) {
+  const bar = btn.closest('.chart-tabs');
+  bar.querySelectorAll('.ctab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(tf!=='daily'){
+    toast('Weekly & Monthly charts available on Trader and Pro plans');
+    btn.classList.remove('active');
+    bar.querySelectorAll('.ctab')[0].classList.add('active');
+  }
+}
+
+// ══ V3 CHART ENGINE ══
+
+// Multi-timeframe data
+const tfData = {
+  daily:{
+    labels:Array.from({length:60},(_,i)=>{const d=new Date(2026,2,1+i);return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}).slice(-30),
+    closes:[100.2,102.4,104.8,103.1,106.2,108.5,107.4,110.8,112.3,111.0,114.6,116.8,115.2,118.4,120.1,119.3,122.6,124.8,123.4,126.2,125.1,128.4,130.6,129.2,131.8,133.4,132.1,134.5,133.8,134.21],
+    vol:[180,220,310,190,280,350,240,420,290,200,380,310,260,440,320,290,510,380,270,490,360,420,310,280,390,480,320,560,290,390].map(v=>v*1e6),
+    sr:[{lo:138.5,hi:140.0,type:'res',lbl:'RES $138.50–$140.00 · Strong'},{lo:126.8,hi:128.5,type:'sup',lbl:'SUP $126.80–$128.50 · V.Strong'},{lo:118.0,hi:119.5,type:'sup',lbl:'SUP $118.00–$119.50 · Moderate'}],
+    mas:{ema9:[99,101,103,102,105,107,106,109,111,110,113,115,114,117,119,118,121,123,122,125,124,127,129,128,130,132,131,133,132,134],ema21:[95,97,99,98,101,103,102,105,107,106,109,111,110,113,115,114,117,119,118,121,120,123,125,124,126,128,127,129,128,129],sma50:[88,90,91,90,93,95,94,97,99,98,101,103,102,105,107,106,109,111,110,113,112,115,117,116,118,120,119,121,120,122],sma150:[75,76,77,76,78,80,79,82,84,83,86,88,87,90,92,91,94,96,95,98,97,100,102,101,103,105,104,106,105,108],sma200:[68,69,70,69,71,73,72,75,77,76,79,81,80,83,85,84,87,89,88,91,90,93,95,94,96,98,97,99,98,101]}
+  },
+  weekly:{
+    labels:['Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr'].slice(-20),
+    closes:[62,65,70,68,74,80,78,84,90,88,96,102,99,108,114,112,120,126,130,134.21],
+    vol:[1.2,1.4,2.1,1.6,1.8,2.4,1.9,2.8,2.2,1.7,3.1,2.6,2.0,3.4,2.9,2.3,3.8,3.1,2.7,3.5].map(v=>v*1e9),
+    sr:[{lo:138.5,hi:141.0,type:'res',lbl:'RES $138.50–$141.00 · Strong'},{lo:118.0,hi:120.0,type:'sup',lbl:'SUP $118–$120 · V.Strong'},{lo:98.0,hi:100.5,type:'sup',lbl:'SUP $98–$100 · Moderate'}],
+    mas:{ema9:[60,63,68,66,72,78,76,82,88,86,94,100,97,106,112,110,118,124,128,133],ema21:[55,58,63,61,67,73,71,77,83,81,89,95,92,101,107,105,113,119,123,128],sma50:[45,48,53,51,57,63,61,67,73,71,79,85,82,91,97,95,103,109,113,118],sma150:[30,33,37,36,41,47,45,51,57,55,63,69,66,75,81,79,87,93,97,102],sma200:[22,25,29,28,33,39,37,43,49,47,55,61,58,67,73,71,79,85,89,94]}
+  },
+  monthly:{
+    labels:['2024 Q1','Q2','Q3','Q4','2025 Q1','Q2','Q3','Q4','2026 Q1','Q2'],
+    closes:[48,58,72,84,96,108,118,126,130,134.21],
+    vol:[4.2,5.1,6.8,5.4,7.2,8.4,6.9,9.1,8.2,7.4].map(v=>v*1e9),
+    sr:[{lo:138.0,hi:142.0,type:'res',lbl:'RES $138–$142 · Monthly Resistance'},{lo:96.0,hi:100.0,type:'sup',lbl:'SUP $96–$100 · Major Support'}],
+    mas:{ema9:[46,56,70,82,94,106,116,124,128,133],ema21:[40,50,64,76,88,100,110,118,122,127],sma50:[28,38,52,64,76,88,98,106,110,115],sma150:[14,22,34,46,58,70,80,88,92,97],sma200:[8,16,28,40,52,64,74,82,86,91]}
+  }
+};
+
+let currentTF = 'daily';
+let currentChartType = 'line';
+let maVisibility = {ema9:true,ema21:true,sma50:true,sma150:true,sma200:true,vol:false};
+let priceChart = null;
+let volChart = null;
+
+function ema(data,period){
+  const k=2/(period+1);
+  let result=[data[0]];
+  for(let i=1;i<data.length;i++) result.push(data[i]*k+result[i-1]*(1-k));
+  return result;
+}
+
+function sma(data,period){
+  return data.map((_,i)=>i<period-1?null:data.slice(i-period+1,i+1).reduce((a,b)=>a+b)/period);
+}
+
+const srPlugin={
+  id:'srZones',
+  beforeDraw(chart){
+    const {ctx,chartArea:{left,right},scales:{y}}=chart;
+    if(!y) return;
+    const zones=tfData[currentTF].sr;
+    zones.forEach(z=>{
+      const isRes=z.type==='res';
+      const y1=y.getPixelForValue(z.hi);
+      const y2=y.getPixelForValue(z.lo);
+      ctx.fillStyle=isRes?'rgba(239,68,68,0.13)':'rgba(34,197,94,0.13)';
+      ctx.fillRect(left,y1,right-left,y2-y1);
+      ctx.font='bold 9px Inter,sans-serif';
+      ctx.fillStyle=isRes?'rgba(239,68,68,0.85)':'rgba(34,197,94,0.85)';
+      ctx.fillText(z.lbl,left+6,y1+11);
+    });
+  }
+};
+
+function getMaDatasets(tf){
+  const d=tfData[tf];
+  const maConf=[
+    {key:'ema9',color:'#f59e0b',label:'9 EMA',w:1.5},
+    {key:'ema21',color:'#a78bfa',label:'21 EMA',w:1.5},
+    {key:'sma50',color:'#34d399',label:'50 SMA',w:1.5},
+    {key:'sma150',color:'#f87171',label:'150 SMA',w:2},
+    {key:'sma200',color:'#60a5fa',label:'200 SMA',w:2},
+  ];
+  return maConf.filter(m=>maVisibility[m.key]).map(m=>({
+    label:m.label,data:d.mas[m.key],
+    borderColor:m.color,borderWidth:m.w,
+    pointRadius:0,fill:false,tension:0.3,
+    hidden:false
+  }));
+}
+
+function buildChart(){
+  const d=tfData[currentTF];
+  const ohlc=d.closes.map((c,i)=>{
+    const prev=i>0?d.closes[i-1]:c;
+    const chg=c-prev;
+    const h=+(c+Math.abs(chg)*0.5+Math.random()*0.8).toFixed(2);
+    const l=+(c-Math.abs(chg)*0.5-Math.random()*0.8).toFixed(2);
+    const o=+(prev+(c-prev)*0.3).toFixed(2);
+    return {o,h,l,c:+c.toFixed(2)};
+  });
+
+  const canvas=document.getElementById('priceChart');
+  if(!canvas) return;
+  if(priceChart){priceChart.destroy();priceChart=null;}
+  const ctx=canvas.getContext('2d');
+
+  const priceDataset = currentChartType==='line'
+    ? [{label:'Price',data:d.closes,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.05)',borderWidth:2,pointRadius:0,pointHoverRadius:4,fill:true,tension:0.3}]
+    : [
+        {label:'Wick',data:ohlc.map(x=>[x.l,x.h]),backgroundColor:ohlc.map(x=>x.c>=x.o?'rgba(34,197,94,0.4)':'rgba(239,68,68,0.4)'),borderColor:ohlc.map(x=>x.c>=x.o?'#22c55e':'#ef4444'),borderWidth:1,barPercentage:0.18},
+        {label:'Body',data:ohlc.map(x=>[Math.min(x.o,x.c),Math.max(x.o,x.c)]),backgroundColor:ohlc.map(x=>x.c>=x.o?'rgba(34,197,94,0.85)':'rgba(239,68,68,0.85)'),borderColor:ohlc.map(x=>x.c>=x.o?'#22c55e':'#ef4444'),borderWidth:1,barPercentage:0.65}
+      ];
+
+  const allDatasets=[...priceDataset,...getMaDatasets(currentTF)];
+
+  priceChart=new Chart(ctx,{
+    type:currentChartType==='line'?'line':'bar',
+    plugins:[srPlugin],
+    data:{labels:d.labels,datasets:allDatasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:c=>c.dataset.label==='Wick'?null:(c.dataset.label==='Body'?null:` ${c.dataset.label}: $${Array.isArray(c.raw)?c.raw.map(v=>v.toFixed(2)).join('–'):c.parsed.y.toFixed(2)}`),
+          filter:i=>i.dataset.label!=='Wick'&&i.dataset.label!=='Body'
+        }}
+      },
+      scales:{
+        x:{ticks:{font:{size:9},maxTicksLimit:10,color:'#6b7280'},grid:{display:false}},
+        y:{position:'right',ticks:{font:{size:9},color:'#6b7280',callback:v=>'$'+v.toFixed(0)},grid:{color:'rgba(255,255,255,0.04)'}}
+      }
+    }
+  });
+
+  // Volume chart
+  const vc=document.getElementById('volChart');
+  const vp=document.getElementById('vol-panel');
+  if(maVisibility.vol){
+    vp.style.display='block';
+    if(volChart){volChart.destroy();volChart=null;}
+    const vctx=vc.getContext('2d');
+    volChart=new Chart(vctx,{
+      type:'bar',
+      data:{
+        labels:d.labels,
+        datasets:[{
+          label:'Volume',
+          data:d.vol,
+          backgroundColor:d.closes.map((c,i)=>i===0||c>=d.closes[i-1]?'rgba(34,197,94,0.6)':'rgba(239,68,68,0.6)'),
+          borderWidth:0
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` Vol: ${(c.parsed.y/1e6).toFixed(0)}M`}}},
+        scales:{
+          x:{display:false},
+          y:{position:'right',ticks:{font:{size:8},color:'#4b5563',callback:v=>v>=1e9?(v/1e9).toFixed(1)+'B':(v/1e6).toFixed(0)+'M',maxTicksLimit:3},grid:{display:false}}
+        }
+      }
+    });
+  } else {
+    vp.style.display='none';
+    if(volChart){volChart.destroy();volChart=null;}
+  }
+}
+
+function switchTF(btn,tf){
+  document.querySelectorAll('#tf-tabs .ctab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentTF=tf;
+  buildChart();
+}
+
+function switchChartType(type){
+  currentChartType=type;
+  document.getElementById('ct-line').classList.toggle('active',type==='line');
+  document.getElementById('ct-candle').classList.toggle('active',type==='candle');
+  buildChart();
+}
+
+function toggleMA(btn,key){
+  maVisibility[key]=!maVisibility[key];
+  btn.classList.toggle('active',maVisibility[key]);
+  buildChart();
+}
+
+function switchChart(btn,tf){ switchTF(btn,tf); }
+
+// ── EPS CHART ──
+function buildEpsChart(){
+  const c=document.getElementById('epsChart');
+  if(!c) return;
+  const qtrs=['Q2\'24','Q3\'24','Q4\'24','Q1\'25','Q2\'25','Q3\'25','Q4\'25','Q1\'26'];
+  const eps=[0.44,0.60,0.88,1.09,1.42,1.82,2.31,2.94];
+  const est=[0.42,0.57,0.84,1.04,1.35,1.74,2.20,2.80];
+  new Chart(c,{
+    type:'bar',
+    data:{
+      labels:qtrs,
+      datasets:[
+        {label:'EPS (Actual)',data:eps,backgroundColor:eps.map((v,i)=>v>=est[i]?'rgba(34,197,94,0.8)':'rgba(55,65,81,0.8)'),borderRadius:3},
+        {label:'Estimate',data:est,type:'line',borderColor:'rgba(96,165,250,0.7)',borderWidth:1.5,borderDash:[4,3],pointRadius:3,pointBackgroundColor:'#3b82f6',fill:false}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: $${c.parsed.y.toFixed(2)}`}}},
+      scales:{
+        x:{ticks:{font:{size:9},color:'#6b7280'},grid:{display:false}},
+        y:{position:'right',ticks:{font:{size:9},color:'#6b7280',callback:v=>'$'+v.toFixed(2)},grid:{color:'rgba(255,255,255,0.04)'}}
+      }
+    }
+  });
+}
+
+// ── REVENUE CHART ──
+function buildRevChart(){
+  const c=document.getElementById('revChart');
+  if(!c) return;
+  const qtrs=['Q2\'24','Q3\'24','Q4\'24','Q1\'25','Q2\'25','Q3\'25','Q4\'25','Q1\'26'];
+  const rev=[13.5,18.1,22.1,26.0,30.0,35.1,39.3,44.1];
+  const est=[13.0,17.4,21.1,24.6,28.5,33.4,37.8,42.0];
+  new Chart(c,{
+    type:'bar',
+    data:{
+      labels:qtrs,
+      datasets:[
+        {label:'Revenue ($B)',data:rev,backgroundColor:'rgba(59,130,246,0.7)',borderRadius:3},
+        {label:'Estimate',data:est,type:'line',borderColor:'rgba(245,158,11,0.7)',borderWidth:1.5,borderDash:[4,3],pointRadius:3,pointBackgroundColor:'#f59e0b',fill:false}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: $${c.parsed.y.toFixed(1)}B`}}},
+      scales:{
+        x:{ticks:{font:{size:9},color:'#6b7280'},grid:{display:false}},
+        y:{position:'right',ticks:{font:{size:9},color:'#6b7280',callback:v=>'$'+v+'B'},grid:{color:'rgba(255,255,255,0.04)'}}
+      }
+    }
+  });
+}
+
+// ── PEER CHART ──
+function buildPeerChart(){
+  const c=document.getElementById('peerChart');
+  if(!c) return;
+  new Chart(c,{
+    type:'bar',
+    data:{
+      labels:['NVDA','AVGO','AMD','QCOM','INTC'],
+      datasets:[
+        {label:'TicScore',data:[82,74,61,55,18],backgroundColor:['rgba(34,197,94,0.8)','rgba(34,197,94,0.7)','rgba(245,158,11,0.7)','rgba(245,158,11,0.6)','rgba(239,68,68,0.7)'],borderRadius:4},
+        {label:'RS Rating',data:[91,82,68,58,12],backgroundColor:['rgba(59,130,246,0.5)','rgba(59,130,246,0.45)','rgba(59,130,246,0.35)','rgba(59,130,246,0.3)','rgba(239,68,68,0.35)'],borderRadius:4}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}`,}}},
+      scales:{
+        x:{ticks:{font:{size:10},color:'#9ca3af'},grid:{display:false}},
+        y:{display:false,max:110}
+      }
+    }
+  });
+}
+
+setTimeout(()=>{buildChart();buildEpsChart();buildRevChart();buildPeerChart();},400);
+
+function setFilter(btn) {
+  const bar = btn.parentElement;
+  bar.querySelectorAll('.fc').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  toast('Filter applied — re-run scanner to update results');
+}
+
+function setSortBtn(btn) {
+  document.querySelectorAll('.wl-sort').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>{t.style.display='none'},2800);
+}
+
+function showToast(show) { toast(show?'Alert activated':'Alert paused'); }
+
+document.getElementById('global-search').addEventListener('keydown', function(e) {
+  if(e.key==='Enter' && this.value.trim()) { goAnalyze(this.value.trim()); this.value=''; }
+});
+</script>
+</body>
+</html>
