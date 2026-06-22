@@ -997,159 +997,209 @@ input:focus,select:focus{border-color:#3b82f6}
 
 <!-- ══ METHODOLOGY ══ -->
 <div class="page" id="page-methodology">
-  <div style="font-size:20px;font-weight:800;color:#f9fafb;margin-bottom:4px">Methodology & Guide</div>
-  <div style="font-size:13px;color:#6b7280;margin-bottom:22px">How TIC Research scores, stages, and analyzes every stock — and how to read your report.</div>
+<style>
+.mh{display:flex;align-items:center;gap:10px;margin:28px 0 14px}
+.mh-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mh-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px}
+.mcard{background:#111;border:1px solid #1f2937;border-radius:10px;padding:16px 18px}
+.mcard-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.mcard-body{font-size:13px;color:#6b7280;line-height:1.8}
+.mcard-body b{color:#d1d5db;font-weight:600}
+.mbullet{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-size:13px;color:#6b7280;line-height:1.6}
+.mbullet .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.interp-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #141414;font-size:13px}
+.interp-row:last-child{border-bottom:none}
+.stage-card{border-radius:8px;padding:14px 16px;border:1px solid}
+.stage-num{font-size:28px;font-weight:800;margin-bottom:2px}
+.stage-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.stage-desc{font-size:12px;line-height:1.7}
+.stage-action{font-size:11px;font-weight:700;margin-top:10px}
+</style>
 
-  <style>
-    details{background:#111;border:1px solid #1f2937;border-radius:10px;margin-bottom:10px;overflow:hidden}
-    details[open]{border-color:#1e40af}
-    summary{padding:16px 18px;font-size:14px;font-weight:700;color:#f9fafb;cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none;user-select:none}
-    summary::-webkit-details-marker{display:none}
-    summary::after{content:'▾';margin-left:auto;font-size:16px;color:#6b7280;transition:transform .2s}
-    details[open] summary::after{transform:rotate(-180deg);color:#60a5fa}
-    summary:hover{background:#141414}
-    .mbox{padding:0 18px 18px}
-    .mbox p{font-size:13px;color:#9ca3af;line-height:1.8;margin-bottom:12px}
-    .mbox p:last-child{margin-bottom:0}
-    .score-row{display:grid;grid-template-columns:130px 60px 1fr;gap:12px;align-items:start;padding:10px 0;border-bottom:1px solid #141414;font-size:13px}
-    .score-row:last-child{border-bottom:none}
-    .sc-label{color:#d1d5db;font-weight:600}
-    .sc-pts{color:#60a5fa;font-weight:800}
-    .sc-desc{color:#6b7280;line-height:1.6}
-    .stage-row{display:grid;grid-template-columns:110px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #141414;font-size:13px}
-    .stage-row:last-child{border-bottom:none}
-    .tip-box{background:#0c1a2e;border:1px solid #1e3a5f;border-radius:8px;padding:12px 14px;font-size:12px;color:#93c5fd;line-height:1.7;margin-top:10px}
-    .tip-box strong{color:#60a5fa}
-    .ma-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-    .ma-card{background:#0a0a0a;border:1px solid #1f2937;border-radius:8px;padding:12px 14px}
-    .ma-name{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#374151;font-weight:700;margin-bottom:4px}
-    .ma-desc{font-size:12px;color:#6b7280;line-height:1.6}
-    .guide-step{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #141414}
-    .guide-step:last-child{border-bottom:none}
-    .gs-num{width:28px;height:28px;border-radius:50%;background:#0c1a2e;border:1px solid #1e3a5f;color:#60a5fa;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-    .gs-title{font-size:13px;font-weight:700;color:#f9fafb;margin-bottom:3px}
-    .gs-desc{font-size:12px;color:#6b7280;line-height:1.6}
-  </style>
+  <div style="font-size:20px;font-weight:800;color:#f9fafb;margin-bottom:4px">Methodology</div>
+  <div style="font-size:13px;color:#6b7280;margin-bottom:6px">TIC Research is a technical and fundamental analysis tool for educational purposes. All scores, signals, and data are informational only and do not constitute financial advice. Past performance of any indicator or pattern does not guarantee future results. Always manage risk with defined position sizing and stop losses.</div>
 
-  <!-- 1. OVERVIEW -->
-  <details open>
-    <summary><span style="font-size:16px">📋</span> What is TIC Research?</summary>
-    <div class="mbox">
-      <p>TIC Research is a stock analysis platform built on two proven institutional frameworks — William O'Neil's CAN SLIM methodology and Stan Weinstein's Stage Analysis. Every report combines fundamental quality scoring, technical structure, and news sentiment into a single, actionable signal.</p>
-      <p>The goal is simple: surface stocks that are fundamentally strong <em>and</em> technically set up for a move — the same way professional fund managers evaluate positions — and present it clearly so you can make your own informed decision.</p>
-      <div class="tip-box"><strong>Important:</strong> TIC Research is an educational research tool. Nothing on this platform constitutes financial advice or a recommendation to buy or sell any security. Always conduct your own due diligence and consult a licensed financial advisor before investing.</div>
+  <!-- ── TICSCORE ── -->
+  <div class="mh"><div class="mh-icon" style="background:#052e16"><svg width="14" height="14" fill="none" stroke="#22c55e" viewBox="0 0 24 24" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="mh-title" style="color:#22c55e">TicScore — CAN SLIM Quantitative Screen (0–100 pts)</div></div>
+  <div style="font-size:13px;color:#6b7280;margin-bottom:12px;line-height:1.8">TicScore is a quantitative screen derived from William O'Neil's CAN SLIM methodology — designed to identify institutional-quality growth stocks before they make major price moves. Each component measures a distinct dimension of stock quality. Pass threshold is ≥50 pts. Scores ≥70 indicate a high-conviction setup.</div>
+  <div style="font-size:12px;color:#6b7280;margin-bottom:14px"><b style="color:#9ca3af">Exempt sectors</b> (Financials, Real Estate, Energy, Mining, Utilities, Clinical Biotech) are excluded from scoring because their earnings cycles don't conform to the growth-stock model.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+    <div class="mcard" style="border-left:3px solid #22c55e">
+      <div class="mcard-title" style="color:#22c55e">G — Growth (0–40 pts)</div>
+      <div class="mcard-body">The most heavily weighted component. Measures quarterly EPS growth (current quarter vs same quarter last year), annual EPS trend, and revenue acceleration.<br/><br/>CAN SLIM requires ≥25% quarterly EPS growth. <b>Earnings acceleration</b> — where each quarter beats the previous — is the strongest signal. A stock reporting 50%+ EPS growth with revenue confirmation is a Tier 1 setup.</div>
     </div>
-  </details>
-
-  <!-- 2. TICSCORE -->
-  <details>
-    <summary><span style="font-size:16px">🏆</span> TicScore — how it's calculated (0–100)</summary>
-    <div class="mbox">
-      <p>The TicScore is a composite score from 0–100 based on four pillars of the CAN SLIM framework. A score of <strong style="color:#22c55e">50 or above = Pass</strong>. Below 50 = Fail. The higher the score, the stronger the fundamental and technical setup.</p>
-      <div class="score-row"><span class="sc-label">Growth (G)</span><span class="sc-pts">0–40 pts</span><span class="sc-desc">Quarterly EPS growth rate vs. prior year same quarter. 25%+ growth = full points. Accelerating growth earns bonus. Derived from reported financials via Yahoo Finance.</span></div>
-      <div class="score-row"><span class="sc-label">Volume (V)</span><span class="sc-pts">0–20 pts</span><span class="sc-desc">Relative volume vs. 50-day average on up-days. Unusually high volume on advancing days signals institutional accumulation — the "smart money" footprint.</span></div>
-      <div class="score-row"><span class="sc-label">Quality (Q)</span><span class="sc-pts">0–20 pts</span><span class="sc-desc">Return on Equity (ROE) ≥ 17% scores full marks. Also factors in debt-to-equity ratio. Based on CAN SLIM's emphasis on financial efficiency over growth alone.</span></div>
-      <div class="score-row"><span class="sc-label">Sponsorship (S)</span><span class="sc-pts">0–20 pts</span><span class="sc-desc">Institutional ownership percentage and trend. Rising institutional ownership = fund managers are loading — a powerful confirmation signal that the thesis is institutional-grade.</span></div>
-      <div class="tip-box"><strong>How to use it:</strong> Focus on scores 70+ for highest conviction setups. Scores of 50–70 are worth watching. Below 50, wait for fundamentals to improve before considering a long position.</div>
+    <div class="mcard" style="border-left:3px solid #3b82f6">
+      <div class="mcard-title" style="color:#3b82f6">V — Supply &amp; Demand (0–20 pts)</div>
+      <div class="mcard-body">Measures the float (tradeable shares) and recent relative volume. Smaller floats move more aggressively on institutional buying because supply is limited.<br/><br/>Relative volume above 1.5× average during a price breakout confirms institutional participation. <b>High-volume up days with low-volume pullbacks</b> is the ideal accumulation pattern.</div>
     </div>
-  </details>
-
-  <!-- 3. TICSTAGE -->
-  <details>
-    <summary><span style="font-size:16px">📈</span> TicStage — Stan Weinstein Stage Analysis</summary>
-    <div class="mbox">
-      <p>Every stock cycles through four stages. TicStage identifies where a stock is in that cycle using the 150-day simple moving average (150 SMA) — the institutional benchmark. Only Stage 2 offers the optimal long risk/reward.</p>
-      <div class="stage-row"><span class="pill py">Stage 1</span><span class="sc-desc" style="color:#6b7280">Basing — price consolidating sideways above flat or rising 150 SMA. Accumulation in progress. <em>Watch but don't buy yet.</em></span><span class="pill py">Wait</span></div>
-      <div class="stage-row"><span class="pill pg">Stage 2</span><span class="sc-desc" style="color:#6b7280">Advancing — price trending above rising 150 SMA. This is the <strong style="color:#22c55e">only stage to buy</strong>. Institutions are in control. PowerStack aligned. 2A = early advance, 2B = late/extended.</span><span class="pill pg">Buy zone</span></div>
-      <div class="stage-row"><span class="pill py">Stage 3</span><span class="sc-desc" style="color:#6b7280">Topping — price stalling near resistance, 150 SMA flattening. Distribution begins. <em>Reduce or exit long positions.</em></span><span class="pill py">Exit</span></div>
-      <div class="stage-row"><span class="pill pr">Stage 4</span><span class="sc-desc" style="color:#6b7280">Declining — price below falling 150 SMA. Downtrend confirmed. <em>Capital preservation mode. No long positions.</em></span><span class="pill pr">Avoid</span></div>
-      <div class="tip-box"><strong>Key rule:</strong> Never fight the stage. A 90-scoring stock in Stage 4 is still a losing trade. Stage determines direction — TicScore determines quality within that direction.</div>
+    <div class="mcard" style="border-left:3px solid #a78bfa">
+      <div class="mcard-title" style="color:#a78bfa">Q — Quality (0–20 pts)</div>
+      <div class="mcard-body">Return on Equity (ROE) ≥17% and profit margin expansion. ROE measures how efficiently management deploys capital — consistently high ROE is a moat indicator.<br/><br/>O'Neil specifically required ≥17% ROE as a minimum threshold. Stocks with expanding margins (gross, operating, net) in consecutive quarters signal pricing power.</div>
     </div>
-  </details>
+    <div class="mcard" style="border-left:3px solid #f59e0b">
+      <div class="mcard-title" style="color:#f59e0b">S — Sponsorship (0–20 pts)</div>
+      <div class="mcard-body">Institutional ownership percentage and analyst consensus. The "N" in CAN SLIM (New) — new institutional sponsors buying the stock create sustained demand.<br/><br/>Look for <b>increasing institutional count</b> quarter-over-quarter, not just high ownership. A stock going from 200 to 350 institutional holders in 2 quarters is accumulation in progress.</div>
+    </div>
+  </div>
+  <div class="mcard" style="margin-bottom:4px">
+    <div class="mcard-title" style="color:#6b7280">Score Interpretation</div>
+    <div class="interp-row"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0"></span><span style="color:#9ca3af;min-width:80px">70–100 pts</span><span style="color:#d1d5db;font-weight:600">High conviction. Institutional-grade setup.</span></div>
+    <div class="interp-row"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0"></span><span style="color:#9ca3af;min-width:80px">50–69 pts</span><span style="color:#d1d5db;font-weight:600">Conditional pass. Check chart structure.</span></div>
+    <div class="interp-row"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0"></span><span style="color:#9ca3af;min-width:80px">0–49 pts</span><span style="color:#d1d5db;font-weight:600">Fail. Fundamentals don't support swing long.</span></div>
+  </div>
 
-  <!-- 4. POWERSTACK -->
-  <details>
-    <summary><span style="font-size:16px">⚡</span> PowerStack — moving average alignment</summary>
-    <div class="mbox">
-      <p>The PowerStack is five moving averages stacked in order from fastest to slowest. When all five are aligned (9 EMA > 21 EMA > 50 SMA > 150 SMA > 200 SMA) and price is above all of them, the stock is in its strongest institutional trend state.</p>
-      <div class="ma-grid">
-        <div class="ma-card"><div class="ma-name">9 EMA</div><div class="ma-desc">Fastest line. Shows short-term momentum. Price dipping to 9 EMA and bouncing is a high-quality entry in a strong trend.</div></div>
-        <div class="ma-card"><div class="ma-name">21 EMA</div><div class="ma-desc">Short-term institutional support. A healthy Stage 2 stock typically stays above this during pullbacks.</div></div>
-        <div class="ma-card"><div class="ma-name">50 SMA</div><div class="ma-desc">Medium-term trend. The most-watched line on Wall Street. Breaks below the 50 SMA on heavy volume are early warning signals.</div></div>
-        <div class="ma-card"><div class="ma-name">150 SMA</div><div class="ma-desc">The Stage Analysis line. Stan Weinstein's primary trend identifier. Rising 150 SMA = Stage 2. Flat or falling = Stage 1 or 3/4.</div></div>
+  <!-- ── TICSTAGE ── -->
+  <div class="mh"><div class="mh-icon" style="background:#0c1a2e"><svg width="14" height="14" fill="none" stroke="#60a5fa" viewBox="0 0 24 24" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="mh-title" style="color:#60a5fa">TicStage — Stan Weinstein Stage Analysis</div></div>
+  <div style="font-size:13px;color:#6b7280;margin-bottom:14px;line-height:1.8">Every stock cycles through four stages. Weinstein's framework (from <em>Secrets for Profiting in Bull and Bear Markets</em>) uses the 30-week moving average as the key dividing line. TIC Research uses the 150-day SMA as the direct proxy. The stage determines whether you should be long, flat, or short — regardless of fundamentals.</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px">
+    <div class="stage-card" style="background:#0c1a2e;border-color:#1e3a5f">
+      <div class="stage-num" style="color:#60a5fa">1</div>
+      <div class="stage-name" style="color:#60a5fa">Basing</div>
+      <div class="stage-desc" style="color:#9ca3af">Price consolidating below or near a flattening 150 SMA. Volume drying up. Institutions accumulating quietly. Can last months.</div>
+      <div class="stage-action" style="color:#6b7280">Wait for breakout</div>
+    </div>
+    <div class="stage-card" style="background:#052e16;border-color:#166534">
+      <div class="stage-num" style="color:#22c55e">2</div>
+      <div class="stage-name" style="color:#22c55e">Advancing</div>
+      <div class="stage-desc" style="color:#86efac">Price above a rising 150 SMA. Higher highs, higher lows. This is the only stage where swing longs have structural tailwind.</div>
+      <div class="stage-action" style="color:#22c55e">Optimal long zone</div>
+    </div>
+    <div class="stage-card" style="background:#1c1200;border-color:#92400e">
+      <div class="stage-num" style="color:#f59e0b">3</div>
+      <div class="stage-name" style="color:#f59e0b">Topping</div>
+      <div class="stage-desc" style="color:#fcd34d">Price stalling near a flattening 150 SMA. Volume patterns diverging. Distribution — institutions selling into strength.</div>
+      <div class="stage-action" style="color:#f59e0b">Reduce / avoid</div>
+    </div>
+    <div class="stage-card" style="background:#1c0000;border-color:#991b1b">
+      <div class="stage-num" style="color:#ef4444">4</div>
+      <div class="stage-name" style="color:#ef4444">Declining</div>
+      <div class="stage-desc" style="color:#fca5a5">Price below a declining 150 SMA. Lower highs, lower lows. No matter how cheap it looks, the trend is against you.</div>
+      <div class="stage-action" style="color:#ef4444">No long setups</div>
+    </div>
+  </div>
+  <div style="font-size:12px;color:#6b7280;margin-bottom:4px;line-height:1.7"><b style="color:#9ca3af">PowerStack Override:</b> Stage 2 is confirmed early when 9EMA > 21EMA > 50SMA all aligned above the 150 SMA. This stacking tells you the short, medium, and long-term trends are all pointing the same direction — the highest-probability continuation environment.</div>
+
+  <!-- ── TECHNICAL INDICATORS ── -->
+  <div class="mh"><div class="mh-icon" style="background:#1c1200"><svg width="14" height="14" fill="none" stroke="#f59e0b" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="mh-title" style="color:#f59e0b">Technical Indicators — What Each Signal Means</div></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:4px">
+    <div class="mcard">
+      <div class="mcard-title" style="color:#60a5fa">RSI (14) — Relative Strength Index</div>
+      <div class="mcard-body">Measures momentum on a 0–100 scale. Calculated as average gain / average loss over 14 periods. Tells you if the stock is extended or has room to run.<br/><br/>
+        <div class="mbullet"><span class="dot" style="background:#ef4444"></span><span><b>70–100</b> — Overbought — mean reversion risk</span></div>
+        <div class="mbullet"><span class="dot" style="background:#f59e0b"></span><span><b>40–70</b> — Neutral — trending zone</span></div>
+        <div class="mbullet"><span class="dot" style="background:#22c55e"></span><span><b>0–30</b> — Oversold — potential bounce zone</span></div>
+        In a Stage 2 uptrend, RSI holding above 50 on pullbacks confirms trend strength. RSI dipping to 40–50 then bouncing = ideal swing entry.
       </div>
-      <div class="ma-card" style="background:#0a0a0a;border:1px solid #1f2937;border-radius:8px;padding:12px 14px;margin-bottom:10px"><div class="ma-name">200 SMA</div><div class="ma-desc" style="font-size:12px;color:#6b7280;line-height:1.6">Long-term institutional anchor. Golden Cross = 50 SMA crosses above 200 SMA (bullish). Death Cross = 50 SMA crosses below 200 SMA (bearish).</div></div>
-      <div class="tip-box"><strong>Full Stack Aligned</strong> means all five are in perfect order and price is above all of them — the strongest possible technical structure for a long position.</div>
     </div>
-  </details>
-
-  <!-- 5. S/R ZONES -->
-  <details>
-    <summary><span style="font-size:16px">🎯</span> Support & Resistance zones — how they're built</summary>
-    <div class="mbox">
-      <p>Support and resistance zones are price ranges — not single lines — built by clustering swing highs and swing lows from recent price history. A zone is stronger when more price points cluster near it.</p>
-      <div class="score-row"><span class="sc-label">Swing detection</span><span class="sc-pts" style="font-size:11px;color:#6b7280">Step 1</span><span class="sc-desc">The algorithm identifies swing highs (local peaks) and swing lows (local troughs) over a 5-bar lookback window across 120 days of price data.</span></div>
-      <div class="score-row"><span class="sc-label">Clustering</span><span class="sc-pts" style="font-size:11px;color:#6b7280">Step 2</span><span class="sc-desc">Swing points within 1.5% of each other are grouped into a single zone. The zone low = lowest point in the cluster, zone high = highest + ATR padding.</span></div>
-      <div class="score-row"><span class="sc-label">Strength rating</span><span class="sc-pts" style="font-size:11px;color:#6b7280">Step 3</span><span class="sc-desc">2 touches = Weak · 3 touches = Moderate · 4 touches = Strong · 5+ touches = Very Strong. More touches = price has respected that level repeatedly = more reliable.</span></div>
-      <div class="tip-box"><strong>How to trade them:</strong> Buy near Strong/Very Strong support zones with a stop just below the zone low. Target the nearest resistance zone. The zone width tells you how precise price needs to be — wider zones = more tolerance.</div>
+    <div class="mcard">
+      <div class="mcard-title" style="color:#22c55e">MACD (12/26/9) — Trend Momentum</div>
+      <div class="mcard-body">Plots the difference between 12-day and 26-day EMAs. The Signal line (9-day EMA of MACD) and Histogram show momentum direction and acceleration.<br/><br/>
+        <div class="mbullet"><span class="dot" style="background:#22c55e"></span><span><b style="color:#22c55e">Bullish:</b> MACD line above Signal · Histogram expanding positive · Both above zero = trend acceleration</span></div>
+        <div class="mbullet"><span class="dot" style="background:#ef4444"></span><span><b style="color:#ef4444">Bearish:</b> MACD crosses below Signal · Histogram shrinking negative · Divergence between price and MACD = distribution warning</span></div>
+      </div>
     </div>
-  </details>
-
-  <!-- 6. INDICATORS -->
-  <details>
-    <summary><span style="font-size:16px">📊</span> Technical indicators explained</summary>
-    <div class="mbox">
-      <div class="score-row"><span class="sc-label">RSI (14)</span><span class="sc-pts" style="color:#f59e0b;font-size:11px">Momentum</span><span class="sc-desc">Relative Strength Index. Above 70 = overbought (pullback risk). Below 30 = oversold (bounce opportunity). 50–70 in a Stage 2 stock = healthy momentum zone.</span></div>
-      <div class="score-row"><span class="sc-label">MACD</span><span class="sc-pts" style="color:#22c55e;font-size:11px">Trend</span><span class="sc-desc">Moving Average Convergence Divergence. Positive = bullish momentum. Negative = bearish. A MACD crossover (line crossing signal line upward) is an early entry signal.</span></div>
-      <div class="score-row"><span class="sc-label">ADX (14)</span><span class="sc-pts" style="color:#60a5fa;font-size:11px">Trend strength</span><span class="sc-desc">Average Directional Index. Below 20 = no trend (choppy). 20–25 = developing. 25–40 = strong trend. Above 40 = very strong, but watch for exhaustion near 50+.</span></div>
-      <div class="score-row"><span class="sc-label">ATR (14)</span><span class="sc-pts" style="color:#9ca3af;font-size:11px">Volatility</span><span class="sc-desc">Average True Range. Daily dollar range the stock typically moves. Use for stop placement: a 1.5× ATR stop below your entry gives the trade room to breathe without being stopped out on noise.</span></div>
-      <div class="score-row"><span class="sc-label">RS Rating</span><span class="sc-pts" style="color:#22c55e;font-size:11px">Rank</span><span class="sc-desc">Relative Strength vs. the S&P 500 over the past 12 months, scored 1–99. 80+ = top 20% of stocks. O'Neil required RS ≥ 80 before any CAN SLIM buy. Leaders lead — laggards lag.</span></div>
+    <div class="mcard">
+      <div class="mcard-title" style="color:#a78bfa">ADX (14) — Trend Strength</div>
+      <div class="mcard-body">ADX measures how strong the current trend is, regardless of direction. DI+ measures upward directional pressure; DI– measures downward pressure.<br/><br/>
+        <div class="mbullet"><span class="dot" style="background:#22c55e"></span><span><b>ADX ≥ 40</b> — Very strong trend</span></div>
+        <div class="mbullet"><span class="dot" style="background:#f59e0b"></span><span><b>ADX 25–40</b> — Strong trend in progress</span></div>
+        <div class="mbullet"><span class="dot" style="background:#6b7280"></span><span><b>ADX &lt; 20</b> — Trendless / choppy</span></div>
+        DI+ crossing above DI– with ADX rising = trend initiation signal. ADX ≥ 25 with DI+ > DI– = confirmed bull trend.
+      </div>
     </div>
-  </details>
-
-  <!-- 7. PATTERNS -->
-  <details>
-    <summary><span style="font-size:16px">🔍</span> Active patterns — what to look for</summary>
-    <div class="mbox">
-      <div class="score-row"><span class="sc-label" style="color:#60a5fa">Pocket Pivot</span><span class="sc-pts" style="color:#9ca3af;font-size:11px">Bullish</span><span class="sc-desc">Volume on an up-day exceeds the highest volume of any down-day over the prior 10 sessions. Signals institutional accumulation — funds are quietly loading shares before a breakout.</span></div>
-      <div class="score-row"><span class="sc-label" style="color:#ef4444">Lower High</span><span class="sc-pts" style="color:#9ca3af;font-size:11px">Bearish</span><span class="sc-desc">Each rally peak is lower than the previous one — distribution in progress. Combined with falling volume on up-days = institutions selling into strength. Warning signal.</span></div>
-      <div class="score-row"><span class="sc-label" style="color:#22c55e">Gap Support</span><span class="sc-pts" style="color:#9ca3af;font-size:11px">Bullish</span><span class="sc-desc">A gap-up day (open above prior day's high) on heavy volume creates a support zone at the gap area. Stocks often retest the gap and hold — a high-quality re-entry point.</span></div>
-      <div class="score-row"><span class="sc-label" style="color:#22c55e">Golden Cross</span><span class="sc-pts" style="color:#9ca3af;font-size:11px">Bullish</span><span class="sc-desc">50 SMA crosses above 200 SMA. Long-term institutional signal that the trend has shifted from bearish to bullish. Often precedes significant multi-month advances.</span></div>
-      <div class="score-row"><span class="sc-label" style="color:#ef4444">Death Cross</span><span class="sc-pts" style="color:#9ca3af;font-size:11px">Bearish</span><span class="sc-desc">50 SMA crosses below 200 SMA. Confirms a long-term trend reversal to the downside. Avoid long exposure until a Golden Cross recurs.</span></div>
+    <div class="mcard">
+      <div class="mcard-title" style="color:#34d399">ATR (14) — Average True Range</div>
+      <div class="mcard-body">Measures average daily price range over 14 periods. The fundamental tool for position sizing and stop placement.<br/><br/>
+        <b>Stop placement:</b> Initial stops are typically set at 1.5–2.0× ATR below the entry. This keeps you outside normal noise while limiting catastrophic loss.<br/><br/>
+        <b>Position sizing:</b> Risk $ per trade ÷ (ATR × 1.5) = share size. Never risk more than 1–2% of portfolio on a single ATR stop.
+      </div>
     </div>
-  </details>
-
-  <!-- 8. NEWS -->
-  <details>
-    <summary><span style="font-size:16px">📰</span> News sentiment — how scores work</summary>
-    <div class="mbox">
-      <p>Each headline is scored from <strong style="color:#ef4444">-1.0 (fully bearish)</strong> to <strong style="color:#22c55e">+1.0 (fully bullish)</strong> using keyword analysis against curated bullish and bearish word lists. The score is the ratio of bullish vs. bearish keyword hits.</p>
-      <div class="score-row"><span class="sc-label">+0.50 to +1.0</span><span class="pill pg" style="font-size:10px">Bullish</span><span class="sc-desc">Strong positive language — upgrade, surge, beat, record, growth, breakout, buy, strong, momentum, partnership.</span></div>
-      <div class="score-row"><span class="sc-label">-0.10 to +0.49</span><span class="pill pgr" style="font-size:10px">Neutral</span><span class="sc-desc">Mixed or no strong sentiment keywords. Factual reporting without directional bias. Treated as noise.</span></div>
-      <div class="score-row"><span class="sc-label">-1.0 to -0.11</span><span class="pill pr" style="font-size:10px">Bearish</span><span class="sc-desc">Negative language — downgrade, miss, decline, warning, risk, sell, weak, lawsuit, investigation, loss, cut.</span></div>
-      <p style="margin-top:12px">The overall news signal (✅ Confirming / ⚠️ Mixed / ❌ Conflicting) is based on the ratio of bullish to bearish headlines. Sources: Yahoo Finance and Finviz, pulled fresh on every report.</p>
-      <div class="tip-box"><strong>Important:</strong> News sentiment is a <em>confirmation tool</em>, not a primary signal. A great technical setup with confirming news is stronger than either alone. Contradicting news on a strong chart is a yellow flag — not necessarily a reason to avoid, but worth monitoring.</div>
+    <div class="mcard">
+      <div class="mcard-title" style="color:#f87171">RS Rating — Relative Strength</div>
+      <div class="mcard-body">Ranks price performance relative to the 52-week range (0–99 scale). This is not the same as RSI — it measures where the stock sits in its annual range.<br/><br/>
+        <div class="mbullet"><span class="dot" style="background:#22c55e"></span><span><b>80–99</b> — Sector leader — buy zone</span></div>
+        <div class="mbullet"><span class="dot" style="background:#f59e0b"></span><span><b>60–79</b> — Neutral — monitor</span></div>
+        <div class="mbullet"><span class="dot" style="background:#ef4444"></span><span><b>0–59</b> — Laggard — avoid longs</span></div>
+        IBD research shows the best breakout stocks have RS ≥ 85 <em>before</em> the breakout. Low RS on a breakout = likely false move.
+      </div>
     </div>
-  </details>
-
-  <!-- 9. HOW TO READ -->
-  <details>
-    <summary><span style="font-size:16px">📖</span> How to read your report — step by step</summary>
-    <div class="mbox">
-      <div class="guide-step"><div class="gs-num">1</div><div><div class="gs-title">Check TicStage first</div><div class="gs-desc">If Stage 4 — stop. Capital preservation. No long setup exists regardless of score. If Stage 2 — continue to step 2.</div></div></div>
-      <div class="guide-step"><div class="gs-num">2</div><div><div class="gs-title">Check TicScore</div><div class="gs-desc">70+ = high conviction. 50–69 = acceptable. Under 50 = wait for fundamentals to improve. Score 70+ in Stage 2A is the sweet spot.</div></div></div>
-      <div class="guide-step"><div class="gs-num">3</div><div><div class="gs-title">Check RS Rating</div><div class="gs-desc">RS ≥ 80 confirms the stock is outperforming the market. Leaders lead. If RS is below 60, the stock is a laggard — avoid even with a good TicScore.</div></div></div>
-      <div class="guide-step"><div class="gs-num">4</div><div><div class="gs-title">Read the TIC Signal</div><div class="gs-desc">The summary box at the top of the report gives you the key thesis — what the data says about where the stock stands and what level to watch.</div></div></div>
-      <div class="guide-step"><div class="gs-num">5</div><div><div class="gs-title">Identify your entry zone</div><div class="gs-desc">Look at the S/R chart. The nearest Strong or Very Strong support zone below current price is your entry area. ATR tells you how much stop room you need.</div></div></div>
-      <div class="guide-step"><div class="gs-num">6</div><div><div class="gs-title">Confirm with news</div><div class="gs-desc">✅ Confirming news on a Stage 2 / TicScore 70+ setup = highest conviction. ❌ Conflicting news = monitor but reduce position size until news resolves.</div></div></div>
-      <div class="guide-step"><div class="gs-num">7</div><div><div class="gs-title">Set your stop and target</div><div class="gs-desc">Stop = just below the support zone low. Target = nearest resistance zone. Risk/reward should be at least 2:1 before entering any position.</div></div></div>
-      <div class="tip-box" style="margin-top:10px"><strong>The ideal setup:</strong> Stage 2A · TicScore 70+ · RS ≥ 80 · Full PowerStack aligned · Pocket Pivot active · News confirming · Price near Strong support zone. Not every report will have all seven — the more that align, the higher your conviction.</div>
+    <div class="mcard">
+      <div class="mcard-title" style="color:#60a5fa">Moving Average Crosses</div>
+      <div class="mcard-body">
+        <b style="color:#22c55e">Golden Cross:</b> 50 SMA rises above 200 SMA. Signals that medium-term momentum has overtaken the long-term trend. Institutional algorithms trigger long signals on this event.<br/><br/>
+        <b style="color:#ef4444">Death Cross:</b> 50 SMA falls below 200 SMA. The macro structure is bearish. Even good news can fail to hold gains in a death cross environment. Wait for recapture before going long.
+      </div>
     </div>
-  </details>
+  </div>
 
-  <div style="margin-top:18px;font-size:12px;color:#374151;text-align:center;line-height:1.8">
-    TIC Research · Educational platform only · Not financial advice · Data sourced from Yahoo Finance & Finviz<br/>
-    Methodology based on William O'Neil's CAN SLIM® and Stan Weinstein's Stage Analysis frameworks.
+  <!-- ── PATTERN RECOGNITION ── -->
+  <div class="mh"><div class="mh-icon" style="background:#0c1a2e"><svg width="14" height="14" fill="none" stroke="#60a5fa" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="mh-title" style="color:#60a5fa">Pattern Recognition — What the System Detects</div></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
+    <div class="mcard">
+      <div class="mcard-title" style="color:#22c55e">Pocket Pivot</div>
+      <div class="mcard-body">Developed by Chris Kacher &amp; Gil Morales. A Pocket Pivot occurs when today's volume on an up-day exceeds the highest volume of any down-day in the prior 10 sessions.<br/><br/>This signals institutional accumulation happening <em>quietly</em> — before a formal breakout. Pocket Pivots near the 10-day or 50-day MA are the highest-quality entries. Often precedes a 10–20% move.</div>
+    </div>
+    <div class="mcard">
+      <div class="mcard-title" style="color:#ef4444">Lower High Pattern</div>
+      <div class="mcard-body">Three consecutive swing highs where each peak is lower than the last. Classic distribution structure — sellers are more aggressive than buyers at each rally attempt.<br/><br/>When a Lower High pattern coincides with declining volume on bounces and ADX flattening, it's a warning that the uptrend is exhausted. The correct play is to tighten stops or reduce exposure.</div>
+    </div>
+    <div class="mcard">
+      <div class="mcard-title" style="color:#f59e0b">Gap Support Zones</div>
+      <div class="mcard-body">An upward price gap (today's low &gt; yesterday's high by 0.5%+) creates a zone of air between prior resistance and new support. These gaps often act as magnets when price pulls back.<br/><br/>Gap zones are structural support floors — institutions who bought the gap rarely let price fall back through it without defending. A gap fill that holds is a high-probability long re-entry.</div>
+    </div>
+    <div class="mcard">
+      <div class="mcard-title" style="color:#a78bfa">Support &amp; Resistance Levels</div>
+      <div class="mcard-body">Computed from recent swing highs (resistance) and swing lows (support) using the 5-bar lookback. These are the price levels where supply and demand have historically reversed.<br/><br/>A close above resistance on above-average volume = breakout confirmation. A close below support with volume = breakdown. Price that oscillates at a level for 3+ sessions before breaking tends to see stronger follow-through.</div>
+    </div>
+    <div class="mcard">
+      <div class="mcard-title" style="color:#34d399">Sector Rotation Logic</div>
+      <div class="mcard-body">Capital doesn't disappear — it rotates between sectors based on the economic cycle. When Technology lags, Industrials or Energy may be leading. The SPY Sector Rotation section shows you which names within the sector have the most institutional momentum right now.<br/><br/>Trade toward the leaders, away from the laggers. If the subject ticker ranks in the bottom half of its sector, consider whether a higher-RS peer offers a better risk/reward entry in the same thesis.</div>
+    </div>
+    <div class="mcard">
+      <div class="mcard-title" style="color:#9ca3af">News Confirmation Logic</div>
+      <div class="mcard-body">Headlines are scored bullish/bearish/neutral via keyword pattern matching across two independent sources (Yahoo Finance, Finviz). The aggregate signal confirms or contradicts what the chart is saying.<br/><br/>
+        <b style="color:#22c55e">Confirming:</b> ≥60% bullish headlines. <b style="color:#ef4444">Contradicting:</b> ≥60% bearish. <b style="color:#f59e0b">Mixed:</b> Split sentiment. Always verify headlines manually — the system flags direction, not magnitude.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHART TOOLS ── -->
+  <div class="mh"><div class="mh-icon" style="background:#1c0040"><svg width="14" height="14" fill="none" stroke="#a78bfa" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><div class="mh-title" style="color:#a78bfa">Chart Tools — How to Use the Price Chart</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+    <div class="mcard">
+      <div class="mcard-title" style="color:#a78bfa">Multi-Timeframe Analysis</div>
+      <div class="mcard-body">Use the Daily / Weekly / Monthly tabs to assess trend at each timeframe. The rule: <b>trade in the direction of the longer timeframe, enter on the shorter.</b><br/><br/>
+        <div class="mbullet"><span class="dot" style="background:#60a5fa"></span><span><b>Monthly:</b> Is this a Stage 2 macro uptrend? Where is the 150 SMA trend?</span></div>
+        <div class="mbullet"><span class="dot" style="background:#22c55e"></span><span><b>Weekly:</b> Is price above the 10-week (50 SMA) and 30-week (150 SMA)? Where are key bases?</span></div>
+        <div class="mbullet"><span class="dot" style="background:#f59e0b"></span><span><b>Daily:</b> Is there a Pocket Pivot, volume surge, or pullback to the 9 EMA for a low-risk entry?</span></div>
+        All three aligned bullish = highest-conviction trade environment.
+      </div>
+    </div>
+    <div class="mcard">
+      <div class="mcard-title" style="color:#f59e0b">MA Overlay Interpretation</div>
+      <div class="mcard-body">Toggle each moving average on/off to reduce visual noise. Key rules:<br/><br/>
+        <div class="mbullet"><span class="dot" style="background:#f59e0b"></span><span><b style="color:#f59e0b">9 EMA (amber):</b> Momentum line. In a strong trend, price bounces off the 9 EMA repeatedly. Break and close below = momentum loss.</span></div>
+        <div class="mbullet"><span class="dot" style="background:#a78bfa"></span><span><b style="color:#a78bfa">21 EMA (purple):</b> Short-term institutional support. Pullbacks to 21 EMA in Stage 2 are buy opportunities.</span></div>
+        <div class="mbullet"><span class="dot" style="background:#34d399"></span><span><b style="color:#34d399">50 SMA (green):</b> Medium-term trend line. The most widely watched by Wall Street. High-volume 50 SMA breaks are serious warning signals.</span></div>
+        <div class="mbullet"><span class="dot" style="background:#f87171"></span><span><b style="color:#f87171">150 SMA (red):</b> The Stage Analysis line. Rising = Stage 2. Flat/falling = Stage 1 or 3/4.</span></div>
+        <div class="mbullet"><span class="dot" style="background:#60a5fa"></span><span><b style="color:#60a5fa">200 SMA (blue):</b> Long-term anchor. Golden Cross / Death Cross triggers occur here.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SPY SECTORS ── -->
+  <div class="mh"><div class="mh-icon" style="background:#0c1a2e"><svg width="14" height="14" fill="none" stroke="#3b82f6" viewBox="0 0 24 24" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><div class="mh-title" style="color:#3b82f6">SPY Sector Rotation — Leading vs Lagging</div></div>
+  <div class="mcard" style="margin-bottom:10px">
+    <div class="mcard-body">The SPY Sector Rotation panel ranks all 11 S&P 500 sectors by their RS performance vs SPY over 4-week, 13-week, and 26-week windows. This tells you <b>where institutional money is flowing</b> in real time.<br/><br/>
+      <div class="mbullet"><span class="dot" style="background:#22c55e"></span><span><b>Leading (green):</b> Sector is outperforming SPY. Stocks in leading sectors have institutional tailwind — they tend to go up even when SPY is flat.</span></div>
+      <div class="mbullet"><span class="dot" style="background:#ef4444"></span><span><b>Lagging (red):</b> Sector is underperforming SPY. Even strong stocks in lagging sectors fight headwinds — the sector itself is seeing outflows.</span></div>
+      <div class="mbullet"><span class="dot" style="background:#3b82f6"></span><span><b>Your ticker's sector (blue):</b> Always highlighted so you can see instantly whether you're trading with or against the institutional rotation tide.</span></div>
+      Use 4W for short-term momentum trades. Use 26W to understand the macro rotation cycle and avoid sectors in structural outflow.
+    </div>
+  </div>
+
+  <div style="margin-top:20px;padding:14px 18px;background:#0a0a0a;border:1px solid #1f2937;border-radius:8px;font-size:12px;color:#374151;text-align:center;line-height:1.9">
+    TIC Research · CAN SLIM + Stage Analysis · AI Thesis · Data via Schwab API · Not financial advice
   </div>
 </div>
 
