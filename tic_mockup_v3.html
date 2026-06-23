@@ -1378,49 +1378,62 @@ function calcMACDVal(closes) {
 function generateBullBear(ticker, price, stageInfo, score, sup, res, met, earns, mas, daily) {
   var bullLines=[], bearLines=[];
   var supPrice = sup&&sup.lo ? sup.lo : null;
-  var resPrice = res&&res.hi ? res.hi : null;
+  var resPrice = res&&res.lo ? res.lo : null; // use lo so target is the start of the zone, not the end
   var ma150 = mas&&mas.sma150 ? mas.sma150[mas.sma150.length-1] : null;
   var ma50  = mas&&mas.sma50  ? mas.sma50[mas.sma50.length-1]  : null;
+  var closes = daily.map(function(d){return d.close;});
+  // Compute 52W high/low from the raw 60-bar window (best available)
+  var highs60 = daily.map(function(d){return d.high;}), lows60 = daily.map(function(d){return d.low;});
+  var h52 = Math.max.apply(null, highs60), l52 = Math.min.apply(null, lows60);
+  var rsi = calcRSI(closes, 14);
 
-  // Bull cases
-  if(stageInfo.stage==='Stage 2'){
-    bullLines.push('▲ '+stageInfo.stage+' confirmed — price above rising 150 SMA, optimal institutional accumulation zone.');
+  // ── BULL CASES ──
+  if(stageInfo.stage==='Stage 2A'||stageInfo.stage==='Stage 2B'){
+    bullLines.push('▲ '+stageInfo.stage+' confirmed — price above rising 150 SMA ($'+(ma150?ma150.toFixed(2):'—')+'), optimal institutional accumulation zone.');
   }
-  if(resPrice&&price<resPrice){
-    var upside = (((resPrice-price)/price)*100).toFixed(1);
-    bullLines.push('▲ Breakout above $'+resPrice.toFixed(2)+' with volume confirmation targets +'+upside+'% move — next resistance zone unlocked.');
+  // Upside target: use resistance if meaningful (>2%), otherwise 52W high
+  var upsideTarget = resPrice && ((resPrice-price)/price)>0.02 ? resPrice : h52;
+  var upsideLabel  = resPrice && ((resPrice-price)/price)>0.02 ? 'resistance zone' : '52W high';
+  if(upsideTarget > price){
+    var upside = (((upsideTarget-price)/price)*100).toFixed(1);
+    bullLines.push('▲ Next major target $'+upsideTarget.toFixed(2)+' ('+upsideLabel+') — +'+upside+'% potential from current price.');
   }
   if(ma50&&ma150&&ma50>ma150){
-    bullLines.push('▲ Golden Cross active (50 SMA above 150 SMA) — institutional tailwind confirmed across all timeframes.');
+    bullLines.push('▲ Golden Cross active (50 SMA above 150 SMA) — institutional tailwind across all timeframes confirms uptrend structure.');
   }
-  if(score.G>=30){
-    var e0=earns[0], e4=earns[4];
-    if(e0&&e4&&e4.actual&&e0.actual){ var yoy=(((e0.actual-e4.actual)/Math.abs(e4.actual))*100).toFixed(0); bullLines.push('▲ EPS up +'+yoy+'% YoY — CAN SLIM earnings acceleration validates institutional demand.'); }
+  if(score.G>=25){
+    var e0=earns[0], eComp=earns[4]||earns[3];
+    if(e0&&eComp&&eComp.actual&&e0.actual&&eComp.actual!==0){
+      var yoy=(((e0.actual-eComp.actual)/Math.abs(eComp.actual))*100).toFixed(0);
+      bullLines.push('▲ EPS '+(yoy>=0?'up +':'')+yoy+'% '+(earns[4]?'YoY':'vs 3Q ago')+' ($'+e0.actual.toFixed(2)+') — earnings acceleration validates institutional demand.');
+    }
   }
-  if(score.total>=70) bullLines.push('▲ TicScore '+score.total+'/100 — High Conviction. CAN SLIM criteria strongly met across growth, volume, and analyst sentiment.');
+  if(score.total>=70) bullLines.push('▲ TicScore '+score.total+'/100 — High Conviction. CAN SLIM criteria met: strong earnings growth, volume confirmation, and analyst support.');
+  if(rsi&&rsi<45) bullLines.push('▲ RSI at '+rsi+' — oversold territory creates low-risk entry opportunity before next momentum leg.');
 
-  // Bear cases
-  var rsi=calcRSI(daily.map(function(d){return d.close;}), 14);
-  if(rsi&&rsi>65) bearLines.push('▼ RSI at '+rsi+' — approaching overbought territory; extended run raises mean-reversion risk near resistance.');
-  if(resPrice&&price<resPrice){
-    bearLines.push('▼ Resistance at $'+resPrice.toFixed(2)+' remains untested — failure to break with volume could trigger short-term reversal.');
+  // ── BEAR CASES ──
+  if(rsi&&rsi>70) bearLines.push('▼ RSI at '+rsi+' — overbought; extended run raises mean-reversion risk, wait for pullback to moving averages.');
+  if(h52&&((h52-price)/price)<0.05) bearLines.push('▼ Price within 5% of 52-week high ($'+h52.toFixed(2)+') — breakout attempts at 52W highs frequently fail on first test.');
+  if(res&&resPrice){
+    bearLines.push('▼ Resistance cluster at $'+res.hi.toFixed(2)+' — failure to reclaim with volume could trigger short-term reversal back to support.');
   }
   if(supPrice){
     var drawdown=(((price-supPrice)/price)*100).toFixed(1);
     bearLines.push('▼ Break below $'+supPrice.toFixed(2)+' support invalidates setup — opens path to next zone, -'+Math.abs(drawdown)+'% drawdown scenario.');
   }
   if(stageInfo.stage==='Stage 3'||stageInfo.stage==='Stage 4'){
-    bearLines.push('▼ '+stageInfo.stage+' — '+stageInfo.desc+'. Capital at elevated risk until re-base and Stage 2 reclaim.');
+    bearLines.push('▼ '+stageInfo.stage+' — '+stageInfo.desc+'. Capital at elevated risk until stock re-bases and reclaims Stage 2.');
   }
-  if(met&&met.beta&&met.beta>1.5) bearLines.push('▼ Beta '+met.beta.toFixed(2)+' — high sensitivity to broad market drawdowns; position size accordingly.');
+  if(met&&met.beta&&met.beta>1.5) bearLines.push('▼ Beta '+met.beta.toFixed(2)+' — high volatility amplifies broad market drawdowns; size position accordingly.');
+  if(score.V<8) bearLines.push('▼ Volume score below threshold (V:'+score.V+'/20) — institutional accumulation not confirmed; watch for volume expansion on breakout.');
 
-  if(bullLines.length===0) bullLines.push('▲ Run analysis for this ticker to generate bull case from live data.');
-  if(bearLines.length===0) bearLines.push('▼ Run analysis for this ticker to generate bear case from live data.');
+  if(bullLines.length===0) bullLines.push('▲ Stage and trend analysis will appear here after analysis completes.');
+  if(bearLines.length===0) bearLines.push('▼ Risk factors will appear here after analysis completes.');
 
   var bullEl=document.getElementById('r-bull-case');
   var bearEl=document.getElementById('r-bear-case');
-  if(bullEl) bullEl.innerHTML=bullLines.map(function(l){return '<div class="bb-item" style="color:#86efac">'+l+'</div>';}).join('');
-  if(bearEl) bearEl.innerHTML=bearLines.map(function(l){return '<div class="bb-item" style="color:#fca5a5">'+l+'</div>';}).join('');
+  if(bullEl) bullEl.innerHTML=bullLines.map(function(l){return '<div class="bb-item" style="color:#86efac;margin-bottom:6px">'+l+'</div>';}).join('');
+  if(bearEl) bearEl.innerHTML=bearLines.map(function(l){return '<div class="bb-item" style="color:#fca5a5;margin-bottom:6px">'+l+'</div>';}).join('');
 }
 
 function updatePowerStack(price, allMAs) {
@@ -1502,14 +1515,19 @@ function updateEarningsStats(earns) {
   function setEl(id,val){ var e=document.getElementById(id); if(e) e.textContent=val; }
   function setCls(id,cls){ var e=document.getElementById(id); if(e) e.className=cls; }
   if(!earns||earns.length<2) return;
-  // YoY EPS growth (compare most recent vs same quarter 1yr ago)
-  var e0=earns[0], e4=earns.length>4?earns[4]:null;
-  if(e0&&e0.actual!=null&&e4&&e4.actual!=null&&e4.actual!==0){
-    var yoy=(((e0.actual-e4.actual)/Math.abs(e4.actual))*100).toFixed(0);
+  // YoY EPS growth — compare latest vs same quarter 1yr ago (earns[4]), fall back to earns[3]
+  var e0=earns[0];
+  var eComp=earns[4]||earns[3]||null;
+  var compLabel=earns[4]?'YoY':'vs 3Q ago';
+  if(e0&&e0.actual!=null&&eComp&&eComp.actual!=null&&eComp.actual!==0){
+    var yoy=(((e0.actual-eComp.actual)/Math.abs(eComp.actual))*100).toFixed(0);
     var yoyStr=(yoy>=0?'+':'')+yoy+'%';
     setEl('r-eps-growth',yoyStr);
     setCls('r-eps-growth','mc-val '+(yoy>=0?'green':'red'));
-    setEl('r-eps-growth-sub',(e0.period||'Latest')+' vs '+(e4.period||'Prior yr'));
+    setEl('r-eps-growth-sub',(e0.period||'Latest')+' · '+compLabel);
+  } else if(e0&&e0.actual!=null){
+    setEl('r-eps-growth','$'+e0.actual.toFixed(2)+' EPS');
+    setEl('r-eps-growth-sub',(e0.period||'Latest')+' (1 yr data N/A)');
   }
   // EPS Surprise % (latest quarter actual vs estimate)
   var e0=earns[0];
@@ -1842,11 +1860,20 @@ function goAnalyze(ticker) {
     if(el('r-rs')) el('r-rs').textContent=rs;
     if(el('r-rs-l')) el('r-rs-l').textContent=rs>=80?'Leader · Stack Aligned ✓':rs>=50?'Neutral · Partial Stack':'Laggard · Stack Unaligned ✗';
     // Find nearest support BELOW price and nearest resistance ABOVE price
+    // Require at least 1% gap so micro-zones don't produce meaningless "0.1% upside" bull cases
     var allZones=newTF.daily.sr;
-    var zonesBelow=allZones.filter(function(z){return z.hi<price;}).sort(function(a,b){return b.hi-a.hi;});
-    var zonesAbove=allZones.filter(function(z){return z.lo>price;}).sort(function(a,b){return a.lo-b.lo;});
+    var zonesBelow=allZones.filter(function(z){return z.hi<price*0.99;}).sort(function(a,b){return b.hi-a.hi;});
+    var zonesAbove=allZones.filter(function(z){return z.lo>price*1.01;}).sort(function(a,b){return a.lo-b.lo;});
     var sup=zonesBelow[0]||null;
     var resZ=zonesAbove[0]||null;
+    // If still no support found, widen search to 200-bar window and use pivot lows
+    if(!sup){
+      var wideWin=newTF.daily.allCloses;
+      var floorEst=Math.min.apply(null,newTF.daily.allCloses.slice(-40));
+      var recentLows=newTF.daily.raw.map(function(d){return d.low;});
+      var floorLow=Math.min.apply(null,recentLows)*1.005;
+      if(floorLow<price*0.99) sup={lo:+floorLow.toFixed(2),hi:+(floorLow*1.01).toFixed(2),type:'sup',lbl:'SUP $'+floorLow.toFixed(2)+' · Recent Low'};
+    }
 
     // S/R level cards
     if(el('r-sup-val')) el('r-sup-val').textContent=sup?'$'+sup.lo.toFixed(2):'—';
