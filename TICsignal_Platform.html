@@ -214,7 +214,7 @@ input:focus,select:focus{border-color:#3b82f6}
     <input type="text" placeholder="Search any ticker — NVDA, TSLA, AAPL..." id="global-search" onkeydown="if(event.key==='Enter'){goAnalyze(this.value)}"/>
   </div>
   <button class="btn btn-blue" onclick="nav('alerts');toast('Alert builder opened')">+ New Alert</button>
-  <button class="btn" onclick="nav('pdf');toast('Opening PDF report...')">Export PDF</button>
+  <button class="btn" onclick="nav('pdf');setTimeout(()=>{var nd=document.getElementById('pdf-no-data');if(nd&&nd.style.display!=='none'){toast('Run an analysis first, then export PDF.');}else{window.print();}},200)">Export PDF</button>
 </div>
 
 <div class="app">
@@ -629,7 +629,7 @@ input:focus,select:focus{border-color:#3b82f6}
     <div style="margin-top:14px;display:flex;gap:10px">
       <button class="btn btn-blue" onclick="nav('watchlist');toast('NVDA added to watchlist!')">+ Add to Watchlist</button>
       <button class="btn" onclick="nav('alerts');toast('Alert created for NVDA!')">Set Alert</button>
-      <button class="btn" onclick="nav('pdf');toast('Generating PDF...')">Export PDF</button>
+      <button class="btn" onclick="nav('pdf');setTimeout(()=>{var nd=document.getElementById('pdf-no-data');if(nd&&nd.style.display!=='none'){toast('Run an analysis first, then export PDF.');}else{window.print();}},200)">Export PDF</button>
     </div>
   </div>
 </div>
