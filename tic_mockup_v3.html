@@ -1515,22 +1515,27 @@ function goAnalyze(ticker) {
   }
 
   xget(FH_BASE+'/quote?symbol='+T+'&token='+K, function(e,d){done('quote',e,d);});
-  xget(FH_BASE+'/stock/candle?symbol='+T+'&resolution=D&from='+from+'&to='+now+'&token='+K, function(e,d){done('candle',e,d);});
   xget(FH_BASE+'/stock/profile2?symbol='+T+'&token='+K, function(e,d){done('profile',e,d);});
   xget(FH_BASE+'/stock/metric?symbol='+T+'&metric=all&token='+K, function(e,d){done('metrics',e,d);});
   xget(FH_BASE+'/stock/earnings?symbol='+T+'&token='+K, function(e,d){done('earnings',e,d);});
+  // Yahoo Finance via CORS proxy for historical OHLCV (Finnhub candles require paid plan)
+  var yhUrl='https://corsproxy.io/?'+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?range=2y&interval=1d');
+  xget(yhUrl, function(e,d){done('candle',e,d);});
 
   function processAll(){
-    var candles=res.candle;
-    if(!candles||candles.s!=='ok'||!candles.t||candles.t.length===0){
-      var errMsg=errs.length?errs[0]:'No data — check ticker or API key';
+    var yhData=res.candle;
+    var yhResult=yhData&&yhData.chart&&yhData.chart.result&&yhData.chart.result[0];
+    if(!yhResult||!yhResult.timestamp||yhResult.timestamp.length===0){
+      var errMsg=errs.length?errs[0]:'No price data — check ticker symbol';
       setStatus('Error: '+errMsg); toast(errMsg); return;
     }
 
-    // Build daily array (newest first)
+    // Build daily array (newest first) from Yahoo Finance response
     var daily=[];
-    for(var i=candles.t.length-1;i>=0;i--){
-      daily.push({date:new Date(candles.t[i]*1000).toISOString().slice(0,10),open:candles.o[i],high:candles.h[i],low:candles.l[i],close:candles.c[i],vol:candles.v[i]});
+    var ts=yhResult.timestamp, q=yhResult.indicators.quote[0];
+    for(var i=ts.length-1;i>=0;i--){
+      if(q.close[i]==null) continue;
+      daily.push({date:new Date(ts[i]*1000).toISOString().slice(0,10),open:q.open[i]||q.close[i],high:q.high[i]||q.close[i],low:q.low[i]||q.close[i],close:q.close[i],vol:q.volume[i]||0});
     }
 
     var newTF=buildTFDataFromCandles(daily);
