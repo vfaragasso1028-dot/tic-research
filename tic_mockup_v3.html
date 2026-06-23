@@ -374,43 +374,15 @@ input:focus,select:focus{border-color:#3b82f6}
     <div class="section">TIC Signal</div>
     <div style="background:#0b1320;border:1px solid #1e3a5f;border-radius:10px;padding:16px 20px;font-size:14px;line-height:1.8;color:#cbd5e1" id="r-signal">Enter a ticker above and click Run Analysis → to generate a live TIC Signal.</div>
 
-    <!-- CHART V3 — Full TA -->
-    <div class="section">Price Chart — Technical Analysis</div>
-    <div class="card" style="padding:14px 16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-        <div style="display:flex;gap:5px" id="tf-tabs">
-          <button class="ctab active" onclick="switchTF(this,'daily')">Daily</button>
-          <button class="ctab" onclick="switchTF(this,'weekly')">Weekly</button>
-          <button class="ctab" onclick="switchTF(this,'monthly')">Monthly</button>
+    <!-- CHART — TradingView Widget -->
+    <div class="section">Price Chart — TradingView</div>
+    <div class="card" style="padding:0;overflow:hidden;border-radius:10px">
+      <div id="tv-widget-container" style="height:500px;width:100%">
+        <div id="tv-placeholder" style="height:500px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#6b7280">
+          <div style="font-size:32px">📈</div>
+          <div style="font-size:14px;font-weight:600">Enter a ticker and click Run Analysis</div>
+          <div style="font-size:12px">Full TradingView chart will load here</div>
         </div>
-        <div style="display:flex;gap:5px">
-          <button class="ctab active" id="ct-line" onclick="switchChartType('line')">Line</button>
-          <button class="ctab" id="ct-candle" onclick="switchChartType('candle')">Candlestick</button>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
-        <span style="font-size:10px;color:#4b5563;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Overlays:</span>
-        <button class="ma-toggle active" data-ma="ema9" onclick="toggleMA(this,'ema9')" style="border-color:#f59e0b;color:#f59e0b;background:rgba(245,158,11,.15)">9 EMA</button>
-        <button class="ma-toggle active" data-ma="ema21" onclick="toggleMA(this,'ema21')" style="border-color:#a78bfa;color:#a78bfa;background:rgba(167,139,250,.15)">21 EMA</button>
-        <button class="ma-toggle active" data-ma="sma50" onclick="toggleMA(this,'sma50')" style="border-color:#34d399;color:#34d399;background:rgba(52,211,153,.15)">50 SMA</button>
-        <button class="ma-toggle active" data-ma="sma150" onclick="toggleMA(this,'sma150')" style="border-color:#f87171;color:#f87171;background:rgba(248,113,113,.15)">150 SMA</button>
-        <button class="ma-toggle active" data-ma="sma200" onclick="toggleMA(this,'sma200')" style="border-color:#60a5fa;color:#60a5fa;background:rgba(96,165,250,.15)">200 SMA</button>
-        <button class="ma-toggle" data-ma="vol" onclick="toggleMA(this,'vol')" style="border-color:#6b7280;color:#6b7280">Vol Bars</button>
-      </div>
-      <div style="position:relative;height:260px;width:100%">
-        <canvas id="priceChart" role="img" aria-label="NVDA price chart with MA overlays"></canvas>
-      </div>
-      <div style="position:relative;height:60px;width:100%;margin-top:3px" id="vol-panel">
-        <canvas id="volChart" role="img" aria-label="Volume bars"></canvas>
-      </div>
-      <div class="chart-legend" style="margin-top:10px;flex-wrap:wrap;gap:8px">
-        <div class="cl-item"><span style="width:20px;height:2px;background:#f59e0b;display:inline-block;vertical-align:middle"></span> 9 EMA</div>
-        <div class="cl-item"><span style="width:20px;height:2px;background:#a78bfa;display:inline-block;vertical-align:middle"></span> 21 EMA</div>
-        <div class="cl-item"><span style="width:20px;height:2px;background:#34d399;display:inline-block;vertical-align:middle"></span> 50 SMA</div>
-        <div class="cl-item"><span style="width:20px;height:2px;background:#f87171;display:inline-block;vertical-align:middle"></span> 150 SMA</div>
-        <div class="cl-item"><span style="width:20px;height:2px;background:#60a5fa;display:inline-block;vertical-align:middle"></span> 200 SMA</div>
-        <div class="cl-item"><span style="width:16px;height:8px;background:rgba(239,68,68,0.25);border-radius:2px;display:inline-block"></span> Resistance</div>
-        <div class="cl-item"><span style="width:16px;height:8px;background:rgba(34,197,94,0.2);border-radius:2px;display:inline-block"></span> Support</div>
       </div>
     </div>
 
@@ -1855,10 +1827,7 @@ function goAnalyze(ticker) {
     updatePeerTable(ticker,peerRows.map(function(p){return {t:p.ticker,co:p.company,score:p.score,stage:p.stage,rs:p.rs,eps:p.eps,sales:p.sales};}));
 
     currentTF='daily';
-    document.querySelectorAll('#tf-tabs .ctab').forEach(function(b,i){b.classList.toggle('active',i===0);});
-    if(priceChart){priceChart.destroy();priceChart=null;}
-    if(volChart){volChart.destroy();volChart=null;}
-    setTimeout(function(){buildChart();},100);
+    loadTVWidget(ticker);
 
     buildEpsChartReal(earns);
     buildRevChart();
@@ -1965,6 +1934,44 @@ function getMaDatasets(tf){
     pointRadius:0,fill:false,tension:0.3,
     hidden:false
   }));
+}
+
+function loadTVWidget(symbol) {
+  var container = document.getElementById('tv-widget-container');
+  if (!container) return;
+  container.innerHTML = '';
+  var div = document.createElement('div');
+  div.id = 'tradingview_chart';
+  div.style.height = '500px';
+  container.appendChild(div);
+  var script = document.createElement('script');
+  script.src = 'https://s3.tradingview.com/tv.js';
+  script.onload = function() {
+    new TradingView.widget({
+      autosize: true,
+      symbol: symbol,
+      interval: 'D',
+      timezone: 'America/New_York',
+      theme: 'dark',
+      style: '1',
+      locale: 'en',
+      toolbar_bg: '#131722',
+      enable_publishing: false,
+      hide_top_toolbar: false,
+      hide_legend: false,
+      save_image: true,
+      container_id: 'tradingview_chart',
+      studies: [
+        'MASimple@tv-scriptstd;length=50',
+        'MASimple@tv-scriptstd;length=150',
+        'MASimple@tv-scriptstd;length=200',
+        'MAExp@tv-scriptstd;length=9',
+        'MAExp@tv-scriptstd;length=21',
+        'Volume@tv-scriptstd'
+      ]
+    });
+  };
+  document.head.appendChild(script);
 }
 
 function buildChart(){
@@ -2340,7 +2347,7 @@ function switchSpyTF(btn,tf){
   buildSpySectors(tf);
 }
 
-setTimeout(()=>{buildChart();buildEpsChart();buildRevChart();buildPeerChart();buildSpySectors('4w');buildDashSpySectors('4w');buildDashScanPreview();initDashboardGreeting();runPreset(document.querySelector('#scan-presets .fc'),'stage2leaders');initWatchlist();},400);
+setTimeout(()=>{buildEpsChart();buildRevChart();buildPeerChart();buildSpySectors('4w');buildDashSpySectors('4w');buildDashScanPreview();initDashboardGreeting();runPreset(document.querySelector('#scan-presets .fc'),'stage2leaders');initWatchlist();},400);
 
 var SCANNER_DB = [
   // ── MEGA CAP TECH ──
