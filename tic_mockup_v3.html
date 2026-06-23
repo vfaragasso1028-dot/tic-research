@@ -297,6 +297,7 @@ input:focus,select:focus{border-color:#3b82f6}
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
     <div class="section" style="margin:0">SPY Sector Rotation</div>
     <div style="display:flex;gap:6px" id="dash-spy-tf">
+      <button class="ctab" onclick="switchDashSpyTF(this,'1d')" style="font-size:11px;padding:4px 10px">1D</button>
       <button class="ctab active" onclick="switchDashSpyTF(this,'4w')" style="font-size:11px;padding:4px 10px">4W</button>
       <button class="ctab" onclick="switchDashSpyTF(this,'13w')" style="font-size:11px;padding:4px 10px">13W</button>
       <button class="ctab" onclick="switchDashSpyTF(this,'26w')" style="font-size:11px;padding:4px 10px">26W</button>
@@ -499,10 +500,10 @@ input:focus,select:focus{border-color:#3b82f6}
     <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
       <table class="t">
         <thead><tr><th>Ticker</th><th>Company</th><th>Price</th><th>TicScore</th><th>Stage</th><th>RS</th><th>EPS Growth</th><th>Rev Growth</th><th>Mkt Cap</th><th>vs Group</th></tr></thead>
-        <tbody>
-          <tr style="background:#0c1a2e"><td style="font-weight:800;color:#60a5fa;font-size:14px">NVDA ★</td><td style="color:#9ca3af">Nvidia</td><td style="font-weight:700">$134.21</td><td class="green" style="font-weight:800">82</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:800">91</td><td class="green">+168%</td><td class="green">+69%</td><td class="muted">$3.29T</td><td><span class="pill pg">Leader</span></td></tr>
-          <tr><td style="font-weight:800;color:#f9fafb">AVGO</td><td class="muted">Broadcom</td><td style="font-weight:600">$248.80</td><td class="green" style="font-weight:700">74</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:700">82</td><td class="green">+44%</td><td class="green">+51%</td><td class="muted">$1.16T</td><td><span class="pill pg">Strong</span></td></tr>
-          <tr><td style="font-weight:800;color:#f9fafb">AMD</td><td class="muted">Adv. Micro Devices</td><td style="font-weight:600">$168.40</td><td class="yellow" style="font-weight:700">61</td><td><span class="pill pg">S2B</span></td><td class="yellow" style="font-weight:700">68</td><td class="yellow">+18%</td><td class="yellow">+36%</td><td class="muted">$272B</td><td><span class="pill py">Neutral</span></td></tr>
+        <tbody id="peer-tbody">
+          <tr style="background:#0c1a2e"><td style="font-weight:800;color:#60a5fa;font-size:14px" id="peer-t1">—</td><td style="color:#9ca3af" id="peer-c1">—</td><td style="font-weight:700" id="peer-p1">—</td><td class="green" style="font-weight:800" id="peer-s1">—</td><td id="peer-st1">—</td><td class="green" style="font-weight:800" id="peer-rs1">—</td><td class="green" id="peer-eps1">—</td><td class="green" id="peer-rev1">—</td><td class="muted" id="peer-mc1">—</td><td><span class="pill pg">Leader</span></td></tr>
+          <tr><td style="font-weight:800;color:#f9fafb" id="peer-t2">—</td><td class="muted" id="peer-c2">—</td><td style="font-weight:600" id="peer-p2">—</td><td class="green" style="font-weight:700" id="peer-s2">—</td><td id="peer-st2">—</td><td class="green" style="font-weight:700" id="peer-rs2">—</td><td class="green" id="peer-eps2">—</td><td class="green" id="peer-rev2">—</td><td class="muted" id="peer-mc2">—</td><td><span class="pill pg">Strong</span></td></tr>
+          <tr><td style="font-weight:800;color:#f9fafb" id="peer-t3">—</td><td class="muted" id="peer-c3">—</td><td style="font-weight:600" id="peer-p3">—</td><td class="yellow" style="font-weight:700" id="peer-s3">—</td><td id="peer-st3">—</td><td class="yellow" style="font-weight:700" id="peer-rs3">—</td><td class="yellow" id="peer-eps3">—</td><td class="yellow" id="peer-rev3">—</td><td class="muted" id="peer-mc3">—</td><td><span class="pill py">Neutral</span></td></tr>
           <tr><td style="font-weight:800;color:#f9fafb">QCOM</td><td class="muted">Qualcomm</td><td style="font-weight:600">$178.20</td><td class="yellow" style="font-weight:700">55</td><td><span class="pill py">S3A</span></td><td class="yellow" style="font-weight:700">58</td><td class="yellow">+12%</td><td class="yellow">+17%</td><td class="muted">$198B</td><td><span class="pill py">Weak</span></td></tr>
           <tr><td style="font-weight:800;color:#f9fafb">INTC</td><td class="muted">Intel</td><td style="font-weight:600">$22.10</td><td class="red" style="font-weight:700">18</td><td><span class="pill pr">S4A</span></td><td class="red" style="font-weight:700">12</td><td class="red">-42%</td><td class="red">-8%</td><td class="muted">$93B</td><td><span class="pill pr">Avoid</span></td></tr>
         </tbody>
@@ -584,6 +585,7 @@ input:focus,select:focus{border-color:#3b82f6}
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
         <div style="font-size:11px;color:#6b7280">RS performance vs SPY over the last <strong style="color:#d1d5db">4 weeks · 13 weeks · 26 weeks</strong>. Green = outperforming · Red = underperforming.</div>
         <div style="display:flex;gap:5px" id="spy-tf-tabs">
+          <button class="ctab" onclick="switchSpyTF(this,'1d')">1D</button>
           <button class="ctab active" onclick="switchSpyTF(this,'4w')">4W</button>
           <button class="ctab" onclick="switchSpyTF(this,'13w')">13W</button>
           <button class="ctab" onclick="switchSpyTF(this,'26w')">26W</button>
@@ -640,67 +642,18 @@ input:focus,select:focus{border-color:#3b82f6}
   </div>
 
   <div class="card" style="margin-bottom:14px;padding:16px 18px">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:12px">Universe</div>
-    <div class="filter-bar">
-      <button class="fc active" onclick="setFilter(this)">S&amp;P 500 (503)</button>
-      <button class="fc" onclick="setFilter(this)">Nasdaq 100</button>
-      <button class="fc" onclick="setFilter(this)">Russell 2000</button>
-      <button class="fc" onclick="setFilter(this)">My Watchlist</button>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:12px">Quick Scan Presets</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px" id="scan-presets">
+      <button class="fc active" onclick="runPreset(this,'stage2leaders')">⭐ Stage 2 Leaders</button>
+      <button class="fc" onclick="runPreset(this,'highconviction')">🔥 High Conviction ≥70</button>
+      <button class="fc" onclick="runPreset(this,'rs90')">🚀 RS ≥ 90</button>
+      <button class="fc" onclick="runPreset(this,'pocketpivot')">📌 Pocket Pivots</button>
+      <button class="fc" onclick="runPreset(this,'goldencross')">✨ Golden Cross</button>
+      <button class="fc" onclick="runPreset(this,'eps')">📈 EPS + Sales Growth</button>
+      <button class="fc" onclick="runPreset(this,'stage1')">⏳ Stage 1 Basing</button>
+      <button class="fc" onclick="runPreset(this,'avoid')">⚠️ Stage 3/4 Avoid</button>
+      <button class="fc" onclick="runPreset(this,'all')">All Stocks</button>
     </div>
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Stage</div>
-    <div class="filter-bar">
-      <button class="fc active" onclick="setFilter(this)">Stage 2 Only</button>
-      <button class="fc" onclick="setFilter(this)">All Stages</button>
-      <button class="fc" onclick="setFilter(this)">Stage 1 (Basing)</button>
-    </div>
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">TicScore</div>
-    <div class="filter-bar">
-      <button class="fc" onclick="setFilter(this)">Any</button>
-      <button class="fc active" onclick="setFilter(this)">≥ 50 Pass</button>
-      <button class="fc" onclick="setFilter(this)">≥ 70 High Conviction</button>
-    </div>
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Moving Average Filters</div>
-    <div class="filter-bar">
-      <button class="fc active" onclick="setFilter(this)">Price > 50 SMA</button>
-      <button class="fc active" onclick="setFilter(this)">Price > 200 SMA</button>
-      <button class="fc" onclick="setFilter(this)">Price > 150 SMA</button>
-      <button class="fc" onclick="setFilter(this)">50 SMA > 200 SMA</button>
-      <button class="fc" onclick="setFilter(this)">150 SMA Rising</button>
-    </div>
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Price Patterns</div>
-    <div class="filter-bar">
-      <button class="fc active" onclick="setFilter(this)">Golden Cross</button>
-      <button class="fc" onclick="setFilter(this)">Pocket Pivot</button>
-      <button class="fc" onclick="setFilter(this)">Cup &amp; Handle</button>
-      <button class="fc" onclick="setFilter(this)">Flat Base</button>
-      <button class="fc" onclick="setFilter(this)">Double Bottom</button>
-      <button class="fc" onclick="setFilter(this)">Bull Flag</button>
-      <button class="fc" onclick="setFilter(this)">High Tight Flag</button>
-      <button class="fc" onclick="setFilter(this)">Ascending Triangle</button>
-    </div>
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Relative Strength</div>
-    <div class="filter-bar">
-      <button class="fc active" onclick="setFilter(this)">RS ≥ 80</button>
-      <button class="fc" onclick="setFilter(this)">RS ≥ 90</button>
-      <button class="fc" onclick="setFilter(this)">RS Improving</button>
-      <button class="fc" onclick="setFilter(this)">RS New High</button>
-    </div>
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Fundamental Filters</div>
-    <div class="filter-bar">
-      <button class="fc" onclick="setFilter(this)">EPS Growth > 25%</button>
-      <button class="fc" onclick="setFilter(this)">Sales Growth > 20%</button>
-      <button class="fc" onclick="setFilter(this)">ROE > 17%</button>
-      <button class="fc" onclick="setFilter(this)">Low Debt</button>
-      <button class="fc" onclick="setFilter(this)">Accelerating EPS</button>
-    </div>
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Volume</div>
-    <div class="filter-bar">
-      <button class="fc" onclick="setFilter(this)">Volume Surge 1.5×+</button>
-      <button class="fc" onclick="setFilter(this)">Volume Surge 2×+</button>
-      <button class="fc" onclick="setFilter(this)">Up Day on Heavy Vol</button>
-    </div>
-    <button class="btn btn-blue" style="margin-top:12px" onclick="runScan()">Run Scanner →</button>
-    <button class="btn" style="margin-top:12px;margin-left:8px" onclick="document.getElementById('page-scanner').querySelectorAll('.fc').forEach(function(b){b.classList.remove('active')});document.getElementById('page-scanner').querySelectorAll('.fc:first-child').forEach(function(b){b.classList.add('active')});runScan()">Clear All</button>
   </div>
 
   <div class="result-bar">
@@ -722,31 +675,19 @@ input:focus,select:focus{border-color:#3b82f6}
 <!-- ══ WATCHLIST ══ -->
 <div class="page" id="page-watchlist">
   <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
-    <div style="font-size:18px;font-weight:800;color:#f9fafb">Watchlist <span style="font-size:13px;color:#6b7280;font-weight:400">(6 tickers)</span></div>
+    <div style="font-size:18px;font-weight:800;color:#f9fafb">Watchlist <span style="font-size:13px;color:#6b7280;font-weight:400">(7 tickers)</span></div>
     <button class="btn btn-blue" onclick="toast('Ticker added to watchlist!')">+ Add Ticker</button>
-  </div>
-  <div class="wl-controls">
-    <button class="wl-sort active" onclick="setSortBtn(this)">All</button>
-    <button class="wl-sort" onclick="setSortBtn(this)">Stage 2 Only</button>
-    <button class="wl-sort" onclick="setSortBtn(this)">Alerts On</button>
-    <button class="wl-sort" onclick="setSortBtn(this)">TicScore ≥ 70</button>
-    <button class="wl-sort" onclick="setSortBtn(this)">Sort: RS ↓</button>
   </div>
   <div class="card" style="padding:0;overflow:hidden">
     <table class="t">
-      <thead><tr><th>Ticker</th><th>Company</th><th>Price</th><th>Change</th><th>TicScore</th><th>Stage</th><th>RS</th><th>Support</th><th>Resistance</th><th>Alert</th><th>Action</th></tr></thead>
-      <tbody>
-        <tr onclick="goAnalyze('NVDA')"><td style="font-weight:800;color:#f9fafb;font-size:14px">NVDA</td><td class="muted">Nvidia</td><td style="font-weight:600">$134.21</td><td class="green">▲ +1.78%</td><td class="green" style="font-weight:800">82</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:700">91</td><td class="green">$126.80</td><td class="red">$138.50</td><td><span class="pill pb">Active</span></td><td><span class="blue" style="font-size:12px;cursor:pointer">Analyze →</span></td></tr>
-        <tr onclick="goAnalyze('META')"><td style="font-weight:800;color:#f9fafb;font-size:14px">META</td><td class="muted">Meta Platforms</td><td style="font-weight:600">$622.40</td><td class="green">▲ +2.14%</td><td class="green" style="font-weight:800">76</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:700">84</td><td class="green">$598.00</td><td class="red">$641.00</td><td><span class="pill pb">Active</span></td><td><span class="blue" style="font-size:12px;cursor:pointer">Analyze →</span></td></tr>
-        <tr onclick="goAnalyze('TSLA')"><td style="font-weight:800;color:#f9fafb;font-size:14px">TSLA</td><td class="muted">Tesla</td><td style="font-weight:600">$248.10</td><td class="green">▲ +3.14%</td><td class="yellow" style="font-weight:800">72</td><td><span class="pill pg">S2B</span></td><td class="yellow" style="font-weight:700">74</td><td class="green">$232.00</td><td class="red">$265.00</td><td><span class="pill py">Watch</span></td><td><span class="blue" style="font-size:12px;cursor:pointer">Analyze →</span></td></tr>
-        <tr onclick="goAnalyze('MSFT')"><td style="font-weight:800;color:#f9fafb;font-size:14px">MSFT</td><td class="muted">Microsoft</td><td style="font-weight:600">$458.20</td><td class="red">▼ -0.44%</td><td class="yellow" style="font-weight:800">71</td><td><span class="pill pg">S2B</span></td><td class="yellow" style="font-weight:700">74</td><td class="green">$440.00</td><td class="red">$470.00</td><td><span class="pill pgr">None</span></td><td><span class="blue" style="font-size:12px;cursor:pointer">Analyze →</span></td></tr>
-        <tr onclick="goAnalyze('AMZN')"><td style="font-weight:800;color:#f9fafb;font-size:14px">AMZN</td><td class="muted">Amazon</td><td style="font-weight:600">$261.42</td><td class="red">▼ -0.83%</td><td class="red" style="font-weight:800">25</td><td><span class="pill pr">S4A</span></td><td class="red" style="font-weight:700">50</td><td class="green">$259.34</td><td class="red">$274.00</td><td><span class="pill pb">Active</span></td><td><span class="blue" style="font-size:12px;cursor:pointer">Analyze →</span></td></tr>
-        <tr onclick="goAnalyze('AAPL')"><td style="font-weight:800;color:#f9fafb;font-size:14px">AAPL</td><td class="muted">Apple</td><td style="font-weight:600">$211.30</td><td class="green">▲ +0.44%</td><td class="yellow" style="font-weight:800">58</td><td><span class="pill py">S3A</span></td><td class="yellow" style="font-weight:700">62</td><td class="green">$200.00</td><td class="red">$224.00</td><td><span class="pill pgr">None</span></td><td><span class="blue" style="font-size:12px;cursor:pointer">Analyze →</span></td></tr>
+      <thead><tr><th>Ticker</th><th>Company</th><th>Price</th><th>Change</th><th>TicScore</th><th>Stage</th><th>RS</th><th>Support</th><th>Action</th></tr></thead>
+      <tbody id="wl-tbody">
+        <tr><td colspan="9" style="text-align:center;color:#6b7280;padding:20px">Loading live prices…</td></tr>
       </tbody>
     </table>
   </div>
   <div style="margin-top:10px;font-size:11px;color:#6b7280;background:#0f0f0f;border:1px solid #1f2937;border-radius:6px;padding:10px 14px">
-    💡 Watchlist auto-refreshes at market close (4pm ET daily). Click any row to run a full analysis. Color-coded by stage — green = Stage 2, yellow = Stage 1/3, red = Stage 4.
+    Live prices via Finnhub · Click any row to run full analysis · Color = Stage (green=S2, yellow=S1/S3, red=S4)
   </div>
 </div>
 
@@ -796,83 +737,65 @@ input:focus,select:focus{border-color:#3b82f6}
 <!-- ══ PDF ══ -->
 <div class="page" id="page-pdf">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-    <div style="font-size:18px;font-weight:800;color:#f9fafb">PDF Report — NVDA</div>
-    <button class="btn btn-blue" onclick="toast('PDF downloaded — NVDA_TIC_Report_Jun19.pdf')">⬇ Download PDF</button>
+    <div style="font-size:18px;font-weight:800;color:#f9fafb" id="pdf-title">PDF Report</div>
+    <button class="btn btn-blue" onclick="window.print()">⬇ Print / Save PDF</button>
   </div>
-  <div style="background:#1a1a1a;border-radius:12px;padding:20px">
+  <div id="pdf-no-data" style="text-align:center;padding:60px 20px;color:#6b7280">
+    <div style="font-size:40px;margin-bottom:12px">📄</div>
+    <div style="font-size:16px;font-weight:700;color:#f9fafb;margin-bottom:8px">No analysis run yet</div>
+    <div style="font-size:13px;margin-bottom:20px">Go to Analyze, run a ticker, then come back here to export the PDF.</div>
+    <button class="btn btn-blue" onclick="nav('analyze')">Go to Analyzer →</button>
+  </div>
+  <div style="background:#1a1a1a;border-radius:12px;padding:20px;display:none" id="pdf-content">
     <div class="pdf-page">
       <div class="pdf-brand">TIC RESEARCH</div>
-      <div class="pdf-h1">NVDA</div>
-      <div class="pdf-co">Nvidia Corporation · Technology · Semiconductors</div>
-      <div class="pdf-price-row"><span class="pdf-pr">$134.21</span><span class="pdf-chg">▲ +$2.34 (+1.78%)</span></div>
+      <div class="pdf-h1" id="pdf-ticker">—</div>
+      <div class="pdf-co" id="pdf-co">—</div>
+      <div class="pdf-price-row"><span class="pdf-pr" id="pdf-price">—</span><span class="pdf-chg" id="pdf-chg"></span></div>
       <hr class="pdf-divider"/>
       <div class="pdf-g2">
         <div>
           <div class="pdf-sec">TicScore &amp; Stage</div>
-          <div class="pdf-kv"><span>TicScore</span><span style="color:#16a34a">82 / 100 ✓ Pass</span></div>
-          <div class="pdf-kv"><span>Growth (G)</span><span>40 pts</span></div>
-          <div class="pdf-kv"><span>Volume (V)</span><span>20 pts</span></div>
-          <div class="pdf-kv"><span>Quality (Q)</span><span>14 pts</span></div>
-          <div class="pdf-kv"><span>Sponsorship (S)</span><span>8 pts</span></div>
-          <div class="pdf-kv"><span>TicStage</span><span style="color:#16a34a">Stage 2A — Advancing</span></div>
-          <div class="pdf-kv"><span>RS Rating</span><span style="color:#16a34a">91 — Leader</span></div>
-          <div class="pdf-kv"><span>Cross Type</span><span style="color:#16a34a">Golden Cross ✓</span></div>
-          <div class="pdf-kv"><span>PowerStack</span><span style="color:#16a34a">Fully Aligned ✓</span></div>
+          <div class="pdf-kv"><span>TicScore</span><span id="pdf-score">—</span></div>
+          <div class="pdf-kv"><span>Growth (G)</span><span id="pdf-g">—</span></div>
+          <div class="pdf-kv"><span>Volume (V)</span><span id="pdf-v">—</span></div>
+          <div class="pdf-kv"><span>Quality (Q)</span><span id="pdf-q">—</span></div>
+          <div class="pdf-kv"><span>Sponsorship (S)</span><span id="pdf-s">—</span></div>
+          <div class="pdf-kv"><span>TicStage</span><span id="pdf-stage">—</span></div>
+          <div class="pdf-kv"><span>RS Rating</span><span id="pdf-rs">—</span></div>
           <div class="pdf-sec">Key Levels</div>
-          <div class="pdf-kv"><span>Support Zone</span><span>$126.80 – $128.50</span></div>
-          <div class="pdf-kv"><span>Resistance Zone</span><span>$138.50 – $140.00</span></div>
-          <div class="pdf-kv"><span>52-Week High</span><span>$153.13</span></div>
-          <div class="pdf-kv"><span>52-Week Low</span><span>$86.41</span></div>
-          <div class="pdf-kv"><span>Analyst Target</span><span>$160.00</span></div>
+          <div class="pdf-kv"><span>Support Zone</span><span id="pdf-sup">—</span></div>
+          <div class="pdf-kv"><span>Resistance Zone</span><span id="pdf-res">—</span></div>
+          <div class="pdf-kv"><span>52-Week High</span><span id="pdf-52h">—</span></div>
+          <div class="pdf-kv"><span>52-Week Low</span><span id="pdf-52l">—</span></div>
         </div>
         <div>
-          <div class="pdf-sec">PowerStack</div>
-          <div class="pdf-kv"><span>9 EMA</span><span>$131.44</span></div>
-          <div class="pdf-kv"><span>21 EMA</span><span>$128.90</span></div>
-          <div class="pdf-kv"><span>50 SMA</span><span>$122.18</span></div>
-          <div class="pdf-kv"><span>150 SMA</span><span>$108.44</span></div>
-          <div class="pdf-kv"><span>200 SMA</span><span>$101.20</span></div>
+          <div class="pdf-sec">PowerStack MAs</div>
+          <div class="pdf-kv"><span>9 EMA</span><span id="pdf-ema9">—</span></div>
+          <div class="pdf-kv"><span>21 EMA</span><span id="pdf-ema21">—</span></div>
+          <div class="pdf-kv"><span>50 SMA</span><span id="pdf-sma50">—</span></div>
+          <div class="pdf-kv"><span>150 SMA</span><span id="pdf-sma150">—</span></div>
+          <div class="pdf-kv"><span>200 SMA</span><span id="pdf-sma200">—</span></div>
           <div class="pdf-sec">Indicators</div>
-          <div class="pdf-kv"><span>RSI (14)</span><span style="color:#d97706">61.2 — Elevated</span></div>
-          <div class="pdf-kv"><span>MACD</span><span style="color:#16a34a">+2.14 — Bullish</span></div>
-          <div class="pdf-kv"><span>ADX (14)</span><span>38.4 — Strong</span></div>
-          <div class="pdf-kv"><span>ATR (14)</span><span>$4.82 (3.6%)</span></div>
-          <div class="pdf-kv"><span>Volume</span><span>312M (1.4× avg)</span></div>
-          <div class="pdf-sec">News Sentiment</div>
-          <div class="pdf-kv"><span>Signal</span><span style="color:#16a34a">✅ Confirming</span></div>
-          <div class="pdf-kv"><span>Bullish</span><span>4 headlines</span></div>
-          <div class="pdf-kv"><span>Bearish</span><span>1 headline</span></div>
-          <div class="pdf-kv"><span>Neutral</span><span>5 headlines</span></div>
+          <div class="pdf-kv"><span>RSI (14)</span><span id="pdf-rsi">—</span></div>
+          <div class="pdf-kv"><span>MACD</span><span id="pdf-macd">—</span></div>
+          <div class="pdf-kv"><span>ADX (14)</span><span id="pdf-adx">—</span></div>
+          <div class="pdf-kv"><span>ATR (14)</span><span id="pdf-atr">—</span></div>
+          <div class="pdf-kv"><span>Volume</span><span id="pdf-vol">—</span></div>
         </div>
       </div>
-      <!-- MINI CHART -->
-      <div class="pdf-sec">Price Chart — S/R Zones (60-day Daily)</div>
-      <svg viewBox="0 0 680 110" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;background:#fafafa;margin-bottom:10px">
-        <rect x="0" y="4" width="680" height="18" fill="rgba(239,68,68,0.12)"/>
-        <text x="4" y="16" font-size="8" fill="#dc2626" font-family="Inter,sans-serif" font-weight="600">RES $138.50–$140.00 · Strong</text>
-        <rect x="0" y="68" width="680" height="16" fill="rgba(34,197,94,0.12)"/>
-        <text x="4" y="79" font-size="8" fill="#16a34a" font-family="Inter,sans-serif" font-weight="600">SUP $126.80–$128.50 · Very Strong</text>
-        <rect x="0" y="88" width="680" height="12" fill="rgba(34,197,94,0.06)"/>
-        <text x="4" y="97" font-size="8" fill="#16a34a" font-family="Inter,sans-serif">SUP $118.00–$119.50 · Moderate</text>
-        <polyline points="0,102 20,98 40,92 60,86 80,80 100,74 120,70 140,66 160,60 180,54 200,48 220,54 240,46 260,40 280,34 300,38 320,30 340,24 360,18 380,26 400,20 420,14 440,22 460,16 480,10 500,18 520,12 540,8 560,16 580,10 600,14 620,10 640,8 660,10 680,8" fill="none" stroke="#2563eb" stroke-width="2"/>
-        <line x1="0" y1="8" x2="680" y2="8" stroke="#2563eb" stroke-width="1" stroke-dasharray="4,3" opacity=".5"/>
-        <text x="620" y="6" font-size="8" fill="#1d4ed8" font-weight="700" font-family="Inter,sans-serif">$134.21</text>
-      </svg>
-
       <div class="pdf-sec">TIC Signal</div>
-      <div class="pdf-signal-box">Pocket Pivot active — volume confirms institutional accumulation. Golden Cross (50 SMA above 200 SMA) supports bullish macro structure. Stage 2A — optimal long exposure on pullback to $126.80 support zone. Confirmed breakout above $138.50 targets $153.13 52-week high.</div>
-
-      <!-- ENTRY SETUP CARD -->
+      <div class="pdf-signal-box" id="pdf-signal">Run analysis to generate TIC Signal.</div>
       <div class="pdf-sec">Entry Setup</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px">
         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 10px">
           <div style="font-size:9px;color:#16a34a;font-weight:700;text-transform:uppercase;margin-bottom:3px">Entry Zone</div>
-          <div style="font-size:14px;font-weight:800;color:#14532d">$126.80</div>
-          <div style="font-size:9px;color:#16a34a">–$128.50</div>
+          <div style="font-size:14px;font-weight:800;color:#14532d" id="pdf-entry">—</div>
+          <div style="font-size:9px;color:#16a34a">Support level</div>
         </div>
         <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 10px">
           <div style="font-size:9px;color:#dc2626;font-weight:700;text-transform:uppercase;margin-bottom:3px">Stop Loss</div>
-          <div style="font-size:14px;font-weight:800;color:#7f1d1d">$119.60</div>
+          <div style="font-size:14px;font-weight:800;color:#7f1d1d" id="pdf-stop">—</div>
           <div style="font-size:9px;color:#dc2626">1.5× ATR below sup.</div>
         </div>
         <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 10px">
@@ -933,11 +856,10 @@ input:focus,select:focus{border-color:#3b82f6}
 
       <div class="pdf-footer" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
         <div>
-          TIC Research · Generated June 19, 2026 at 4:12pm ET<br/>
-          For educational purposes only. Not financial advice. Powered by Schwab API · Real-time data.<br/>
-          S/R zones from swing high/low clustering with ATR padding. Position sizing assumes 1.5× ATR stop.
+          TIC Research · Generated <span id="pdf-date">—</span><br/>
+          For educational purposes only. Not financial advice. Live data via Finnhub + Yahoo Finance.<br/>
+          S/R zones from swing high/low clustering. Position sizing assumes 1.5× ATR stop.
         </div>
-        <div style="flex-shrink:0;width:56px;height:56px;background:#e5e7eb;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#6b7280;text-align:center;line-height:1.3">QR<br/>Live<br/>Report</div>
       </div>
     </div>
   </div>
@@ -1914,6 +1836,23 @@ function goAnalyze(ticker) {
     // Bull / Bear cases
     generateBullBear(ticker, price, stageInfo, score, sup, resZ, met, earns, newTF.daily.allMAs, newTF.daily.raw);
 
+    // Populate PDF with live data
+    var rsiVal=calcRSI(newTF.daily.allCloses,14);
+    var macdVal=calcMACD(newTF.daily.allCloses);
+    var adxVal=parseInt((el('r-adx2')||{}).textContent)||null;
+    var atrVal=parseFloat((el('r-atr')||{}).textContent)||null;
+    var sigTxt=(el('r-signal')||{}).textContent||'';
+    var bdParts=score;
+    var hist252=daily.slice(0,Math.min(daily.length,252));
+    var h52=Math.max.apply(null,hist252.map(function(d){return d.high;}));
+    var l52=Math.min.apply(null,hist252.map(function(d){return d.low;}));
+    populatePDF(ticker,coName,price,chg,chgPct,score,score,stageInfo,rs,sup,resZ,h52,l52,newTF.daily.allMAs,rsiVal,macdVal,adxVal,atrVal,sigTxt);
+
+    // Fill peer table with semi peers from SCANNER_DB
+    var semiPeers=['NVDA','AVGO','AMD'];
+    var peerRows=semiPeers.map(function(t){return SCANNER_DB.find(function(s){return s.ticker===t;})||{t:t,co:t,score:0,stage:'—',rs:0,eps:false,sales:false};});
+    updatePeerTable(ticker,peerRows.map(function(p){return {t:p.ticker,co:p.company,score:p.score,stage:p.stage,rs:p.rs,eps:p.eps,sales:p.sales};}));
+
     currentTF='daily';
     document.querySelectorAll('#tf-tabs .ctab').forEach(function(b,i){b.classList.toggle('active',i===0);});
     if(priceChart){priceChart.destroy();priceChart=null;}
@@ -2209,6 +2148,19 @@ function buildPeerChart(){
 
 // ── SPY SECTOR ROTATION ──
 const spyData = {
+  '1d':[
+    {sector:'Technology',   etf:'XLK', rs:+1.8, rank:1, yours:true},
+    {sector:'Comm. Services',etf:'XLC', rs:+1.2, rank:2, yours:false},
+    {sector:'Financials',   etf:'XLF', rs:+0.9, rank:3, yours:false},
+    {sector:'Industrials',  etf:'XLI', rs:+0.6, rank:4, yours:false},
+    {sector:'Healthcare',   etf:'XLV', rs:+0.4, rank:5, yours:false},
+    {sector:'Materials',    etf:'XLB', rs:+0.1, rank:6, yours:false},
+    {sector:'Consumer Disc.',etf:'XLY', rs:-0.2, rank:7, yours:false},
+    {sector:'Consumer Stap.',etf:'XLP', rs:-0.4, rank:8, yours:false},
+    {sector:'Real Estate',  etf:'XLRE',rs:-0.6, rank:9, yours:false},
+    {sector:'Energy',       etf:'XLE', rs:-0.9, rank:10,yours:false},
+    {sector:'Utilities',    etf:'XLU', rs:-1.4, rank:11,yours:false},
+  ],
   '4w':[
     {sector:'Energy',etf:'XLE',rs:+6.8,rank:1,yours:false},
     {sector:'Technology',etf:'XLK',rs:+5.2,rank:2,yours:true},
@@ -2265,7 +2217,7 @@ function buildSpySectors(tf){
     const border=isYours?'#1e3a5f':isPos?`rgba(34,197,94,${0.3+intensity*0.4})`:`rgba(239,68,68,${0.3+intensity*0.4})`;
     const rsColor=isPos?'#22c55e':'#ef4444';
     const rankColor=isYours?'#60a5fa':isPos?'#22c55e':'#ef4444';
-    grid.innerHTML+=`<div style="background:${bg};border:1px solid ${border};border-radius:8px;padding:10px 12px;${isYours?'border-left:3px solid #3b82f6;':isPos?'':''}">
+    grid.innerHTML+=`<div style="background:${bg};border:1px solid ${border};border-radius:8px;padding:10px 12px;${isYours?'border-left:3px solid #3b82f6;':isPos?'':''}cursor:pointer" onclick="sectorToScanner('${s.sector}')" title="Scan ${s.sector} stocks">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <span style="font-size:10px;font-weight:700;color:#9ca3af">${s.etf}</span>
         <span style="font-size:10px;color:${rankColor};font-weight:700">#${s.rank}</span>
@@ -2325,7 +2277,7 @@ function buildDashSpySectors(tf){
     var bg=isPos?'rgba(34,197,94,'+(0.06+intensity*0.14)+')':'rgba(239,68,68,'+(0.06+intensity*0.14)+')';
     var border=isPos?'rgba(34,197,94,'+(0.25+intensity*0.4)+')':'rgba(239,68,68,'+(0.25+intensity*0.4)+')';
     var rsColor=isPos?'#22c55e':'#ef4444';
-    grid.innerHTML+='<div style="background:'+bg+';border:1px solid '+border+';border-radius:8px;padding:9px 11px">'
+    grid.innerHTML+='<div style="background:'+bg+';border:1px solid '+border+';border-radius:8px;padding:9px 11px;cursor:pointer" onclick="sectorToScanner(\''+s.sector+'\')" title="Click to scan '+s.sector+' stocks">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">'
       +'<span style="font-size:10px;font-weight:700;color:#9ca3af">'+s.etf+'</span>'
       +'<span style="font-size:10px;color:'+(isPos?'#22c55e':'#ef4444')+';font-weight:700">#'+s.rank+'</span>'
@@ -2333,6 +2285,7 @@ function buildDashSpySectors(tf){
       +'<div style="font-size:11px;font-weight:700;color:#d1d5db;margin-bottom:3px">'+s.sector+'</div>'
       +'<div style="font-size:15px;font-weight:800;color:'+rsColor+'">'+(isPos?'+':'')+s.rs.toFixed(1)+'%</div>'
       +'<div style="height:2px;border-radius:2px;background:'+border+';margin-top:5px;width:'+Math.min(Math.abs(s.rs)/20*100,100)+'%"></div>'
+      +'<div style="font-size:9px;color:#4b5563;margin-top:3px">tap to scan →</div>'
       +'</div>';
   });
 }
@@ -2386,7 +2339,7 @@ function switchSpyTF(btn,tf){
   buildSpySectors(tf);
 }
 
-setTimeout(()=>{buildChart();buildEpsChart();buildRevChart();buildPeerChart();buildSpySectors('4w');buildDashSpySectors('4w');buildDashScanPreview();initDashboardGreeting();runScan();},400);
+setTimeout(()=>{buildChart();buildEpsChart();buildRevChart();buildPeerChart();buildSpySectors('4w');buildDashSpySectors('4w');buildDashScanPreview();initDashboardGreeting();runPreset(document.querySelector('#scan-presets .fc'),'stage2leaders');initWatchlist();},400);
 
 var SCANNER_DB = [
   // ── MEGA CAP TECH ──
@@ -2568,6 +2521,181 @@ function setFilter(btn) {
   bar.querySelectorAll('.fc').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   runScan();
+}
+
+function runPreset(btn, preset) {
+  document.querySelectorAll('#scan-presets .fc').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  var r;
+  switch(preset){
+    case 'stage2leaders': r=SCANNER_DB.filter(s=>s.stage.startsWith('2')&&s.score>=50).sort((a,b)=>b.rs-a.rs); break;
+    case 'highconviction': r=SCANNER_DB.filter(s=>s.score>=70).sort((a,b)=>b.score-a.score); break;
+    case 'rs90': r=SCANNER_DB.filter(s=>s.rs>=90).sort((a,b)=>b.rs-a.rs); break;
+    case 'pocketpivot': r=SCANNER_DB.filter(s=>s.pattern==='Pocket Pivot').sort((a,b)=>b.rs-a.rs); break;
+    case 'goldencross': r=SCANNER_DB.filter(s=>s.golden&&s.stage.startsWith('2')).sort((a,b)=>b.rs-a.rs); break;
+    case 'eps': r=SCANNER_DB.filter(s=>s.eps&&s.sales).sort((a,b)=>b.rs-a.rs); break;
+    case 'stage1': r=SCANNER_DB.filter(s=>s.stage==='1').sort((a,b)=>b.rs-a.rs); break;
+    case 'avoid': r=SCANNER_DB.filter(s=>s.stage==='4'||s.stage==='3').sort((a,b)=>a.rs-b.rs); break;
+    default: r=[...SCANNER_DB].sort((a,b)=>b.rs-a.rs);
+  }
+  renderScanResults(r);
+}
+
+function renderScanResults(results) {
+  function stagePill(st){var cls=st.startsWith('2')?'pg':st==='1'?'pb':st==='3'?'py':'pr';return '<span class="pill '+cls+'">S'+st+'</span>';}
+  function patPill(p){if(!p||p==='None')return '<span class="pill pgr">None</span>';var cls=(p==='Pocket Pivot')?'pb':(p==='Cup & Handle'||p==='Asc. Triangle')?'py':'pg';return '<span class="pill '+cls+'">'+p+'</span>';}
+  function sc(v){return v>=70?'green':v>=50?'yellow':'red';}
+  var html='';
+  results.slice(0,5).forEach(function(s,i){
+    var golden=s.golden?'<span class="pill pg">Golden</span>':'<span class="pill pgr">No Cross</span>';
+    html+='<tr onclick="goAnalyze(\''+s.ticker+'\')">'
+      +'<td class="blue" style="font-weight:800">'+(i+1)+'</td>'
+      +'<td style="font-weight:800;color:#f9fafb;font-size:14px">'+s.ticker+'</td>'
+      +'<td class="muted">'+s.company+'</td>'
+      +'<td style="font-weight:600">$'+s.price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'
+      +'<td class="'+sc(s.score)+'" style="font-weight:800">'+s.score+'</td>'
+      +'<td>'+stagePill(s.stage)+'</td>'
+      +'<td class="'+sc(s.rs)+'" style="font-weight:800">'+s.rs+'</td>'
+      +'<td>'+golden+'</td>'
+      +'<td>'+patPill(s.pattern)+'</td>'
+      +'<td class="green">$'+s.support.toFixed(2)+'</td>'
+      +'<td><button class="btn btn-blue" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();goAnalyze(\''+s.ticker+'\')">Analyze</button></td>'
+      +'</tr>';
+  });
+  results.slice(5,9).forEach(function(s,i){
+    html+='<tr style="opacity:.3;filter:blur(2.5px);pointer-events:none">'
+      +'<td>'+(6+i)+'</td><td>'+s.ticker+'</td><td>'+s.company+'</td>'
+      +'<td>$'+s.price.toFixed(2)+'</td><td>'+s.score+'</td>'
+      +'<td><span class="pill pg">S'+s.stage+'</span></td>'
+      +'<td>'+s.rs+'</td><td>—</td><td>'+s.pattern+'</td><td>$'+s.support.toFixed(2)+'</td><td>—</td>'
+      +'</tr>';
+  });
+  if(!results.length) html='<tr><td colspan="11" style="text-align:center;color:#6b7280;padding:28px">No results match — try a different preset</td></tr>';
+  var tbody=document.getElementById('scan-tbody');
+  if(tbody) tbody.innerHTML=html;
+  var now=new Date(),h=now.getHours(),m=now.getMinutes(),ampm=h>=12?'pm':'am';
+  h=h%12||12;
+  var ts=h+':'+(m<10?'0':'')+m+ampm+' ET';
+  var rc=document.querySelector('.result-count');
+  if(rc) rc.innerHTML='Showing <strong>'+Math.min(results.length,5)+' of '+results.length+' results</strong> · Last run: today '+ts;
+  toast(results.length+' results found');
+}
+
+// ── WATCHLIST LIVE PRICES ──
+var WL_TICKERS = [
+  {t:'NVDA', co:'Nvidia',      score:82, stage:'2A', rs:91, sup:126.80},
+  {t:'MU',   co:'Micron',      score:66, stage:'2A', rs:72, sup:128.00},
+  {t:'CRWD', co:'CrowdStrike', score:80, stage:'2A', rs:92, sup:398.00},
+  {t:'MSFT', co:'Microsoft',   score:71, stage:'2B', rs:74, sup:440.00},
+  {t:'META', co:'Meta',        score:76, stage:'2A', rs:84, sup:598.00},
+  {t:'TSLA', co:'Tesla',       score:72, stage:'2B', rs:74, sup:232.00},
+  {t:'SNDK', co:'SanDisk',     score:60, stage:'2A', rs:68, sup:0},
+];
+
+function initWatchlist() {
+  var key=getFHKey(); if(!key) return;
+  Promise.all(WL_TICKERS.map(function(w){return fgetQ(FH_BASE+'/quote?symbol='+w.t+'&token='+key);}))
+  .then(function(res){
+    var html='';
+    WL_TICKERS.forEach(function(w,i){
+      var q=res[i]||{};
+      var price=q.c?'$'+q.c.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+      var chg=q.dp!=null?(q.d>=0?'▲ +':'▼ ')+Math.abs(q.dp).toFixed(2)+'%':'—';
+      var chgCls=q.d!=null?(q.d>=0?'green':'red'):'muted';
+      var sCls=w.stage.startsWith('2')?'pg':w.stage==='1'?'pb':w.stage==='3'?'py':'pr';
+      var scoreCls=w.score>=70?'green':w.score>=50?'yellow':'red';
+      var rsCls=w.rs>=80?'green':w.rs>=60?'yellow':'red';
+      html+='<tr onclick="goAnalyze(\''+w.t+'\')">'
+        +'<td style="font-weight:800;color:#f9fafb;font-size:14px">'+w.t+'</td>'
+        +'<td class="muted">'+w.co+'</td>'
+        +'<td style="font-weight:600">'+price+'</td>'
+        +'<td class="'+chgCls+'">'+chg+'</td>'
+        +'<td class="'+scoreCls+'" style="font-weight:800">'+w.score+'</td>'
+        +'<td><span class="pill '+sCls+'">S'+w.stage+'</span></td>'
+        +'<td class="'+rsCls+'" style="font-weight:700">'+w.rs+'</td>'
+        +'<td class="green">'+(w.sup?'$'+w.sup.toFixed(2):'—')+'</td>'
+        +'<td><button class="btn btn-blue" style="font-size:11px;padding:4px 9px" onclick="event.stopPropagation();goAnalyze(\''+w.t+'\')">Analyze →</button></td>'
+        +'</tr>';
+    });
+    var tb=document.getElementById('wl-tbody');
+    if(tb) tb.innerHTML=html;
+  }).catch(function(){});
+}
+
+// ── PEER COMPARISON FILL (called from goAnalyze) ──
+function updatePeerTable(ticker, peers) {
+  // peers = array of {t, co, score, stage, rs, epsG, revG, mc} from SCANNER_DB
+  peers.forEach(function(p,i){
+    var n=i+1;
+    var setT=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+    setT('peer-t'+n, i===0?ticker+' ★':p.t);
+    setT('peer-c'+n, p.co);
+    setT('peer-p'+n, '—'); // price loads live
+    setT('peer-s'+n, p.score);
+    setT('peer-rs'+n, p.rs);
+    setT('peer-eps'+n, p.eps?'+25%+':'—');
+    setT('peer-rev'+n, p.sales?'+20%+':'—');
+    setT('peer-mc'+n, '—');
+    var stEl=document.getElementById('peer-st'+n);
+    if(stEl){var cls=p.stage.startsWith('2')?'pg':p.stage==='1'?'pb':'pr';stEl.innerHTML='<span class="pill '+cls+'">S'+p.stage+'</span>';}
+  });
+}
+
+// ── PDF POPULATE (called from goAnalyze after analysis) ──
+function populatePDF(ticker, coName, price, chg, chgPct, score, bd, stageInfo, rs, sup, resZ, h52, l52, allMAs, rsi, macd, adx, atr, signal) {
+  var nd=document.getElementById('pdf-no-data');
+  var pc=document.getElementById('pdf-content');
+  var pt=document.getElementById('pdf-title');
+  if(nd) nd.style.display='none';
+  if(pc) pc.style.display='block';
+  if(pt) pt.textContent='PDF Report — '+ticker;
+  function s(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+  var isUp=chg>=0;
+  s('pdf-ticker',ticker);
+  s('pdf-co',coName);
+  s('pdf-price','$'+price.toFixed(2));
+  var chgEl=document.getElementById('pdf-chg');
+  if(chgEl){chgEl.textContent=(isUp?'▲ +$':'▼ -$')+Math.abs(chg).toFixed(2)+' ('+(isUp?'+':'-')+Math.abs(chgPct).toFixed(2)+'%)';chgEl.style.color=isUp?'#16a34a':'#dc2626';}
+  s('pdf-score',score.total+' / 100 '+(score.total>=50?'✓ Pass':'✗ Fail'));
+  s('pdf-g',bd.G+' pts'); s('pdf-v',bd.V+' pts'); s('pdf-q',bd.Q+' pts'); s('pdf-s',bd.S+' pts');
+  s('pdf-stage',stageInfo.stage+' — '+stageInfo.desc);
+  s('pdf-rs',rs+' — '+(rs>=80?'Leader':rs>=60?'Neutral':'Laggard'));
+  s('pdf-sup',sup?'$'+sup.lo.toFixed(2)+' – $'+sup.hi.toFixed(2):'N/A');
+  s('pdf-res',resZ?'$'+resZ.lo.toFixed(2)+' – $'+resZ.hi.toFixed(2):'N/A');
+  s('pdf-52h','$'+h52.toFixed(2)); s('pdf-52l','$'+l52.toFixed(2));
+  var n=allMAs.ema9.length-1;
+  function fmtMA(v){return v?'$'+v.toFixed(2):'—';}
+  s('pdf-ema9',fmtMA(allMAs.ema9[n])); s('pdf-ema21',fmtMA(allMAs.ema21[n]));
+  s('pdf-sma50',fmtMA(allMAs.sma50[n])); s('pdf-sma150',fmtMA(allMAs.sma150[n])); s('pdf-sma200',fmtMA(allMAs.sma200[n]));
+  s('pdf-rsi',rsi!=null?rsi.toFixed(1)+' — '+(rsi>70?'Overbought':rsi<30?'Oversold':'Neutral'):'—');
+  s('pdf-macd',macd!=null?(macd>=0?'+':'')+macd.toFixed(2)+' — '+(macd>=0?'Bullish':'Bearish'):'—');
+  s('pdf-adx',adx?adx+' — '+(adx>=40?'Very Strong':adx>=25?'Strong':'Developing'):'—');
+  s('pdf-atr',atr?'$'+atr.toFixed(2):'—');
+  s('pdf-entry',sup?'$'+sup.lo.toFixed(2):'—');
+  s('pdf-stop',sup?'$'+(sup.lo*0.94).toFixed(2):'—');
+  s('pdf-signal',signal||'—');
+  var now=new Date(),months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  s('pdf-date',months[now.getMonth()]+' '+now.getDate()+', '+now.getFullYear()+' at '+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes()+' ET');
+}
+
+// ── SECTOR CLICK → SCANNER ──
+function sectorToScanner(sectorName) {
+  var sectorMap = {
+    'Technology':['NVDA','APP','CRWD','ORCL','NOW','PANW','FTNT','ZS','NET','DDOG','CRM','ADBE','MSFT','GOOGL','META','AAPL','AMZN','AVGO','AMD','AMAT','LRCX','KLAC','MRVL','QCOM','TXN','MU','INTC','SNOW','MDB','TEAM','COIN','PLTR'],
+    'Healthcare':['LLY','VRTX','ISRG','REGN','AMGN','ABBV','UNH','DXCM'],
+    'Financials':['JPM','GS','MS','BLK','AXP','BAC','V','MA','PYPL','SQ'],
+    'Industrials':['AXON','HWM','GEV','GE','CAT','RTX','LMT','HON','DE'],
+    'Energy':['XOM','CVX','COP'],
+    'Consumer Disc.':['TSLA','SHOP','UBER','ABNB','NKE','SBUX','MCD','DECK','HD'],
+    'Consumer Stap.':['WMT','COST'],
+    'Comm. Services':['NFLX','DIS'],
+  };
+  var tickers = sectorMap[sectorName] || [];
+  var results = SCANNER_DB.filter(function(s){return tickers.indexOf(s.ticker)>=0;}).sort(function(a,b){return b.rs-a.rs;});
+  nav('scanner');
+  document.querySelectorAll('#scan-presets .fc').forEach(function(b){b.classList.remove('active');});
+  renderScanResults(results);
+  toast(sectorName+' — '+results.length+' stocks found');
 }
 
 function setSortBtn(btn) {
