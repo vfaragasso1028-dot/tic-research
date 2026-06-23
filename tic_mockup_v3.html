@@ -1838,7 +1838,7 @@ function goAnalyze(ticker) {
 
     // Populate PDF with live data
     var rsiVal=calcRSI(newTF.daily.allCloses,14);
-    var macdVal=calcMACD(newTF.daily.allCloses);
+    var macdVal=calcMACDVal(newTF.daily.allCloses);
     var adxVal=parseInt((el('r-adx2')||{}).textContent)||null;
     var atrVal=parseFloat((el('r-atr')||{}).textContent)||null;
     var sigTxt=(el('r-signal')||{}).textContent||'';
