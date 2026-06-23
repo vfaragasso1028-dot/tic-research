@@ -258,15 +258,15 @@ input:focus,select:focus{border-color:#3b82f6}
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
     <div>
       <div style="font-size:11px;color:#374151;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Good morning, Vince</div>
-      <div style="font-size:20px;font-weight:800;color:#f9fafb">Markets open · June 19, 2026</div>
+      <div style="font-size:20px;font-weight:800;color:#f9fafb" id="dash-date">Markets open · June 22, 2026</div>
     </div>
     <button class="btn btn-blue" onclick="nav('analyze');toast('Opening analyzer...')">Analyze a Ticker →</button>
   </div>
 
   <div class="g4" style="margin-bottom:20px">
-    <div class="metric-card"><div class="mc-label">S&P 500</div><div class="mc-val green">5,841</div><div class="mc-sub green">▲ +0.82% today</div></div>
-    <div class="metric-card"><div class="mc-label">Nasdaq</div><div class="mc-val green">19,204</div><div class="mc-sub green">▲ +1.14% today</div></div>
-    <div class="metric-card"><div class="mc-label">VIX</div><div class="mc-val yellow">14.2</div><div class="mc-sub muted">Low fear — risk on</div></div>
+    <div class="metric-card"><div class="mc-label">S&P 500</div><div class="mc-val green" id="d-spy">—</div><div class="mc-sub green" id="d-spy-chg">Loading…</div></div>
+    <div class="metric-card"><div class="mc-label">Nasdaq</div><div class="mc-val green" id="d-qqq">—</div><div class="mc-sub green" id="d-qqq-chg">Loading…</div></div>
+    <div class="metric-card"><div class="mc-label">VIX</div><div class="mc-val yellow" id="d-vix">—</div><div class="mc-sub muted" id="d-vix-sub">Loading…</div></div>
     <div class="metric-card"><div class="mc-label">Analyses Today</div><div class="mc-val blue">2 / 3</div><div class="mc-sub muted">1 remaining (Free)</div></div>
   </div>
 
@@ -276,11 +276,11 @@ input:focus,select:focus{border-color:#3b82f6}
       <div class="card" style="padding:0;overflow:hidden">
         <div class="quick-ticker" onclick="goAnalyze('NVDA')">
           <div class="qt-sym">NVDA</div><div class="qt-name">Nvidia · <span class="pill pg">S2A</span></div>
-          <div class="qt-price">$134.21</div><div class="qt-chg green">▲ +1.78%</div>
+          <div class="qt-price" id="da-nvda-price">—</div><div class="qt-chg green" id="da-nvda-chg">Loading…</div>
         </div>
-        <div class="quick-ticker" onclick="goAnalyze('AMZN')">
-          <div class="qt-sym">AMZN</div><div class="qt-name">Amazon · <span class="pill pr">S4A</span></div>
-          <div class="qt-price">$261.42</div><div class="qt-chg red">▼ -0.83%</div>
+        <div class="quick-ticker" onclick="goAnalyze('TSLA')">
+          <div class="qt-sym">TSLA</div><div class="qt-name">Tesla · <span class="pill pg">S2A</span></div>
+          <div class="qt-price" id="da-tsla-price">—</div><div class="qt-chg green" id="da-tsla-chg">Loading…</div>
         </div>
         <div class="quick-ticker" onclick="nav('analyze')">
           <div style="width:100%;text-align:center;font-size:12px;color:#374151;padding:4px 0">+ Analyze new ticker (1 free left today)</div>
@@ -291,17 +291,17 @@ input:focus,select:focus{border-color:#3b82f6}
     <div>
       <div class="section">Watchlist Snapshot</div>
       <div class="card" style="padding:0;overflow:hidden">
-        <div class="quick-ticker" onclick="nav('watchlist')">
+        <div class="quick-ticker" onclick="goAnalyze('NVDA')">
           <div class="qt-sym">NVDA</div><div class="qt-name"><span class="pill pg">Stage 2</span></div>
-          <div class="qt-price">$134.21</div><div class="qt-chg green">▲ +1.78%</div>
+          <div class="qt-price" id="dw-nvda-price">—</div><div class="qt-chg" id="dw-nvda-chg">Loading…</div>
         </div>
-        <div class="quick-ticker" onclick="nav('watchlist')">
+        <div class="quick-ticker" onclick="goAnalyze('TSLA')">
           <div class="qt-sym">TSLA</div><div class="qt-name"><span class="pill pg">Stage 2</span></div>
-          <div class="qt-price">$248.10</div><div class="qt-chg green">▲ +3.14%</div>
+          <div class="qt-price" id="dw-tsla-price">—</div><div class="qt-chg" id="dw-tsla-chg">Loading…</div>
         </div>
-        <div class="quick-ticker" onclick="nav('watchlist')">
-          <div class="qt-sym">AMZN</div><div class="qt-name"><span class="pill pr">Stage 4</span></div>
-          <div class="qt-price">$261.42</div><div class="qt-chg red">▼ -0.83%</div>
+        <div class="quick-ticker" onclick="goAnalyze('AMZN')">
+          <div class="qt-sym">AMZN</div><div class="qt-name"><span class="pill pg">Stage 2</span></div>
+          <div class="qt-price" id="dw-amzn-price">—</div><div class="qt-chg" id="dw-amzn-chg">Loading…</div>
         </div>
         <div class="quick-ticker" onclick="nav('watchlist')">
           <div style="width:100%;text-align:center;font-size:12px;color:#374151;padding:4px 0">View full watchlist →</div>
@@ -407,26 +407,22 @@ input:focus,select:focus{border-color:#3b82f6}
       </table>
     </div>
     <div class="g4">
-      <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">Support</div><div class="mc-val">$126.80</div><div class="mc-sub">Swing low floor</div></div>
-      <div class="card" style="border-left:3px solid #ef4444"><div class="mc-label">Resistance</div><div class="mc-val">$138.50</div><div class="mc-sub">Swing high ceiling</div></div>
-      <div class="card"><div class="mc-label">52W High</div><div class="mc-val">$153.13</div><div class="mc-sub red">-12.4% from price</div></div>
-      <div class="card"><div class="mc-label">52W Low</div><div class="mc-val">$86.41</div><div class="mc-sub green">+55.3% from price</div></div>
+      <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">Support</div><div class="mc-val" id="r-sup-val">—</div><div class="mc-sub" id="r-sup-sub">Swing low floor</div></div>
+      <div class="card" style="border-left:3px solid #ef4444"><div class="mc-label">Resistance</div><div class="mc-val" id="r-res-val">—</div><div class="mc-sub" id="r-res-sub">Swing high ceiling</div></div>
+      <div class="card"><div class="mc-label">52W High</div><div class="mc-val" id="r-52h">—</div><div class="mc-sub" id="r-52h-sub">from price</div></div>
+      <div class="card"><div class="mc-label">52W Low</div><div class="mc-val" id="r-52l">—</div><div class="mc-sub" id="r-52l-sub">from price</div></div>
     </div>
 
     <!-- BULL BEAR -->
     <div class="section">Bull / Bear Cases</div>
     <div class="g2">
-      <div class="bull-box">
+      <div class="bull-box" id="r-bull-box">
         <div class="bb-title" style="color:#16a34a">▲ Bull Case</div>
-        <div class="bb-item" style="color:#86efac">▲ Breakout above $138.50 with volume confirms Stage 2 continuation — 14.1% upside to 52W high of $153.13.</div>
-        <div class="bb-item" style="color:#86efac">▲ Golden Cross + Full PowerStack aligned — institutional tailwind confirmed across all timeframes.</div>
-        <div style="color:#86efac;font-size:13px;line-height:1.7">▲ Pocket Pivot active — volume exceeds all down-day highs from prior 10 sessions. Institutional accumulation in progress.</div>
+        <div id="r-bull-case" style="color:#86efac;font-size:13px;line-height:1.9">Run analysis to generate bull case from live data.</div>
       </div>
-      <div class="bear-box">
+      <div class="bear-box" id="r-bear-box">
         <div class="bb-title" style="color:#dc2626">▼ Bear Case</div>
-        <div class="bb-item" style="color:#fca5a5">▼ ADX at 38.4 — approaching exhaustion zone, susceptible to mean reversion if broad market rotates.</div>
-        <div class="bb-item" style="color:#fca5a5">▼ RSI at 61.2 approaching elevated territory — extended run increases pullback probability near resistance.</div>
-        <div style="color:#fca5a5;font-size:13px;line-height:1.7">▼ Break below $126.80 support invalidates setup and opens path to $118 zone — a -10.6% drawdown scenario.</div>
+        <div id="r-bear-case" style="color:#fca5a5;font-size:13px;line-height:1.9">Run analysis to generate bear case from live data.</div>
       </div>
     </div>
 
@@ -434,22 +430,21 @@ input:focus,select:focus{border-color:#3b82f6}
     <div class="section">Technical Analysis — PowerStack</div>
     <div class="g2">
       <div class="card" style="padding:0 18px">
-        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">9 EMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb">$131.44</span><span class="green" style="font-weight:600">+2.1%</span></div>
-        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">21 EMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb">$128.90</span><span class="green" style="font-weight:600">+4.1%</span></div>
-        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">50 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb">$122.18</span><span class="green" style="font-weight:600">+9.9%</span></div>
-        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">150 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb">$108.44</span><span class="green" style="font-weight:600">+23.8%</span></div>
-        <div class="ma-row" style="border-bottom:none"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">200 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb">$101.20</span><span class="green" style="font-weight:600">+32.6%</span></div>
-        <div style="padding:12px 0;display:flex;gap:8px;flex-wrap:wrap">
-          <span class="pill pg">✓ Golden Cross</span>
-          <span class="pill pg">✓ Full Stack Aligned</span>
+        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">9 EMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-ema9">—</span><span id="r-ema9-chg" style="font-weight:600">—</span></div>
+        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">21 EMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-ema21">—</span><span id="r-ema21-chg" style="font-weight:600">—</span></div>
+        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">50 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-sma50">—</span><span id="r-sma50-chg" style="font-weight:600">—</span></div>
+        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">150 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-sma150">—</span><span id="r-sma150-chg" style="font-weight:600">—</span></div>
+        <div class="ma-row" style="border-bottom:none"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">200 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-sma200">—</span><span id="r-sma200-chg" style="font-weight:600">—</span></div>
+        <div style="padding:12px 0;display:flex;gap:8px;flex-wrap:wrap" id="r-stack-pills">
+          <span class="pill py">Run analysis</span>
         </div>
       </div>
       <div class="card" style="padding:0 18px">
-        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">RSI (14)</span><span style="font-size:18px;font-weight:700;color:#f59e0b">61.2</span><span class="muted" style="font-size:12px">Elevated</span></div>
-        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">MACD</span><span style="font-size:18px;font-weight:700;color:#22c55e">+2.14</span><span class="muted" style="font-size:12px">Bullish</span></div>
-        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">ADX</span><span style="font-size:18px;font-weight:700;color:#f9fafb">38.4</span><span class="muted" style="font-size:12px">Strong</span></div>
-        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">ATR</span><span style="font-size:18px;font-weight:700;color:#f9fafb">$4.82</span><span class="muted" style="font-size:12px">3.6% range</span></div>
-        <div class="ind-row" style="border-bottom:none"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">Volume</span><span style="font-size:18px;font-weight:700;color:#f9fafb">312M</span><span class="muted" style="font-size:12px">1.4× avg</span></div>
+        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">RSI (14)</span><span style="font-size:18px;font-weight:700;color:#f59e0b" id="r-rsi">—</span><span class="muted" style="font-size:12px" id="r-rsi-lbl">—</span></div>
+        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">MACD</span><span style="font-size:18px;font-weight:700;color:#22c55e" id="r-macd">—</span><span class="muted" style="font-size:12px" id="r-macd-lbl">—</span></div>
+        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">ADX</span><span style="font-size:18px;font-weight:700;color:#f9fafb" id="r-adx2">—</span><span class="muted" style="font-size:12px" id="r-adx2-lbl">—</span></div>
+        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">ATR</span><span style="font-size:18px;font-weight:700;color:#f9fafb" id="r-atr">—</span><span class="muted" style="font-size:12px" id="r-atr-lbl">—</span></div>
+        <div class="ind-row" style="border-bottom:none"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">Volume</span><span style="font-size:18px;font-weight:700;color:#f9fafb" id="r-vol">—</span><span class="muted" style="font-size:12px" id="r-vol-lbl">—</span></div>
       </div>
     </div>
 
@@ -476,10 +471,10 @@ input:focus,select:focus{border-color:#3b82f6}
       </div>
     </div>
     <div class="g4" style="margin-bottom:6px">
-      <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">EPS Growth (YoY)</div><div class="mc-val green">+168%</div><div class="mc-sub">Q1 2026 vs Q1 2025</div></div>
-      <div class="card" style="border-left:3px solid #3b82f6"><div class="mc-label">Revenue Growth</div><div class="mc-val blue">+69%</div><div class="mc-sub">$44.1B vs $26.0B</div></div>
-      <div class="card" style="border-left:3px solid #f59e0b"><div class="mc-label">EPS Acceleration</div><div class="mc-val yellow">4 of 4</div><div class="mc-sub">Consecutive quarters</div></div>
-      <div class="card" style="border-left:3px solid #a78bfa"><div class="mc-label">Beat Rate</div><div class="mc-val" style="color:#a78bfa">8 / 8</div><div class="mc-sub green">Perfect beat record</div></div>
+      <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">EPS Growth (YoY)</div><div class="mc-val green" id="r-eps-growth">—</div><div class="mc-sub" id="r-eps-growth-sub">—</div></div>
+      <div class="card" style="border-left:3px solid #3b82f6"><div class="mc-label">Revenue Growth</div><div class="mc-val blue" id="r-rev-growth">—</div><div class="mc-sub" id="r-rev-growth-sub">—</div></div>
+      <div class="card" style="border-left:3px solid #f59e0b"><div class="mc-label">EPS Acceleration</div><div class="mc-val yellow" id="r-eps-acc">—</div><div class="mc-sub" id="r-eps-acc-sub">Consecutive quarters</div></div>
+      <div class="card" style="border-left:3px solid #a78bfa"><div class="mc-label">Beat Rate</div><div class="mc-val" style="color:#a78bfa" id="r-beat-rate">—</div><div class="mc-sub" id="r-beat-sub">Beat record</div></div>
     </div>
 
     <!-- PEER COMPARISON -->
@@ -1277,7 +1272,240 @@ setTimeout(function(){
   if (inp) inp.value = k;
   var inp2 = document.getElementById('fh-key-analyze');
   if (inp2) inp2.value = k;
-}, 300);
+  // Update dashboard date dynamically
+  var dd = document.getElementById('dash-date');
+  if(dd){
+    var now = new Date();
+    var hr = now.getHours();
+    var timeLabel = hr < 9.5 ? 'Pre-market' : hr < 16 ? 'Markets open' : 'After hours';
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    dd.textContent = timeLabel + ' · ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+  }
+  if(k) initDashboard();
+}, 350);
+
+function fgetQ(url){ return fetch(url).then(function(r){return r.json();}).catch(function(){return null;}); }
+
+function initDashboard() {
+  var key = getFHKey();
+  if(!key) return;
+  var tickers = ['SPY','QQQ','VXX','NVDA','TSLA','AMZN'];
+  Promise.all(tickers.map(function(t){
+    return fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key);
+  })).then(function(res){
+    var spy=res[0]||{}, qqq=res[1]||{}, vxx=res[2]||{}, nvda=res[3]||{}, tsla=res[4]||{}, amzn=res[5]||{};
+    function fmt(v){ return v!=null ? v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—'; }
+    function chgStr(d,dp){ if(d==null) return '—'; var up=d>=0; return (up?'▲ +':'▼ -')+Math.abs(dp).toFixed(2)+'% today'; }
+    function setEl(id,val){ var e=document.getElementById(id); if(e) e.textContent=val; }
+    function setCls(id,cls){ var e=document.getElementById(id); if(e) e.className=cls; }
+    // SPY → S&P 500 proxy
+    if(spy.c){ setEl('d-spy','$'+fmt(spy.c)); setEl('d-spy-chg',chgStr(spy.d,spy.dp)); setCls('d-spy',spy.d>=0?'mc-val green':'mc-val red'); setCls('d-spy-chg',spy.d>=0?'mc-sub green':'mc-sub red'); }
+    // QQQ → Nasdaq proxy
+    if(qqq.c){ setEl('d-qqq','$'+fmt(qqq.c)); setEl('d-qqq-chg',chgStr(qqq.d,qqq.dp)); setCls('d-qqq',qqq.d>=0?'mc-val green':'mc-val red'); setCls('d-qqq-chg',qqq.d>=0?'mc-sub green':'mc-sub red'); }
+    // VXX → VIX proxy
+    if(vxx.c){ setEl('d-vix','$'+fmt(vxx.c)); setEl('d-vix-sub',vxx.c<20?'Low fear — risk on':vxx.c<30?'Elevated — caution':'High fear — risk off'); }
+    // NVDA
+    if(nvda.c){
+      var up=nvda.d>=0, pstr=(up?'▲ +':'▼ ')+Math.abs(nvda.dp).toFixed(2)+'%';
+      setEl('da-nvda-price','$'+fmt(nvda.c)); setEl('da-nvda-chg',pstr); setCls('da-nvda-chg','qt-chg '+(up?'green':'red'));
+      setEl('dw-nvda-price','$'+fmt(nvda.c)); setEl('dw-nvda-chg',pstr); setCls('dw-nvda-chg','qt-chg '+(up?'green':'red'));
+    }
+    // TSLA
+    if(tsla.c){
+      var up=tsla.d>=0, pstr=(up?'▲ +':'▼ ')+Math.abs(tsla.dp).toFixed(2)+'%';
+      setEl('da-tsla-price','$'+fmt(tsla.c)); setEl('da-tsla-chg',pstr); setCls('da-tsla-chg','qt-chg '+(up?'green':'red'));
+      setEl('dw-tsla-price','$'+fmt(tsla.c)); setEl('dw-tsla-chg',pstr); setCls('dw-tsla-chg','qt-chg '+(up?'green':'red'));
+    }
+    // AMZN
+    if(amzn.c){
+      var up=amzn.d>=0, pstr=(up?'▲ +':'▼ ')+Math.abs(amzn.dp).toFixed(2)+'%';
+      setEl('dw-amzn-price','$'+fmt(amzn.c)); setEl('dw-amzn-chg',pstr); setCls('dw-amzn-chg','qt-chg '+(up?'green':'red'));
+    }
+  }).catch(function(){});
+}
+
+// ── Technical indicator helpers ──
+function calcRSI(closes, period) {
+  if(!closes||closes.length<period+1) return null;
+  var gains=0, losses=0;
+  for(var i=closes.length-period;i<closes.length;i++){
+    var d=closes[i]-closes[i-1]; if(d>0) gains+=d; else losses-=d;
+  }
+  var avgG=gains/period, avgL=losses/period;
+  if(avgL===0) return 100;
+  return +(100-100/(1+avgG/avgL)).toFixed(1);
+}
+
+function calcATR(daily, period) {
+  if(!daily||daily.length<period+1) return null;
+  var trs=[];
+  for(var i=daily.length-period;i<daily.length;i++){
+    var pc=daily[i-1].close;
+    trs.push(Math.max(daily[i].high-daily[i].low,Math.abs(daily[i].high-pc),Math.abs(daily[i].low-pc)));
+  }
+  return +(trs.reduce(function(a,b){return a+b;},0)/trs.length).toFixed(2);
+}
+
+function calcMACDVal(closes) {
+  var ema12=calcEMA(closes,12), ema26=calcEMA(closes,26);
+  var n=closes.length-1;
+  if(ema12[n]==null||ema26[n]==null) return null;
+  return +(ema12[n]-ema26[n]).toFixed(2);
+}
+
+function generateBullBear(ticker, price, stageInfo, score, sup, res, met, earns, mas, daily) {
+  var bullLines=[], bearLines=[];
+  var supPrice = sup&&sup.lo ? sup.lo : null;
+  var resPrice = res&&res.hi ? res.hi : null;
+  var ma150 = mas&&mas.sma150 ? mas.sma150[mas.sma150.length-1] : null;
+  var ma50  = mas&&mas.sma50  ? mas.sma50[mas.sma50.length-1]  : null;
+
+  // Bull cases
+  if(stageInfo.stage==='Stage 2'){
+    bullLines.push('▲ '+stageInfo.stage+' confirmed — price above rising 150 SMA, optimal institutional accumulation zone.');
+  }
+  if(resPrice&&price<resPrice){
+    var upside = (((resPrice-price)/price)*100).toFixed(1);
+    bullLines.push('▲ Breakout above $'+resPrice.toFixed(2)+' with volume confirmation targets +'+upside+'% move — next resistance zone unlocked.');
+  }
+  if(ma50&&ma150&&ma50>ma150){
+    bullLines.push('▲ Golden Cross active (50 SMA above 150 SMA) — institutional tailwind confirmed across all timeframes.');
+  }
+  if(score.G>=30){
+    var e0=earns[0], e4=earns[4];
+    if(e0&&e4&&e4.actual&&e0.actual){ var yoy=(((e0.actual-e4.actual)/Math.abs(e4.actual))*100).toFixed(0); bullLines.push('▲ EPS up +'+yoy+'% YoY — CAN SLIM earnings acceleration validates institutional demand.'); }
+  }
+  if(score.total>=70) bullLines.push('▲ TicScore '+score.total+'/100 — High Conviction. CAN SLIM criteria strongly met across growth, volume, and analyst sentiment.');
+
+  // Bear cases
+  var rsi=calcRSI(daily.map(function(d){return d.close;}), 14);
+  if(rsi&&rsi>65) bearLines.push('▼ RSI at '+rsi+' — approaching overbought territory; extended run raises mean-reversion risk near resistance.');
+  if(resPrice&&price<resPrice){
+    bearLines.push('▼ Resistance at $'+resPrice.toFixed(2)+' remains untested — failure to break with volume could trigger short-term reversal.');
+  }
+  if(supPrice){
+    var drawdown=(((price-supPrice)/price)*100).toFixed(1);
+    bearLines.push('▼ Break below $'+supPrice.toFixed(2)+' support invalidates setup — opens path to next zone, -'+Math.abs(drawdown)+'% drawdown scenario.');
+  }
+  if(stageInfo.stage==='Stage 3'||stageInfo.stage==='Stage 4'){
+    bearLines.push('▼ '+stageInfo.stage+' — '+stageInfo.desc+'. Capital at elevated risk until re-base and Stage 2 reclaim.');
+  }
+  if(met&&met.beta&&met.beta>1.5) bearLines.push('▼ Beta '+met.beta.toFixed(2)+' — high sensitivity to broad market drawdowns; position size accordingly.');
+
+  if(bullLines.length===0) bullLines.push('▲ Run analysis for this ticker to generate bull case from live data.');
+  if(bearLines.length===0) bearLines.push('▼ Run analysis for this ticker to generate bear case from live data.');
+
+  var bullEl=document.getElementById('r-bull-case');
+  var bearEl=document.getElementById('r-bear-case');
+  if(bullEl) bullEl.innerHTML=bullLines.map(function(l){return '<div class="bb-item" style="color:#86efac">'+l+'</div>';}).join('');
+  if(bearEl) bearEl.innerHTML=bearLines.map(function(l){return '<div class="bb-item" style="color:#fca5a5">'+l+'</div>';}).join('');
+}
+
+function updatePowerStack(price, allMAs) {
+  var n=allMAs.ema9.length-1;
+  function maEl(id, chgId, val){
+    var e=document.getElementById(id), ec=document.getElementById(chgId);
+    if(!val){if(e)e.textContent='N/A';if(ec){ec.textContent='';ec.className='';}return;}
+    if(e) e.textContent='$'+val.toFixed(2);
+    if(ec){
+      var pct=(((price-val)/val)*100).toFixed(1);
+      var up=price>=val;
+      ec.textContent=(up?'+':'')+pct+'%';
+      ec.className=up?'green':'red';
+    }
+  }
+  maEl('r-ema9','r-ema9-chg',allMAs.ema9[n]);
+  maEl('r-ema21','r-ema21-chg',allMAs.ema21[n]);
+  maEl('r-sma50','r-sma50-chg',allMAs.sma50[n]);
+  maEl('r-sma150','r-sma150-chg',allMAs.sma150[n]);
+  maEl('r-sma200','r-sma200-chg',allMAs.sma200[n]);
+  // Stack alignment pills
+  var m=allMAs, k=n;
+  var gc = m.sma50[k]&&m.sma200[k]&&m.sma50[k]>m.sma200[k];
+  var fa = m.ema9[k]&&m.ema21[k]&&m.sma50[k]&&m.sma150[k]&&m.sma200[k]&&price>m.ema9[k]&&m.ema9[k]>m.ema21[k]&&m.ema21[k]>m.sma50[k]&&m.sma50[k]>m.sma150[k]&&m.sma150[k]>m.sma200[k];
+  var pp = document.getElementById('r-stack-pills');
+  if(pp){
+    var pills='';
+    if(gc) pills+='<span class="pill pg">✓ Golden Cross</span> ';
+    else pills+='<span class="pill pr">✗ No Golden Cross</span> ';
+    if(fa) pills+='<span class="pill pg">✓ Full Stack Aligned</span>';
+    else pills+='<span class="pill py">⚡ Partial Stack</span>';
+    pp.innerHTML=pills;
+  }
+}
+
+function updateTechnicals(price, allMAs, daily) {
+  function setEl(id,val){ var e=document.getElementById(id); if(e) e.textContent=val; }
+  function setCls(id,cls){ var e=document.getElementById(id); if(e) e.className=cls; }
+  var closes=daily.map(function(d){return d.close;});
+  // RSI
+  var rsi=calcRSI(closes,14);
+  if(rsi!=null){
+    setEl('r-rsi',rsi);
+    var rsiLbl=rsi>70?'Overbought':rsi>60?'Elevated':rsi>40?'Neutral':rsi>30?'Oversold':'Deeply Oversold';
+    var rsiColor=rsi>70?'#ef4444':rsi>60?'#f59e0b':'#22c55e';
+    var re=document.getElementById('r-rsi'); if(re) re.style.color=rsiColor;
+    setEl('r-rsi-lbl',rsiLbl);
+  }
+  // MACD
+  var macd=calcMACDVal(closes);
+  if(macd!=null){
+    setEl('r-macd',(macd>=0?'+':'')+macd);
+    setEl('r-macd-lbl',macd>=0?'Bullish':'Bearish');
+    var me=document.getElementById('r-macd'); if(me) me.style.color=macd>=0?'#22c55e':'#ef4444';
+  }
+  // ADX approx from allMAs
+  var n=allMAs.sma50.length-1;
+  var adxApprox=allMAs.sma50[n]&&allMAs.sma150[n]?Math.round(Math.abs((price-allMAs.sma50[n])/allMAs.sma50[n]*80+20)):28;
+  adxApprox=Math.min(adxApprox,65);
+  setEl('r-adx2',adxApprox); setEl('r-adx2-lbl',adxApprox>=40?'Very Strong':adxApprox>=25?'Strong':'Developing');
+  // ATR
+  var atr=calcATR(daily,14);
+  if(atr!=null){
+    var atrPct=((atr/price)*100).toFixed(1);
+    setEl('r-atr','$'+atr); setEl('r-atr-lbl',atrPct+'% range');
+  }
+  // Volume vs avg (raw array is oldest-to-newest, last element is most recent)
+  if(daily.length>11){
+    var recentVol=daily[daily.length-1].vol;
+    var avg10=daily.slice(daily.length-11,daily.length-1).reduce(function(a,d){return a+d.vol;},0)/10;
+    var ratio=(recentVol/avg10).toFixed(1);
+    var volFmt=recentVol>=1e9?(recentVol/1e9).toFixed(1)+'B':recentVol>=1e6?(recentVol/1e6).toFixed(0)+'M':(recentVol/1e3).toFixed(0)+'K';
+    setEl('r-vol',volFmt); setEl('r-vol-lbl',ratio+'× avg');
+    var ve=document.getElementById('r-vol'); if(ve) ve.style.color=ratio>=1.5?'#22c55e':ratio>=0.8?'#f9fafb':'#ef4444';
+  }
+}
+
+function updateEarningsStats(earns) {
+  function setEl(id,val){ var e=document.getElementById(id); if(e) e.textContent=val; }
+  function setCls(id,cls){ var e=document.getElementById(id); if(e) e.className=cls; }
+  if(!earns||earns.length<2) return;
+  // YoY EPS growth (compare most recent vs same quarter 1yr ago)
+  var e0=earns[0], e4=earns.length>4?earns[4]:null;
+  if(e0&&e0.actual!=null&&e4&&e4.actual!=null&&e4.actual!==0){
+    var yoy=(((e0.actual-e4.actual)/Math.abs(e4.actual))*100).toFixed(0);
+    var yoyStr=(yoy>=0?'+':'')+yoy+'%';
+    setEl('r-eps-growth',yoyStr);
+    setCls('r-eps-growth','mc-val '+(yoy>=0?'green':'red'));
+    setEl('r-eps-growth-sub',(e0.period||'Latest')+' vs '+(e4.period||'Prior yr'));
+  }
+  // Revenue growth from earnings surprise (no direct rev field in free tier)
+  var revG = (earns[0]&&earns[0].surprise!=null) ? ((earns[0].surprise/Math.max(0.01,Math.abs(earns[0].estimate||1)))*100).toFixed(0)+'% beat' : 'See chart';
+  setEl('r-rev-growth',revG);
+  // EPS acceleration — count quarters with increasing YoY
+  var acc=0;
+  for(var i=0;i<Math.min(earns.length-1,4);i++){
+    var prev=earns[i+1];
+    if(earns[i].actual!=null&&prev.actual!=null&&earns[i].actual>prev.actual) acc++;
+  }
+  setEl('r-eps-acc',acc+' of '+ Math.min(earns.length-1,4)); setEl('r-eps-acc-sub','Consecutive accel.');
+  // Beat rate
+  var beats=earns.filter(function(e){return e.actual!=null&&e.estimate!=null&&e.actual>=e.estimate;}).length;
+  var total=earns.filter(function(e){return e.actual!=null&&e.estimate!=null;}).length;
+  setEl('r-beat-rate',beats+' / '+total);
+  setCls('r-beat-sub',beats===total?'mc-sub green':'mc-sub');
+  setEl('r-beat-sub',beats===total?'Perfect beat record':beats+'/'+total+' beats');
+}
 
 function xget(url, cb) {
   var x = new XMLHttpRequest();
@@ -1583,10 +1811,37 @@ function goAnalyze(ticker) {
     if(el('r-adx-str')) el('r-adx-str').textContent=adxApprox>=40?'Very Strong':adxApprox>=25?'Strong trend':'Developing';
     if(el('r-rs')) el('r-rs').textContent=rs;
     if(el('r-rs-l')) el('r-rs-l').textContent=rs>=80?'Leader · Stack Aligned ✓':rs>=50?'Neutral · Partial Stack':'Laggard · Stack Unaligned ✗';
-    var sup=newTF.daily.sr.find(function(z){return z.type==='sup';})||{lo:'—'};
-    var resZ=newTF.daily.sr.find(function(z){return z.type==='res';})||{hi:'—'};
-    var sig=stageInfo.stage+' — '+stageInfo.desc+'. TicScore: '+score.total+'/100 (G:'+score.G+' V:'+score.V+' Q:'+score.Q+' S:'+score.S+'). RS: '+rs+'. Support: $'+sup.lo+'. Resistance: $'+resZ.hi+'.';
+    var sup=newTF.daily.sr.find(function(z){return z.type==='sup';})||null;
+    var resZ=newTF.daily.sr.find(function(z){return z.type==='res';})||null;
+
+    // S/R level cards
+    if(el('r-sup-val')) el('r-sup-val').textContent=sup?'$'+sup.lo.toFixed(2):'—';
+    if(el('r-sup-sub')) el('r-sup-sub').textContent=sup?'Swing low — key floor':'No support found';
+    if(el('r-res-val')) el('r-res-val').textContent=resZ?'$'+resZ.hi.toFixed(2):'—';
+    if(el('r-res-sub')) el('r-res-sub').textContent=resZ?'Swing high ceiling':'No resistance found';
+    var hist252=daily.slice(0,Math.min(daily.length,252));
+    var h52=Math.max.apply(null,hist252.map(function(d){return d.high;}));
+    var l52=Math.min.apply(null,hist252.map(function(d){return d.low;}));
+    if(el('r-52h')){ el('r-52h').textContent='$'+h52.toFixed(2); el('r-52h').className=price>=h52*0.98?'mc-val green':'mc-val'; }
+    if(el('r-52l')){ el('r-52l').textContent='$'+l52.toFixed(2); el('r-52l').className='mc-val green'; }
+    if(el('r-52h-sub')){ var d52h=(((price-h52)/h52)*100).toFixed(1); el('r-52h-sub').textContent=d52h+'% from price'; el('r-52h-sub').className=price>=h52*0.98?'mc-sub green':'mc-sub red'; }
+    if(el('r-52l-sub')){ var d52l=(((price-l52)/l52)*100).toFixed(1); el('r-52l-sub').textContent='+'+d52l+'% from price'; el('r-52l-sub').className='mc-sub green'; }
+
+    // TIC Signal summary
+    var sig=stageInfo.stage+' — '+stageInfo.desc+'. TicScore: '+score.total+'/100 (G:'+score.G+' V:'+score.V+' Q:'+score.Q+' S:'+score.S+'). RS Rating: '+rs+'. Support: '+(sup?'$'+sup.lo.toFixed(2):'N/A')+'. Resistance: '+(resZ?'$'+resZ.hi.toFixed(2):'N/A')+'.';
     if(el('r-signal')) el('r-signal').textContent=sig;
+
+    // PowerStack MA values (use FULL allMAs)
+    updatePowerStack(price, newTF.daily.allMAs);
+
+    // Technical indicators
+    updateTechnicals(price, newTF.daily.allMAs, newTF.daily.raw);
+
+    // Earnings stats
+    updateEarningsStats(earns);
+
+    // Bull / Bear cases
+    generateBullBear(ticker, price, stageInfo, score, sup, resZ, met, earns, newTF.daily.allMAs, newTF.daily.raw);
 
     currentTF='daily';
     document.querySelectorAll('#tf-tabs .ctab').forEach(function(b,i){b.classList.toggle('active',i===0);});
