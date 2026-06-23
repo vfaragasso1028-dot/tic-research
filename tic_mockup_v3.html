@@ -714,16 +714,8 @@ input:focus,select:focus{border-color:#3b82f6}
   <div class="card" style="padding:0;overflow:hidden">
     <table class="t">
       <thead><tr><th>#</th><th>Ticker</th><th>Company</th><th>Price</th><th>TicScore</th><th>Stage</th><th>RS</th><th>Cross</th><th>Pattern</th><th>Support</th><th></th></tr></thead>
-      <tbody>
-        <tr onclick="goAnalyze('NVDA')"><td class="blue" style="font-weight:800">1</td><td style="font-weight:800;color:#f9fafb;font-size:14px">NVDA</td><td class="muted">Nvidia</td><td style="font-weight:600">$134.21</td><td class="green" style="font-weight:800">82</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:800">91</td><td><span class="pill pg">Golden</span></td><td><span class="pill pb">Pocket Pivot</span></td><td class="green">$126.80</td><td><button class="btn btn-blue" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();goAnalyze('NVDA')">Analyze</button></td></tr>
-        <tr onclick="goAnalyze('META')"><td class="blue" style="font-weight:800">2</td><td style="font-weight:800;color:#f9fafb;font-size:14px">META</td><td class="muted">Meta Platforms</td><td style="font-weight:600">$622.40</td><td class="green" style="font-weight:800">76</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:800">84</td><td><span class="pill pg">Golden</span></td><td><span class="pill pgr">None</span></td><td class="green">$598.00</td><td><button class="btn btn-blue" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();goAnalyze('META')">Analyze</button></td></tr>
-        <tr onclick="goAnalyze('MSFT')"><td class="blue" style="font-weight:800">3</td><td style="font-weight:800;color:#f9fafb;font-size:14px">MSFT</td><td class="muted">Microsoft</td><td style="font-weight:600">$458.20</td><td class="yellow" style="font-weight:800">71</td><td><span class="pill pg">S2B</span></td><td class="yellow" style="font-weight:800">74</td><td><span class="pill pg">Golden</span></td><td><span class="pill pb">Pocket Pivot</span></td><td class="green">$440.00</td><td><button class="btn btn-blue" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();goAnalyze('MSFT')">Analyze</button></td></tr>
-        <tr onclick="goAnalyze('LLY')"><td class="blue" style="font-weight:800">4</td><td style="font-weight:800;color:#f9fafb;font-size:14px">LLY</td><td class="muted">Eli Lilly</td><td style="font-weight:600">$892.10</td><td class="green" style="font-weight:800">78</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:800">88</td><td><span class="pill pg">Golden</span></td><td><span class="pill py">Cup &amp; Handle</span></td><td class="green">$860.00</td><td><button class="btn btn-blue" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();goAnalyze('LLY')">Analyze</button></td></tr>
-        <tr onclick="goAnalyze('AVGO')"><td class="blue" style="font-weight:800">5</td><td style="font-weight:800;color:#f9fafb;font-size:14px">AVGO</td><td class="muted">Broadcom</td><td style="font-weight:600">$248.80</td><td class="green" style="font-weight:800">74</td><td><span class="pill pg">S2A</span></td><td class="green" style="font-weight:800">82</td><td><span class="pill pg">Golden</span></td><td><span class="pill pb">Pocket Pivot</span></td><td class="green">$236.00</td><td><button class="btn btn-blue" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();goAnalyze('AVGO')">Analyze</button></td></tr>
-        <tr style="opacity:.3;filter:blur(2.5px);pointer-events:none"><td>6</td><td>GEV</td><td>GE Vernova</td><td>$412.00</td><td>69</td><td><span class="pill pg">S2</span></td><td>80</td><td><span class="pill pg">Golden</span></td><td>Cup &amp; Handle</td><td>$392.00</td><td>—</td></tr>
-        <tr style="opacity:.3;filter:blur(2.5px);pointer-events:none"><td>7</td><td>AMGN</td><td>Amgen</td><td>$318.40</td><td>65</td><td><span class="pill pg">S2</span></td><td>78</td><td><span class="pill pg">Golden</span></td><td>Bull Flag</td><td>$304.00</td><td>—</td></tr>
-        <tr style="opacity:.3;filter:blur(2.5px);pointer-events:none"><td>8</td><td>ORCL</td><td>Oracle</td><td>$188.20</td><td>71</td><td><span class="pill pg">S2</span></td><td>85</td><td><span class="pill pg">Golden</span></td><td>Flat Base</td><td>$178.00</td><td>—</td></tr>
-        <tr style="opacity:.3;filter:blur(2.5px);pointer-events:none"><td>9</td><td>NOW</td><td>ServiceNow</td><td>$1,041.00</td><td>73</td><td><span class="pill pg">S2</span></td><td>83</td><td><span class="pill pg">Golden</span></td><td>Asc. Triangle</td><td>$998.00</td><td>—</td></tr>
+      <tbody id="scan-tbody">
+        <tr><td colspan="11" style="text-align:center;color:#6b7280;padding:20px">Click Run Scanner → to load results</td></tr>
       </tbody>
     </table>
     <div class="lock"><svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" stroke-width="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-width="2"/></svg> Showing 5 of 47 — upgrade to Pro to unlock all results + CSV export<a onclick="nav('pricing')">Upgrade →</a></div>
@@ -2341,7 +2333,7 @@ function switchSpyTF(btn,tf){
   buildSpySectors(tf);
 }
 
-setTimeout(()=>{buildChart();buildEpsChart();buildRevChart();buildPeerChart();buildSpySectors('4w');},400);
+setTimeout(()=>{buildChart();buildEpsChart();buildRevChart();buildPeerChart();buildSpySectors('4w');runScan();},400);
 
 var SCANNER_DB = [
   {ticker:'NVDA', company:'Nvidia',         price:134.21,  score:82, stage:'2A', rs:91, pattern:'Pocket Pivot',  support:126.80, eps:true,  sales:true,  vol:true,  golden:true},
@@ -2438,7 +2430,7 @@ function runScan() {
     html='<tr><td colspan="11" style="text-align:center;color:#6b7280;padding:28px">No results match — try relaxing your filters</td></tr>';
   }
 
-  var tbody=page.querySelector('.t tbody');
+  var tbody=document.getElementById('scan-tbody');
   if(tbody) tbody.innerHTML=html;
 
   var now=new Date(), h=now.getHours(), m=now.getMinutes(), ampm=h>=12?'pm':'am';
