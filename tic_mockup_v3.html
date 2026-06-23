@@ -685,8 +685,8 @@ input:focus,select:focus{border-color:#3b82f6}
     <div class="al-row" style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;border-bottom:1px solid #1f2937">
       <span></span><span>Ticker</span><span>Condition</span><span>Type</span><span>Channel</span><span>On/Off</span>
     </div>
-    <div class="al-row"><div class="al-dot" style="background:#22c55e"></div><div class="al-sym">NVDA</div><div class="al-desc">Price closes above resistance zone $138.50 — breakout confirmation</div><span class="pill pb">Breakout</span><span class="ch-tag">Email + SMS</span><div class="toggle on" onclick="this.classList.toggle('on');showToast(this.classList.contains('on')?'Alert activated':'Alert paused')"></div></div>
-    <div class="al-row"><div class="al-dot" style="background:#22c55e"></div><div class="al-sym">AMZN</div><div class="al-desc">Price closes below support $259.34 — breakdown warning</div><span class="pill pr">S/R Break</span><span class="ch-tag">Email</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="al-row"><div class="al-dot" style="background:#22c55e"></div><div class="al-sym">NVDA</div><div class="al-desc" id="alert-nvda-desc">Price closes above resistance zone — breakout confirmation</div><span class="pill pb">Breakout</span><span class="ch-tag">Email + SMS</span><div class="toggle on" onclick="this.classList.toggle('on');showToast(this.classList.contains('on')?'Alert activated':'Alert paused')"></div></div>
+    <div class="al-row"><div class="al-dot" style="background:#22c55e"></div><div class="al-sym">AMZN</div><div class="al-desc" id="alert-amzn-desc">Price closes below support zone — breakdown warning</div><span class="pill pr">S/R Break</span><span class="ch-tag">Email</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
     <div class="al-row"><div class="al-dot" style="background:#22c55e"></div><div class="al-sym">TSLA</div><div class="al-desc">TicScore rises above 70 — passes fundamental threshold</div><span class="pill pg">Score</span><span class="ch-tag">Email</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
     <div class="al-row"><div class="al-dot" style="background:#3b82f6"></div><div class="al-sym">META</div><div class="al-desc">Pocket Pivot detected — institutional accumulation signal</div><span class="pill pb">Pattern</span><span class="ch-tag">Email + SMS</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
     <div class="al-row"><div class="al-dot" style="background:#374151"></div><div class="al-sym">AAPL</div><div class="al-desc">Stage changes from Stage 3 → Stage 2 — re-entry signal</div><span class="pill pgr">Stage</span><span class="ch-tag">Email</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
@@ -772,58 +772,46 @@ input:focus,select:focus{border-color:#3b82f6}
         </div>
         <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 10px">
           <div style="font-size:9px;color:#1d4ed8;font-weight:700;text-transform:uppercase;margin-bottom:3px">Price Target</div>
-          <div style="font-size:14px;font-weight:800;color:#1e3a5f">$138.50</div>
+          <div style="font-size:14px;font-weight:800;color:#1e3a5f" id="pdf-target">—</div>
           <div style="font-size:9px;color:#1d4ed8">Resistance zone</div>
         </div>
         <div style="background:#fefce8;border:1px solid #fef08a;border-radius:6px;padding:8px 10px">
           <div style="font-size:9px;color:#a16207;font-weight:700;text-transform:uppercase;margin-bottom:3px">Risk / Reward</div>
-          <div style="font-size:14px;font-weight:800;color:#713f12">2.0 : 1</div>
-          <div style="font-size:9px;color:#a16207">Min. threshold met ✓</div>
+          <div style="font-size:14px;font-weight:800;color:#713f12" id="pdf-rr">—</div>
+          <div style="font-size:9px;color:#a16207" id="pdf-rr-lbl">—</div>
         </div>
       </div>
 
       <!-- POSITION SIZING -->
-      <div class="pdf-sec">Position Sizing Guide (ATR Stop = $7.20)</div>
+      <div class="pdf-sec" id="pdf-pos-title">Position Sizing Guide</div>
       <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;margin-bottom:10px">
         <table style="width:100%;border-collapse:collapse;font-size:11px">
           <thead><tr style="background:#f9fafb"><th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">Portfolio Size</th><th style="padding:6px 10px;text-align:right;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">1% Risk</th><th style="padding:6px 10px;text-align:right;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">2% Risk</th><th style="padding:6px 10px;text-align:right;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">5% Risk</th></tr></thead>
-          <tbody>
-            <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 10px;color:#374151">$25,000</td><td style="padding:6px 10px;text-align:right;font-weight:700">35 sh.</td><td style="padding:6px 10px;text-align:right;font-weight:700">69 sh.</td><td style="padding:6px 10px;text-align:right;font-weight:700">174 sh.</td></tr>
-            <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 10px;color:#374151">$50,000</td><td style="padding:6px 10px;text-align:right;font-weight:700">69 sh.</td><td style="padding:6px 10px;text-align:right;font-weight:700">139 sh.</td><td style="padding:6px 10px;text-align:right;font-weight:700">347 sh.</td></tr>
-            <tr><td style="padding:6px 10px;color:#374151">$100,000</td><td style="padding:6px 10px;text-align:right;font-weight:700">139 sh.</td><td style="padding:6px 10px;text-align:right;font-weight:700">278 sh.</td><td style="padding:6px 10px;text-align:right;font-weight:700">694 sh.</td></tr>
+          <tbody id="pdf-pos-tbody">
+            <tr><td colspan="4" style="padding:10px;text-align:center;color:#9ca3af">Run analysis to populate</td></tr>
           </tbody>
         </table>
       </div>
 
       <div class="pdf-sec">Bull / Bear Cases</div>
-      <div class="pdf-bull-box">▲ Breakout above $138.50 with volume confirms Stage 2 continuation — 14.1% upside to 52W high $153.13.<br/>▲ Golden Cross + Full PowerStack aligned — institutional tailwind confirmed across all timeframes.<br/>▲ Pocket Pivot active — volume exceeds all down-day highs from prior 10 sessions.</div>
-      <div class="pdf-bear-box">▼ ADX at 38.4 approaching exhaustion — susceptible to reversal if broad market rotates.<br/>▼ RSI at 61.2 approaching elevated territory near resistance zone.<br/>▼ Break below $126.80 opens path to $118 zone — a -10.6% drawdown scenario.</div>
+      <div class="pdf-bull-box" id="pdf-bull-box">Run analysis to generate live bull case.</div>
+      <div class="pdf-bear-box" id="pdf-bear-box">Run analysis to generate live bear case.</div>
 
       <!-- CATALYST CALENDAR -->
       <div class="pdf-sec">Catalyst Calendar</div>
       <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;margin-bottom:10px">
         <table style="width:100%;border-collapse:collapse;font-size:11px">
           <thead><tr style="background:#f9fafb"><th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">Date</th><th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">Event</th><th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb">Impact</th></tr></thead>
-          <tbody>
-            <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 10px;font-weight:700;color:#374151">Aug 20, 2026</td><td style="padding:6px 10px;color:#374151">Q2 Earnings (est.)</td><td style="padding:6px 10px"><span style="background:#fef3c7;color:#92400e;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600">High</span></td></tr>
-            <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 10px;font-weight:700;color:#374151">Jul 30, 2026</td><td style="padding:6px 10px;color:#374151">FOMC Rate Decision</td><td style="padding:6px 10px"><span style="background:#eff6ff;color:#1e40af;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600">Medium</span></td></tr>
-            <tr><td style="padding:6px 10px;font-weight:700;color:#374151">Jul 10, 2026</td><td style="padding:6px 10px;color:#374151">CPI Inflation Data</td><td style="padding:6px 10px"><span style="background:#eff6ff;color:#1e40af;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600">Medium</span></td></tr>
+          <tbody id="pdf-catalyst-tbody">
+            <tr><td colspan="3" style="padding:10px;text-align:center;color:#9ca3af">Run analysis to populate</td></tr>
           </tbody>
         </table>
       </div>
 
       <!-- SECTOR ROTATION -->
       <div class="pdf-sec">Sector Rotation Context</div>
-      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:11px">
-        <div style="font-weight:700;color:#14532d;margin-bottom:4px">Technology ranks #2 of 11 sectors this week</div>
-        <div style="color:#16a34a">Sector RS improving · Institutional money flowing in · Overweight recommended</div>
-        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
-          <span style="background:#dcfce7;color:#166534;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">#1 Energy</span>
-          <span style="background:#1d4ed8;color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">#2 Technology ← YOU</span>
-          <span style="background:#f3f4f6;color:#374151;font-size:10px;padding:2px 8px;border-radius:4px">#3 Industrials</span>
-          <span style="background:#f3f4f6;color:#374151;font-size:10px;padding:2px 8px;border-radius:4px">#4 Healthcare</span>
-          <span style="background:#f3f4f6;color:#9ca3af;font-size:10px;padding:2px 8px;border-radius:4px">#5–11 ···</span>
-        </div>
+      <div id="pdf-sector-box" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:#9ca3af">
+        Run analysis to populate sector rotation context.
       </div>
 
       <div class="pdf-footer" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
@@ -1307,6 +1295,11 @@ function generateBullBear(ticker, price, stageInfo, score, sup, res, met, earns,
   var bearEl=document.getElementById('r-bear-case');
   if(bullEl) bullEl.innerHTML=bullLines.map(function(l){return '<div class="bb-item" style="color:#86efac;margin-bottom:6px">'+l+'</div>';}).join('');
   if(bearEl) bearEl.innerHTML=bearLines.map(function(l){return '<div class="bb-item" style="color:#fca5a5;margin-bottom:6px">'+l+'</div>';}).join('');
+  // Mirror to PDF bull/bear boxes
+  var pdfBull=document.getElementById('pdf-bull-box');
+  var pdfBear=document.getElementById('pdf-bear-box');
+  if(pdfBull) pdfBull.innerHTML=bullLines.join('<br/>');
+  if(pdfBear) pdfBear.innerHTML=bearLines.join('<br/>');
 }
 
 function updatePowerStack(price, allMAs) {
@@ -1829,6 +1822,7 @@ function goAnalyze(ticker) {
     currentTF='daily';
     loadTVWidget(ticker);
 
+    window._pdfEarns = earns;
     buildEpsChartReal(earns);
     buildRevChart();
     renderNews(news);
@@ -2585,8 +2579,35 @@ function renderScanResults(results) {
   h=h%12||12;
   var ts=h+':'+(m<10?'0':'')+m+ampm+' ET';
   var rc=document.querySelector('.result-count');
-  if(rc) rc.innerHTML='Showing <strong>'+Math.min(results.length,5)+' of '+results.length+' results</strong> · Last run: today '+ts;
+  if(rc) rc.innerHTML='Showing <strong>'+Math.min(results.length,5)+' of '+results.length+' results</strong> · Last run: today '+ts+' · <span style="color:#f59e0b">fetching live prices…</span>';
   toast(results.length+' results found');
+
+  // Fetch live prices for top 5 visible rows
+  var key=getFHKey();
+  if(key&&results.length){
+    var top=results.slice(0,5);
+    var pending=top.length;
+    top.forEach(function(s,i){
+      var url=FH_BASE+'/quote?symbol='+s.ticker+'&token='+key;
+      fgetQ(url).then(function(q){
+        if(!q||q.c==null){pending--;if(!pending&&rc)rc.innerHTML='Showing <strong>'+Math.min(results.length,5)+' of '+results.length+' results</strong> · Live prices · '+ts+' ET';return;}
+        // Update price cell in row i (4th td, index 3)
+        var rows=document.querySelectorAll('#scan-tbody tr');
+        if(rows[i]){
+          var cells=rows[i].querySelectorAll('td');
+          if(cells[3]){
+            var chg=q.dp||0;
+            var color=chg>=0?'#22c55e':'#ef4444';
+            cells[3].innerHTML='<span style="font-weight:700">$'+q.c.toFixed(2)+'</span><br/><span style="font-size:10px;color:'+color+'">'+(chg>=0?'+':'')+chg.toFixed(2)+'%</span>';
+          }
+          // Update support cell (10th td, index 9) — keep as SCANNER_DB value, label it
+          if(cells[9]) cells[9].innerHTML='<span style="color:#22c55e;font-size:11px">$'+s.support.toFixed(2)+'</span>';
+        }
+        pending--;
+        if(!pending&&rc) rc.innerHTML='Showing <strong>'+Math.min(results.length,5)+' of '+results.length+' results</strong> · <span style="color:#22c55e">Live prices ✓</span> · '+ts+' ET';
+      }).catch(function(){pending--;});
+    });
+  }
 }
 
 // ── WATCHLIST LIVE PRICES ──
@@ -2680,8 +2701,85 @@ function populatePDF(ticker, coName, price, chg, chgPct, score, bd, stageInfo, r
   s('pdf-adx',adx?adx+' — '+(adx>=40?'Very Strong':adx>=25?'Strong':'Developing'):'—');
   s('pdf-atr',atr?'$'+atr.toFixed(2):'—');
   s('pdf-entry',sup?'$'+sup.lo.toFixed(2):'—');
-  s('pdf-stop',sup?'$'+(sup.lo*0.94).toFixed(2):'—');
+  var stopPrice=sup?sup.lo*0.94:null;
+  s('pdf-stop',stopPrice?'$'+stopPrice.toFixed(2):'—');
   s('pdf-signal',signal||'—');
+
+  // Price target & R/R
+  var targetPrice=resZ?resZ.lo:h52;
+  var targetLbl=resZ?'Resistance zone':'52W High';
+  s('pdf-target',targetPrice?'$'+targetPrice.toFixed(2):'—');
+  if(targetPrice&&stopPrice&&sup){
+    var reward=targetPrice-sup.lo;
+    var risk=sup.lo-stopPrice;
+    var rr=risk>0?(reward/risk).toFixed(1):'—';
+    s('pdf-rr',rr+' : 1');
+    var rrEl=document.getElementById('pdf-rr-lbl');
+    if(rrEl){rrEl.textContent=parseFloat(rr)>=2?'Min. threshold met ✓':'Below 2:1 threshold ✗';rrEl.style.color=parseFloat(rr)>=2?'#a16207':'#dc2626';}
+  }
+
+  // Position sizing (ATR-based stop)
+  var atrStop=atr||null;
+  var posTitle=document.getElementById('pdf-pos-title');
+  if(posTitle) posTitle.textContent='Position Sizing Guide'+(atrStop?' (ATR Stop = $'+atrStop.toFixed(2)+')':'');
+  var posTbody=document.getElementById('pdf-pos-tbody');
+  if(posTbody&&atrStop&&price){
+    var sizes=[25000,50000,100000];
+    var risks=[0.01,0.02,0.05];
+    var html='';
+    sizes.forEach(function(sz){
+      var cells=risks.map(function(r){
+        var shares=Math.floor((sz*r)/atrStop);
+        return '<td style="padding:6px 10px;text-align:right;font-weight:700">'+shares+' sh.</td>';
+      }).join('');
+      html+='<tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 10px;color:#374151">$'+sz.toLocaleString()+'</td>'+cells+'</tr>';
+    });
+    posTbody.innerHTML=html;
+  }
+
+  // Catalyst calendar from earnings data (passed via window._pdfEarns)
+  var catalystTbody=document.getElementById('pdf-catalyst-tbody');
+  if(catalystTbody){
+    var earns=window._pdfEarns||[];
+    var rows='';
+    // Next earnings estimate
+    if(earns&&earns.length){
+      var next=earns[0];
+      if(next&&next.period){
+        var d=next.period;
+        rows+='<tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 10px;font-weight:700;color:#374151">'+d+'</td><td style="padding:6px 10px;color:#374151">Earnings (est. $'+(next.estimate!=null?next.estimate.toFixed(2):'TBD')+')</td><td style="padding:6px 10px"><span style="background:#fef3c7;color:#92400e;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600">High</span></td></tr>';
+      }
+    }
+    // Fixed macro events (always relevant)
+    var now2=new Date();
+    var nextFomc=new Date(now2.getFullYear(),now2.getMonth()+1,30);
+    var fomcStr=(nextFomc.getMonth()+1)+'/'+nextFomc.getDate()+'/'+nextFomc.getFullYear();
+    rows+='<tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 10px;font-weight:700;color:#374151">Next FOMC</td><td style="padding:6px 10px;color:#374151">Federal Reserve Rate Decision</td><td style="padding:6px 10px"><span style="background:#eff6ff;color:#1e40af;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600">Medium</span></td></tr>';
+    rows+='<tr><td style="padding:6px 10px;font-weight:700;color:#374151">Monthly</td><td style="padding:6px 10px;color:#374151">CPI / PPI Inflation Data</td><td style="padding:6px 10px"><span style="background:#eff6ff;color:#1e40af;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600">Medium</span></td></tr>';
+    catalystTbody.innerHTML=rows||'<tr><td colspan="3" style="padding:10px;text-align:center;color:#9ca3af">No upcoming catalysts found</td></tr>';
+  }
+
+  // Sector rotation from spyData
+  var sectorBox=document.getElementById('pdf-sector-box');
+  if(sectorBox&&window.spyData&&window.spyData['4w']){
+    var ranked=[...window.spyData['4w']].sort(function(a,b){return b.rs-a.rs;});
+    var top4=ranked.slice(0,4);
+    var pills=top4.map(function(s,i){
+      var isYours=s.yours;
+      var bg=isYours?'#1d4ed8':'#f3f4f6';
+      var color=isYours?'#fff':'#374151';
+      return '<span style="background:'+bg+';color:'+color+';font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">#'+(i+1)+' '+s.sector+(isYours?' ← YOU':'')+'</span>';
+    }).join('');
+    var topSector=ranked[0];
+    var yourSector=ranked.find(function(s){return s.yours;});
+    var yourRank=yourSector?ranked.indexOf(yourSector)+1:null;
+    sectorBox.style.background=yourRank&&yourRank<=3?'#f0fdf4':'#fefce8';
+    sectorBox.style.borderColor=yourRank&&yourRank<=3?'#bbf7d0':'#fef08a';
+    sectorBox.innerHTML='<div style="font-weight:700;color:#14532d;margin-bottom:4px">'+(yourSector?yourSector.sector+' ranks #'+yourRank+' of 11 sectors':'Sector rotation data loaded')+'</div>'
+      +'<div style="color:#16a34a;margin-bottom:8px">Leading sector: '+topSector.sector+' (RS: +'+(topSector.rs>0?'+':'')+topSector.rs.toFixed(1)+'%)'+'</div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap">'+pills+'<span style="background:#f3f4f6;color:#9ca3af;font-size:10px;padding:2px 8px;border-radius:4px">#5–11 ···</span></div>';
+  }
+
   var now=new Date(),months=['January','February','March','April','May','June','July','August','September','October','November','December'];
   s('pdf-date',months[now.getMonth()]+' '+now.getDate()+', '+now.getFullYear()+' at '+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes()+' ET');
 }
