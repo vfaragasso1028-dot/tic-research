@@ -704,8 +704,8 @@ input:focus,select:focus{border-color:#3b82f6}
       <button class="fc" onclick="setFilter(this)">Volume Surge 2×+</button>
       <button class="fc" onclick="setFilter(this)">Up Day on Heavy Vol</button>
     </div>
-    <button class="btn btn-blue" style="margin-top:12px" onclick="toast('Scanner ran — 47 results found matching filters!')">Run Scanner →</button>
-    <button class="btn" style="margin-top:12px;margin-left:8px" onclick="toast('Filters cleared')">Clear All</button>
+    <button class="btn btn-blue" style="margin-top:12px" onclick="runScan()">Run Scanner →</button>
+    <button class="btn" style="margin-top:12px;margin-left:8px" onclick="document.getElementById('page-scanner').querySelectorAll('.fc').forEach(function(b){b.classList.remove('active')});document.getElementById('page-scanner').querySelectorAll('.fc:first-child').forEach(function(b){b.classList.add('active')});runScan()">Clear All</button>
   </div>
 
   <div class="result-bar">
@@ -2313,11 +2313,118 @@ function switchSpyTF(btn,tf){
 
 setTimeout(()=>{buildChart();buildEpsChart();buildRevChart();buildPeerChart();buildSpySectors('4w');},400);
 
+var SCANNER_DB = [
+  {ticker:'NVDA', company:'Nvidia',         price:134.21,  score:82, stage:'2A', rs:91, pattern:'Pocket Pivot',  support:126.80, eps:true,  sales:true,  vol:true,  golden:true},
+  {ticker:'APP',  company:'AppLovin',       price:312.80,  score:79, stage:'2A', rs:94, pattern:'Pocket Pivot',  support:295.00, eps:true,  sales:true,  vol:true,  golden:true},
+  {ticker:'CRWD', company:'CrowdStrike',    price:418.50,  score:80, stage:'2A', rs:92, pattern:'Pocket Pivot',  support:398.00, eps:true,  sales:true,  vol:true,  golden:true},
+  {ticker:'LLY',  company:'Eli Lilly',      price:892.10,  score:78, stage:'2A', rs:88, pattern:'Cup & Handle',  support:860.00, eps:true,  sales:true,  vol:false, golden:true},
+  {ticker:'META', company:'Meta Platforms', price:622.40,  score:76, stage:'2A', rs:84, pattern:'None',          support:598.00, eps:true,  sales:true,  vol:false, golden:true},
+  {ticker:'ORCL', company:'Oracle',         price:188.20,  score:71, stage:'2A', rs:85, pattern:'Flat Base',     support:178.00, eps:true,  sales:true,  vol:false, golden:true},
+  {ticker:'NOW',  company:'ServiceNow',     price:1041.00, score:73, stage:'2A', rs:83, pattern:'Asc. Triangle', support:998.00, eps:true,  sales:true,  vol:false, golden:true},
+  {ticker:'AVGO', company:'Broadcom',       price:248.80,  score:74, stage:'2A', rs:82, pattern:'Pocket Pivot',  support:236.00, eps:true,  sales:false, vol:true,  golden:true},
+  {ticker:'GEV',  company:'GE Vernova',     price:412.00,  score:69, stage:'2A', rs:80, pattern:'Cup & Handle',  support:392.00, eps:false, sales:true,  vol:true,  golden:true},
+  {ticker:'SHOP', company:'Shopify',        price:118.30,  score:66, stage:'2A', rs:77, pattern:'Pocket Pivot',  support:112.00, eps:true,  sales:true,  vol:true,  golden:true},
+  {ticker:'MSFT', company:'Microsoft',      price:458.20,  score:71, stage:'2B', rs:74, pattern:'Pocket Pivot',  support:440.00, eps:true,  sales:true,  vol:false, golden:true},
+  {ticker:'TSLA', company:'Tesla',          price:248.10,  score:72, stage:'2B', rs:74, pattern:'Bull Flag',     support:232.00, eps:false, sales:true,  vol:true,  golden:false},
+  {ticker:'AMGN', company:'Amgen',          price:318.40,  score:65, stage:'2A', rs:78, pattern:'Bull Flag',     support:304.00, eps:false, sales:false, vol:false, golden:true},
+  {ticker:'PLTR', company:'Palantir',       price:28.40,   score:68, stage:'1',  rs:70, pattern:'Flat Base',     support:26.50,  eps:false, sales:true,  vol:false, golden:false},
+  {ticker:'SMCI', company:'Super Micro',    price:42.10,   score:45, stage:'4',  rs:35, pattern:'None',          support:38.00,  eps:false, sales:false, vol:false, golden:false},
+  {ticker:'AXON', company:'Axon Enterprise',price:302.50,  score:75, stage:'2A', rs:89, pattern:'Pocket Pivot',  support:288.00, eps:true,  sales:true,  vol:true,  golden:true},
+  {ticker:'DECK', company:'Deckers Outdoor',price:198.40,  score:70, stage:'2A', rs:81, pattern:'Flat Base',     support:188.00, eps:true,  sales:true,  vol:false, golden:true},
+  {ticker:'HWM',  company:'Howmet Aerospace',price:142.80, score:72, stage:'2A', rs:86, pattern:'Cup & Handle',  support:136.00, eps:true,  sales:true,  vol:false, golden:true},
+  {ticker:'AAPL', company:'Apple',          price:211.30,  score:58, stage:'3',  rs:62, pattern:'None',          support:200.00, eps:true,  sales:true,  vol:false, golden:false},
+  {ticker:'AMZN', company:'Amazon',         price:261.42,  score:25, stage:'4',  rs:50, pattern:'None',          support:248.00, eps:false, sales:false, vol:false, golden:false},
+];
+
+function runScan() {
+  var page = document.getElementById('page-scanner');
+  var active = Array.from(page.querySelectorAll('.fc.active')).map(function(b){return b.textContent.trim();});
+
+  var stageF = active.includes('Stage 2 Only') ? '2' : active.includes('Stage 1 (Basing)') ? '1' : 'all';
+  var minScore = active.includes('≥ 70 High Conviction') ? 70 : active.includes('≥ 50 Pass') ? 50 : 0;
+  var minRS = active.includes('RS ≥ 90') ? 90 : active.includes('RS ≥ 80') ? 80 : 0;
+  var needGolden  = active.includes('Golden Cross');
+  var needPocket  = active.includes('Pocket Pivot');
+  var needCup     = active.includes('Cup & Handle');
+  var needBull    = active.includes('Bull Flag');
+  var needFlat    = active.includes('Flat Base');
+  var needVol     = active.includes('Volume Surge 1.5×+') || active.includes('Volume Surge 2×+') || active.includes('Up Day on Heavy Vol');
+  var needEPS     = active.includes('EPS Growth > 25%') || active.includes('Accelerating EPS');
+  var needSales   = active.includes('Sales Growth > 20%');
+
+  var results = SCANNER_DB.filter(function(s) {
+    if (stageF === '2' && !s.stage.startsWith('2')) return false;
+    if (stageF === '1' && s.stage !== '1') return false;
+    if (s.score < minScore) return false;
+    if (s.rs < minRS) return false;
+    if (needGolden && !s.golden) return false;
+    if (needPocket && s.pattern !== 'Pocket Pivot') return false;
+    if (needCup    && s.pattern !== 'Cup & Handle') return false;
+    if (needBull   && s.pattern !== 'Bull Flag') return false;
+    if (needFlat   && s.pattern !== 'Flat Base') return false;
+    if (needVol    && !s.vol) return false;
+    if (needEPS    && !s.eps) return false;
+    if (needSales  && !s.sales) return false;
+    return true;
+  }).sort(function(a,b){return b.rs-a.rs;});
+
+  function stagePill(st) {
+    var cls = st.startsWith('2')?'pg':st==='1'?'pb':st==='3'?'py':'pr';
+    return '<span class="pill '+cls+'">S'+st+'</span>';
+  }
+  function patPill(p) {
+    if(!p||p==='None') return '<span class="pill pgr">None</span>';
+    var cls=(p==='Pocket Pivot')?'pb':(p==='Cup & Handle'||p==='Asc. Triangle')?'py':'pg';
+    return '<span class="pill '+cls+'">'+p+'</span>';
+  }
+  function sc(v){return v>=70?'green':v>=50?'yellow':'red';}
+
+  var html='';
+  results.slice(0,5).forEach(function(s,i){
+    var golden=s.golden?'<span class="pill pg">Golden</span>':'<span class="pill pgr">No Cross</span>';
+    html+='<tr onclick="goAnalyze(\''+s.ticker+'\')">'
+      +'<td class="blue" style="font-weight:800">'+(i+1)+'</td>'
+      +'<td style="font-weight:800;color:#f9fafb;font-size:14px">'+s.ticker+'</td>'
+      +'<td class="muted">'+s.company+'</td>'
+      +'<td style="font-weight:600">$'+s.price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'
+      +'<td class="'+sc(s.score)+'" style="font-weight:800">'+s.score+'</td>'
+      +'<td>'+stagePill(s.stage)+'</td>'
+      +'<td class="'+sc(s.rs)+'" style="font-weight:800">'+s.rs+'</td>'
+      +'<td>'+golden+'</td>'
+      +'<td>'+patPill(s.pattern)+'</td>'
+      +'<td class="green">$'+s.support.toFixed(2)+'</td>'
+      +'<td><button class="btn btn-blue" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();goAnalyze(\''+s.ticker+'\')">Analyze</button></td>'
+      +'</tr>';
+  });
+  results.slice(5,9).forEach(function(s,i){
+    html+='<tr style="opacity:.3;filter:blur(2.5px);pointer-events:none">'
+      +'<td>'+(6+i)+'</td><td>'+s.ticker+'</td><td>'+s.company+'</td>'
+      +'<td>$'+s.price.toFixed(2)+'</td><td>'+s.score+'</td>'
+      +'<td><span class="pill pg">S'+s.stage+'</span></td>'
+      +'<td>'+s.rs+'</td><td>—</td><td>'+s.pattern+'</td><td>$'+s.support.toFixed(2)+'</td><td>—</td>'
+      +'</tr>';
+  });
+  if(results.length===0){
+    html='<tr><td colspan="11" style="text-align:center;color:#6b7280;padding:28px">No results match — try relaxing your filters</td></tr>';
+  }
+
+  var tbody=page.querySelector('.t tbody');
+  if(tbody) tbody.innerHTML=html;
+
+  var now=new Date(), h=now.getHours(), m=now.getMinutes(), ampm=h>=12?'pm':'am';
+  h=h%12||12;
+  var ts=h+':'+(m<10?'0':'')+m+ampm+' ET';
+  var rc=page.querySelector('.result-count');
+  if(rc) rc.innerHTML='Showing <strong>'+Math.min(results.length,5)+' of '+results.length+' results</strong> · Last run: today '+ts;
+
+  toast(results.length+' results found');
+}
+
 function setFilter(btn) {
   const bar = btn.parentElement;
   bar.querySelectorAll('.fc').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  toast('Filter applied — re-run scanner to update results');
+  runScan();
 }
 
 function setSortBtn(btn) {
