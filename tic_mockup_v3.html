@@ -1817,6 +1817,7 @@ function buildEpsChart(){
 function buildRevChart(){
   const c=document.getElementById('revChart');
   if(!c) return;
+  const ex=Chart.getChart(c); if(ex) ex.destroy();
   const qtrs=['Q2\'24','Q3\'24','Q4\'24','Q1\'25','Q2\'25','Q3\'25','Q4\'25','Q1\'26'];
   const rev=[13.5,18.1,22.1,26.0,30.0,35.1,39.3,44.1];
   const est=[13.0,17.4,21.1,24.6,28.5,33.4,37.8,42.0];
