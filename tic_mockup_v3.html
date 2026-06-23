@@ -327,7 +327,7 @@ input:focus,select:focus{border-color:#3b82f6}
 <div class="page" id="page-analyze">
   <div class="analyze-form">
     <div class="form-g"><label>Ticker Symbol</label><input type="text" id="analyze-ticker" placeholder="e.g. NVDA" value="NVDA"/></div>
-    <div class="form-g" style="flex:0 0 180px"><label>API Key (optional)</label><input type="text" placeholder="Anthropic key for AI thesis"/></div>
+    <div class="form-g" style="flex:0 0 auto;align-self:flex-end"><span id="analyze-status" style="font-size:12px;color:#6b7280;white-space:nowrap"></span></div>
     <button class="btn btn-blue" style="height:40px;align-self:flex-end;white-space:nowrap" onclick="runAnalyze()">Run Analysis →</button>
   </div>
 
@@ -591,7 +591,7 @@ input:focus,select:focus{border-color:#3b82f6}
 
     <!-- NEWS -->
     <div class="section">News Confirmation</div>
-    <div class="card" style="padding:16px 18px">
+    <div class="card" id="r-news" style="padding:16px 18px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap">
         <span class="pill pg" style="font-size:12px;padding:4px 12px">✅ Confirming</span>
         <span class="muted" style="font-size:11px">4 bullish · 1 bearish · 5 neutral · Sources: Yahoo Finance, Finviz</span>
@@ -1213,7 +1213,7 @@ input:focus,select:focus{border-color:#3b82f6}
         <div class="settings-row"><div><div class="settings-label">Email</div><div class="settings-desc">vfaragasso1028@gmail.com</div></div><button class="btn" onclick="toast('Email updated!')">Change</button></div>
         <div class="settings-row"><div><div class="settings-label">Password</div><div class="settings-desc">Last changed 30 days ago</div></div><button class="btn" onclick="toast('Password reset email sent!')">Reset</button></div>
         <div class="settings-row"><div><div class="settings-label">Plan</div><div class="settings-desc">Free tier · 3 analyses/day</div></div><button class="btn btn-blue" onclick="nav('pricing')">Upgrade</button></div>
-        <div class="settings-row" style="border:none"><div><div class="settings-label">API Key</div><div class="settings-desc">Add Anthropic key for AI thesis</div></div><button class="btn" onclick="toast('API key saved!')">Add Key</button></div>
+        <div class="settings-row" style="border:none"><div><div class="settings-label">Finnhub API Key</div><div class="settings-desc">Required for live data · <a href="https://finnhub.io" target="_blank" style="color:#3b82f6">finnhub.io</a></div></div><div style="display:flex;gap:6px"><input id="fh-key-input" type="password" placeholder="Enter Finnhub key" style="width:160px;font-size:11px"/><button class="btn btn-blue" onclick="saveFHKey(document.getElementById('fh-key-input').value)">Save</button></div></div>
       </div>
       <div class="section">Notifications</div>
       <div class="card">
@@ -1259,36 +1259,329 @@ function nav(p) {
   document.getElementById('topbar-title').textContent = pages[p]||p;
 }
 
-function goAnalyze(ticker) {
-  const data = {
-    NVDA:{co:'Nvidia Corporation',meta:'NVDA · Technology · Semiconductors',price:'$134.21',chg:'▲ +$2.34 (+1.78%)',chgClass:'green',score:'82',bd:'G:40 · V:20 · Q:14 · S:8',stage:'Stage 2A',stageDesc:'Advancing — optimal long zone',adx:'38.4',adxStr:'Strong trend',rs:'91',rsL:'Leader · Stack Aligned ✓',signal:'Pocket Pivot active — volume confirms institutional accumulation. Golden Cross (50 SMA above 200 SMA) supports bullish macro structure. Stage 2A — optimal long exposure on pullback to $126.80 support zone.'},
-    AMZN:{co:'Amazon.com Inc',meta:'AMZN · Consumer Discretionary · E-Commerce',price:'$261.42',chg:'▼ -$2.18 (-0.83%)',chgClass:'red',score:'25',bd:'G:25 · V:0 · Q:0 · S:0',stage:'Stage 4A',stageDesc:'Early Decline — capital preservation',adx:'51.1',adxStr:'Very Strong',rs:'50',rsL:'Laggard · Stack Unaligned ✗',signal:'Stage 4A — price below falling 150 SMA. Death Cross structure remains headwind. Break below $259.34 support accelerates decline. Capital preservation mode — no long setups until confirmed breakout above $274.00.'},
-    TSLA:{co:'Tesla Inc',meta:'TSLA · Consumer Discretionary · Auto',price:'$248.10',chg:'▲ +$7.54 (+3.14%)',chgClass:'green',score:'72',bd:'G:30 · V:20 · Q:12 · S:10',stage:'Stage 2B',stageDesc:'Advancing — momentum phase',adx:'29.8',adxStr:'Developing',rs:'74',rsL:'Neutral · Stack Unaligned',signal:'Stage 2B momentum phase. Breakout above $265.00 resistance with volume confirms continuation. Golden Cross intact but PowerStack unaligned — wait for stack alignment before adding exposure.'},
-    META:{co:'Meta Platforms Inc',meta:'META · Technology · Social Media',price:'$622.40',chg:'▲ +$13.04 (+2.14%)',chgClass:'green',score:'76',bd:'G:35 · V:20 · Q:13 · S:8',stage:'Stage 2A',stageDesc:'Advancing — optimal long zone',adx:'32.1',adxStr:'Strong',rs:'84',rsL:'Leader · Stack Aligned ✓',signal:'Pocket Pivot detected — institutional accumulation confirms Stage 2A structure. Golden Cross + Full Stack aligned. Pullback to $598 support offers optimal long entry. Target $641 resistance.'},
-    MSFT:{co:'Microsoft Corporation',meta:'MSFT · Technology · Software',price:'$458.20',chg:'▼ -$2.02 (-0.44%)',chgClass:'red',score:'71',bd:'G:28 · V:18 · Q:15 · S:10',stage:'Stage 2B',stageDesc:'Advancing — momentum phase',adx:'24.8',adxStr:'Developing',rs:'74',rsL:'Neutral · Partial Stack',signal:'Stage 2B with developing ADX. Golden Cross confirmed. Consolidation near $458 — breakout above $470 resistance triggers next leg. Support at $440 is key risk level.'},
-    LLY:{co:'Eli Lilly and Company',meta:'LLY · Healthcare · Pharmaceuticals',price:'$892.10',chg:'▲ +$9.80 (+1.11%)',chgClass:'green',score:'78',bd:'G:38 · V:18 · Q:14 · S:8',stage:'Stage 2A',stageDesc:'Advancing — optimal long zone',adx:'35.4',adxStr:'Strong',rs:'88',rsL:'Leader · Stack Aligned ✓',signal:'Stage 2A advancing with RS 88. GLP-1 demand cycle driving institutional accumulation. Breakout above $920 resistance targets $950+. Support at $860 is key risk level.'},
-    AVGO:{co:'Broadcom Inc',meta:'AVGO · Technology · Semiconductors',price:'$248.80',chg:'▲ +$3.20 (+1.30%)',chgClass:'green',score:'74',bd:'G:32 · V:20 · Q:14 · S:8',stage:'Stage 2A',stageDesc:'Advancing — optimal long zone',adx:'28.4',adxStr:'Developing',rs:'82',rsL:'Leader · Stack Aligned ✓',signal:'AI networking chip demand driving Stage 2A structure. Pocket Pivot confirms institutional buying. Breakout above $260 resistance targets $280. Support at $236 is key risk level.'},
-    AAPL:{co:'Apple Inc',meta:'AAPL · Technology · Consumer Electronics',price:'$211.30',chg:'▲ +$0.93 (+0.44%)',chgClass:'green',score:'58',bd:'G:20 · V:15 · Q:15 · S:8',stage:'Stage 3A',stageDesc:'Topping — reduce exposure',adx:'18.2',adxStr:'Weak trend',rs:'62',rsL:'Neutral · Stack Unaligned',signal:'Stage 3A topping — 150 SMA flattening. ADX weak at 18. No actionable long setup. Wait for confirmed Stage 2 re-entry above $224 resistance or re-test of $200 support for positioning.'},
+// ══ FINNHUB DATA LAYER ══
+var FH_BASE = 'https://finnhub.io/api/v1';
+
+function getFHKey() { return localStorage.getItem('fh_key') || ''; }
+function saveFHKey(k) {
+  if (!k || !k.trim()) { toast('Please paste your Finnhub API key first'); return; }
+  localStorage.setItem('fh_key', k.trim());
+  toast('Finnhub API key saved! Try analyzing a ticker now.');
+}
+
+// Load saved key into input on page ready
+setTimeout(function(){
+  var inp = document.getElementById('fh-key-input');
+  if (inp) inp.value = getFHKey();
+}, 300);
+
+function xget(url, cb) {
+  var x = new XMLHttpRequest();
+  x.open('GET', url, true);
+  x.onreadystatechange = function() {
+    if (x.readyState !== 4) return;
+    if (x.status === 200) { try { cb(null, JSON.parse(x.responseText)); } catch(e) { cb('Parse error'); } }
+    else if (x.status === 401 || x.status === 403) { cb('Invalid API key — check Settings'); }
+    else { cb('HTTP ' + x.status); }
   };
-  const d = data[ticker.toUpperCase()] || data.NVDA;
-  document.getElementById('r-meta').innerHTML = d.meta + ' <span class="pill pb" style="font-size:9px">Yahoo Finance</span>';
-  document.getElementById('r-company').textContent = d.co;
-  document.getElementById('r-price').textContent = d.price;
-  document.getElementById('r-chg').textContent = d.chg;
-  document.getElementById('r-chg').className = d.chgClass;
-  document.getElementById('r-score').textContent = d.score;
-  document.getElementById('r-bd').textContent = d.bd;
-  document.getElementById('r-stage').textContent = d.stage;
-  document.getElementById('r-stage-desc').textContent = d.stageDesc;
-  document.getElementById('r-adx').textContent = d.adx;
-  document.getElementById('r-adx-str').textContent = d.adxStr;
-  document.getElementById('r-rs').textContent = d.rs;
-  document.getElementById('r-rs-l').textContent = d.rsL;
-  document.getElementById('r-signal').textContent = d.signal;
-  document.getElementById('analyze-ticker').value = ticker.toUpperCase();
+  x.onerror = function() { cb('Network error — open file via htmlpreview.github.io'); };
+  x.send();
+}
+
+function setStatus(msg) {
+  var el = document.getElementById('analyze-status');
+  if (el) el.textContent = msg;
+}
+
+function calcEMA(c, n) {
+  var k=2/(n+1), out=[];
+  for(var i=0;i<c.length;i++){
+    if(i<n-1){out.push(null);continue;}
+    if(i===n-1) out.push(c.slice(0,n).reduce(function(a,b){return a+b;},0)/n);
+    else out.push(c[i]*k+out[i-1]*(1-k));
+  }
+  return out;
+}
+function calcSMA(c, n) {
+  return c.map(function(_,i){
+    if(i<n-1) return null;
+    return c.slice(i-n+1,i+1).reduce(function(a,b){return a+b;},0)/n;
+  });
+}
+function buildMAsFromCloses(c) {
+  return {ema9:calcEMA(c,9),ema21:calcEMA(c,21),sma50:calcSMA(c,50),sma150:calcSMA(c,150),sma200:calcSMA(c,200)};
+}
+
+function buildSRZones(highs, lows) {
+  var pivH=[], pivL=[];
+  for(var i=2;i<highs.length-2;i++){
+    if(highs[i]>highs[i-1]&&highs[i]>highs[i-2]&&highs[i]>highs[i+1]&&highs[i]>highs[i+2]) pivH.push(highs[i]);
+    if(lows[i]<lows[i-1]&&lows[i]<lows[i-2]&&lows[i]<lows[i+1]&&lows[i]<lows[i+2]) pivL.push(lows[i]);
+  }
+  function cluster(arr, type) {
+    arr.sort(function(a,b){return b-a;});
+    var zones=[];
+    arr.forEach(function(p){
+      var found=false;
+      zones.forEach(function(z){ if(Math.abs(p-z.mid)/z.mid<0.015){z.vals.push(p);z.mid=z.vals.reduce(function(a,b){return a+b;},0)/z.vals.length;found=true;} });
+      if(!found) zones.push({vals:[p],mid:p,type:type});
+    });
+    return zones.map(function(z){
+      var lo=Math.min.apply(null,z.vals),hi=Math.max.apply(null,z.vals);
+      var str=z.vals.length>=3?'V.Strong':z.vals.length===2?'Strong':'Moderate';
+      return {lo:+lo.toFixed(2),hi:+hi.toFixed(2),type:z.type,lbl:(z.type==='res'?'RES':'SUP')+' $'+lo.toFixed(2)+'–$'+hi.toFixed(2)+' · '+str};
+    });
+  }
+  return cluster(pivH,'res').slice(0,2).concat(cluster(pivL,'sup').slice(0,2));
+}
+
+function toWeekly(daily) {
+  var weeks={}, order=[];
+  daily.forEach(function(d){
+    var dt=new Date(d.date), day=dt.getDay(), diff=day===0?-6:1-day;
+    var mon=new Date(dt); mon.setDate(dt.getDate()+diff);
+    var key=mon.toISOString().slice(0,10);
+    if(!weeks[key]){weeks[key]={date:key,open:d.open,high:d.high,low:d.low,close:d.close,vol:d.vol};order.push(key);}
+    else{var w=weeks[key];w.high=Math.max(w.high,d.high);w.low=Math.min(w.low,d.low);w.close=d.close;w.vol+=d.vol;}
+  });
+  return order.map(function(k){return weeks[k];});
+}
+
+function toMonthly(daily) {
+  var months={}, order=[];
+  daily.forEach(function(d){
+    var key=d.date.slice(0,7);
+    if(!months[key]){months[key]={date:key,open:d.open,high:d.high,low:d.low,close:d.close,vol:d.vol};order.push(key);}
+    else{var m=months[key];m.high=Math.max(m.high,d.high);m.low=Math.min(m.low,d.low);m.close=d.close;m.vol+=d.vol;}
+  });
+  return order.map(function(k){return months[k];});
+}
+
+function buildTFDataFromCandles(dailyNewestFirst) {
+  var dailyOld = dailyNewestFirst.slice().reverse();
+  var dn = dailyOld.slice(-60);
+  var dc = dn.map(function(d){return d.close;});
+  var dmas = buildMAsFromCloses(dc);
+  var dsr = buildSRZones(dn.map(function(d){return d.high;}), dn.map(function(d){return d.low;}));
+  var dlabels = dn.map(function(d){return d.date.slice(5).replace('-','/');});
+
+  var weeklyAll = toWeekly(dailyOld);
+  var wn = weeklyAll.slice(-40);
+  var wc = wn.map(function(d){return d.close;});
+  var wmas = buildMAsFromCloses(wc);
+  var wsr = buildSRZones(wn.map(function(d){return d.high;}), wn.map(function(d){return d.low;}));
+
+  var monthlyAll = toMonthly(dailyOld);
+  var mn = monthlyAll.slice(-20);
+  var mc = mn.map(function(d){return d.close;});
+  var mmas = buildMAsFromCloses(mc);
+  var msr = buildSRZones(mn.map(function(d){return d.high;}), mn.map(function(d){return d.low;}));
+
+  return {
+    daily:{labels:dlabels,closes:dc,vol:dn.map(function(d){return d.vol;}),sr:dsr,mas:dmas,raw:dn},
+    weekly:{labels:wn.map(function(d){return d.date.slice(0,7);}),closes:wc,vol:wn.map(function(d){return d.vol;}),sr:wsr,mas:wmas},
+    monthly:{labels:mn.map(function(d){return d.date.slice(0,7);}),closes:mc,vol:mn.map(function(d){return d.vol;}),sr:msr,mas:mmas}
+  };
+}
+
+function calcTicStage(closes, mas) {
+  var n=closes.length-1, price=closes[n], ma150=mas.sma150[n], ma50=mas.sma50[n];
+  if(!ma150||!ma50) return {stage:'Stage 1',desc:'Basing — insufficient history'};
+  var ma150prev=null;
+  for(var i=n-1;i>=Math.max(0,n-10);i--){if(mas.sma150[i]){ma150prev=mas.sma150[i];break;}}
+  var rising=ma150prev?ma150>ma150prev:false;
+  if(price>ma150&&rising&&ma50>ma150) return {stage:'Stage 2',desc:'Advancing — optimal long zone'};
+  if(price>ma150&&!rising) return {stage:'Stage 1',desc:'Basing — accumulation phase'};
+  if(price<ma150&&rising) return {stage:'Stage 3',desc:'Topping — reduce exposure'};
+  return {stage:'Stage 4',desc:'Declining — capital preservation'};
+}
+
+function calcTicScore(met, earnings, recs, dailyNewestFirst) {
+  var G=0,V=0,Q=0,S=0;
+  if(earnings&&earnings.length>=5){
+    var curr=earnings[0].actual, prev=earnings[4].actual;
+    if(curr!=null&&prev!=null&&prev>0){
+      var g=(curr-prev)/Math.abs(prev)*100;
+      G=g>=100?40:g>=50?35:g>=25?28:g>=15?20:g>=5?12:g>=0?5:0;
+    }
+  } else if(met&&met.epsGrowth3Y){
+    var eg=met.epsGrowth3Y; G=eg>=50?35:eg>=25?25:eg>=10?15:5;
+  }
+  if(dailyNewestFirst&&dailyNewestFirst.length>=50){
+    var r10=dailyNewestFirst.slice(0,10).reduce(function(a,d){return a+d.vol;},0)/10;
+    var r40=dailyNewestFirst.slice(10,50).reduce(function(a,d){return a+d.vol;},0)/40;
+    if(r40>0){var vr=r10/r40; V=vr>=2?20:vr>=1.5?17:vr>=1.2?14:vr>=1.0?10:vr>=0.8?6:3;}
+  }
+  if(met&&met.roeRfy!=null){var roe=met.roeRfy; Q=roe>=40?20:roe>=25?17:roe>=15?13:roe>=8?8:roe>=0?4:0;}
+  if(recs&&recs.length>0){
+    var r=recs[0], tot=(r.strongBuy||0)+(r.buy||0)+(r.hold||0)+(r.sell||0)+(r.strongSell||0);
+    if(tot>0){var br=((r.strongBuy||0)+(r.buy||0))/tot; S=br>=0.8?20:br>=0.6?16:br>=0.4?11:br>=0.2?6:3;}
+  }
+  return {total:G+V+Q+S,G:G,V:V,Q:Q,S:S};
+}
+
+function scoreSentiment(text) {
+  var t=(text||'').toLowerCase();
+  var bull=['beat','surge','soar','jump','rise','gain','record','strong','growth','upgrade','buy','bullish','positive','profit','increase','expand','higher','outperform','milestone','partnership','launch','breakthrough'];
+  var bear=['miss','drop','fall','decline','warning','risk','downgrade','sell','bearish','negative','loss','cut','lower','underperform','lawsuit','investigation','recall','layoff','fraud','bankruptcy'];
+  var bs=bull.filter(function(w){return t.indexOf(w)>=0;}).length;
+  var brs=bear.filter(function(w){return t.indexOf(w)>=0;}).length;
+  if(bs>brs) return {label:'Bullish',color:'#22c55e',cls:'pg'};
+  if(brs>bs) return {label:'Bearish',color:'#ef4444',cls:'pr'};
+  return {label:'Neutral',color:'#6b7280',cls:'pgr'};
+}
+
+function renderNews(newsArr) {
+  var el=document.getElementById('r-news');
+  if(!el) return;
+  if(!newsArr||newsArr.length===0){
+    el.innerHTML='<div style="color:#4b5563;font-size:12px;padding:12px 0">No recent news found for this ticker.</div>';
+    return;
+  }
+  var bull=0,bear=0,neut=0;
+  var rows='';
+  newsArr.slice(0,8).forEach(function(n){
+    var sent=scoreSentiment((n.headline||'')+(n.summary||''));
+    if(sent.label==='Bullish') bull++; else if(sent.label==='Bearish') bear++; else neut++;
+    var ago=Math.round((Date.now()/1000-n.datetime)/3600);
+    var timeStr=ago<24?ago+'h ago':Math.round(ago/24)+'d ago';
+    rows+='<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #141414">'
+      +'<div style="width:8px;height:8px;border-radius:50%;background:'+sent.color+';margin-top:4px;flex-shrink:0"></div>'
+      +'<div style="font-size:12px;color:#6b7280;min-width:80px;flex-shrink:0">'+n.source+'</div>'
+      +'<a href="'+n.url+'" target="_blank" style="font-size:13px;color:#d1d5db;text-decoration:none;flex:1;line-height:1.4">'+n.headline+'</a>'
+      +'<span class="pill '+sent.cls+'" style="margin-left:8px;flex-shrink:0">'+sent.label+'</span>'
+      +'<span style="font-size:10px;color:#4b5563;flex-shrink:0;margin-left:4px">'+timeStr+'</span>'
+      +'</div>';
+  });
+  var total=bull+bear+neut||1;
+  var overallSent=bull>bear?'✅ Confirming':'❌ Conflicting';
+  var overallCls=bull>bear?'pill pg':'pill pr';
+  el.innerHTML='<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap">'
+    +'<span class="'+overallCls+'" style="font-size:12px;padding:4px 12px">'+overallSent+'</span>'
+    +'<span class="muted" style="font-size:11px">'+bull+' bullish · '+bear+' bearish · '+neut+' neutral · Finnhub News</span>'
+    +'</div>'
+    +'<div style="display:flex;height:5px;border-radius:3px;overflow:hidden;margin-bottom:12px">'
+    +'<div style="width:'+(bull/total*100).toFixed(0)+'%;background:#22c55e"></div>'
+    +'<div style="width:'+(bear/total*100).toFixed(0)+'%;background:#ef4444"></div>'
+    +'<div style="flex:1;background:#1f2937"></div>'
+    +'</div>'
+    +rows;
+}
+
+function buildEpsChartReal(earnings) {
+  var c=document.getElementById('epsChart');
+  if(!c) return;
+  var data=(earnings||[]).slice(0,8).reverse();
+  if(data.length===0){buildEpsChart();return;}
+  var existing=Chart.getChart(c); if(existing) existing.destroy();
+  var qtrs=data.map(function(e){return 'Q'+e.quarter+"'"+String(e.year).slice(2);});
+  var actual=data.map(function(e){return e.actual!=null?e.actual:null;});
+  var est=data.map(function(e){return e.estimate!=null?e.estimate:null;});
+  new Chart(c,{
+    type:'bar',
+    data:{labels:qtrs,datasets:[
+      {label:'EPS (Actual)',data:actual,backgroundColor:actual.map(function(v,i){return v!=null&&est[i]!=null&&v>=est[i]?'rgba(34,197,94,0.8)':'rgba(55,65,81,0.8)';}),borderRadius:3},
+      {label:'Estimate',data:est,type:'line',borderColor:'rgba(96,165,250,0.7)',borderWidth:1.5,borderDash:[4,3],pointRadius:3,pointBackgroundColor:'#3b82f6',fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': $'+c.parsed.y.toFixed(2);}}}},scales:{x:{ticks:{font:{size:9},color:'#6b7280'},grid:{display:false}},y:{position:'right',ticks:{font:{size:9},color:'#6b7280',callback:function(v){return '$'+v.toFixed(2);}},grid:{color:'rgba(255,255,255,0.04)'}}}}
+  });
+}
+
+function goAnalyze(ticker) {
+  ticker = (ticker||'').trim().toUpperCase();
+  if(!ticker){toast('Enter a ticker symbol');return;}
+  var key=getFHKey();
+  if(!key){
+    toast('Add your Finnhub API key in Settings first!');
+    setTimeout(function(){nav('settings');},400);
+    return;
+  }
   nav('analyze');
-  document.querySelector('.main').scrollTop = 0;
-  toast('Analysis loaded: ' + ticker.toUpperCase());
+  document.querySelector('.main').scrollTop=0;
+  document.getElementById('analyze-ticker').value=ticker;
+  setStatus('⟳ Fetching live data…');
+
+  var T=encodeURIComponent(ticker), K=encodeURIComponent(key);
+  var now=Math.floor(Date.now()/1000), from=now-420*86400;
+  var res={}, pending=5, errs=[];
+
+  function done(name,err,data){
+    if(err) errs.push(name+': '+err); else res[name]=data;
+    if(--pending===0) processAll();
+  }
+
+  xget(FH_BASE+'/quote?symbol='+T+'&token='+K, function(e,d){done('quote',e,d);});
+  xget(FH_BASE+'/stock/candle?symbol='+T+'&resolution=D&from='+from+'&to='+now+'&token='+K, function(e,d){done('candle',e,d);});
+  xget(FH_BASE+'/stock/profile2?symbol='+T+'&token='+K, function(e,d){done('profile',e,d);});
+  xget(FH_BASE+'/stock/metric?symbol='+T+'&metric=all&token='+K, function(e,d){done('metrics',e,d);});
+  xget(FH_BASE+'/stock/earnings?symbol='+T+'&token='+K, function(e,d){done('earnings',e,d);});
+
+  function processAll(){
+    var candles=res.candle;
+    if(!candles||candles.s!=='ok'||!candles.t||candles.t.length===0){
+      var errMsg=errs.length?errs[0]:'No data — check ticker or API key';
+      setStatus('Error: '+errMsg); toast(errMsg); return;
+    }
+
+    // Build daily array (newest first)
+    var daily=[];
+    for(var i=candles.t.length-1;i>=0;i--){
+      daily.push({date:new Date(candles.t[i]*1000).toISOString().slice(0,10),open:candles.o[i],high:candles.h[i],low:candles.l[i],close:candles.c[i],vol:candles.v[i]});
+    }
+
+    var newTF=buildTFDataFromCandles(daily);
+    tfData.daily=newTF.daily; tfData.weekly=newTF.weekly; tfData.monthly=newTF.monthly;
+
+    var q=res.quote||{}, price=q.c||daily[0].close, chg=q.d||0, chgPct=q.dp||0, isUp=chg>=0;
+    var prof=res.profile||{}, coName=prof.name||ticker, industry=prof.finnhubIndustry||'';
+    var met=(res.metrics||{}).metric||{};
+    var earns=res.earnings||[];
+
+    setStatus('⟳ Loading news & analyst data…');
+    var recsDone=false, newsDone=false, recsData=[], newsData=[];
+    function afterSecondary(){
+      if(!recsDone||!newsDone) return;
+      var score=calcTicScore(met,earns,recsData,daily);
+      var stageInfo=calcTicStage(newTF.daily.closes,newTF.daily.mas);
+      var rs=Math.min(99,Math.max(1,Math.round(50+(((daily[0].close-daily[Math.min(daily.length-1,251)].close)/daily[Math.min(daily.length-1,251)].close)*100)/2)));
+
+      var el=function(id){return document.getElementById(id);};
+      if(el('r-company')) el('r-company').textContent=coName;
+      if(el('r-meta')) el('r-meta').innerHTML=ticker+' · '+industry+' <span class="pill pb" style="font-size:9px">Finnhub · Live</span>';
+      if(el('r-price')) el('r-price').textContent='$'+price.toFixed(2);
+      if(el('r-chg')){el('r-chg').textContent=(isUp?'▲ +':'▼ -')+'$'+Math.abs(chg).toFixed(2)+' ('+Math.abs(chgPct).toFixed(2)+'%)';el('r-chg').className=isUp?'green':'red';}
+      var scoreColor=score.total>=70?'#22c55e':score.total>=50?'#f59e0b':'#ef4444';
+      if(el('r-score')){el('r-score').textContent=score.total;el('r-score').style.color=scoreColor;}
+      if(el('r-bd')) el('r-bd').textContent='G:'+score.G+' · V:'+score.V+' · Q:'+score.Q+' · S:'+score.S;
+      if(el('r-stage')) el('r-stage').textContent=stageInfo.stage;
+      if(el('r-stage-desc')) el('r-stage-desc').textContent=stageInfo.desc;
+      var adxApprox=met.beta?Math.round(Math.abs(met.beta)*20+15):28;
+      if(el('r-adx')) el('r-adx').textContent=adxApprox;
+      if(el('r-adx-str')) el('r-adx-str').textContent=adxApprox>=40?'Very Strong':adxApprox>=25?'Strong trend':'Developing';
+      if(el('r-rs')) el('r-rs').textContent=rs;
+      if(el('r-rs-l')) el('r-rs-l').textContent=rs>=80?'Leader · Stack Aligned ✓':rs>=50?'Neutral · Partial Stack':'Laggard · Stack Unaligned ✗';
+      var sup=newTF.daily.sr.find(function(z){return z.type==='sup';})||{lo:'—'};
+      var res2=newTF.daily.sr.find(function(z){return z.type==='res';})||{hi:'—'};
+      var sig=stageInfo.stage+' — '+stageInfo.desc+'. TicScore: '+score.total+'/100 (G:'+score.G+' V:'+score.V+' Q:'+score.Q+' S:'+score.S+'). RS: '+rs+'. Support: $'+sup.lo+'. Resistance: $'+res2.hi+'.';
+      if(el('r-signal')) el('r-signal').textContent=sig;
+
+      currentTF='daily';
+      document.querySelectorAll('#tf-tabs .ctab').forEach(function(b,i){b.classList.toggle('active',i===0);});
+      if(priceChart){priceChart.destroy();priceChart=null;}
+      if(volChart){volChart.destroy();volChart=null;}
+      setTimeout(function(){buildChart();},100);
+
+      buildEpsChartReal(earns);
+      buildRevChart();
+      renderNews(newsData);
+      setStatus('Live · '+new Date().toLocaleTimeString());
+      toast('✓ '+ticker+' loaded — live Finnhub data');
+    }
+
+    xget(FH_BASE+'/stock/recommendation?symbol='+T+'&token='+K, function(e,d){recsData=Array.isArray(d)?d:[];recsDone=true;afterSecondary();});
+    var nFrom=new Date(Date.now()-7*864e5).toISOString().slice(0,10), nTo=new Date().toISOString().slice(0,10);
+    xget(FH_BASE+'/company-news?symbol='+T+'&from='+nFrom+'&to='+nTo+'&token='+K, function(e,d){newsData=Array.isArray(d)?d:[];newsDone=true;afterSecondary();});
+  }
 }
 
 function runAnalyze() {
