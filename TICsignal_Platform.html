@@ -279,69 +279,66 @@ input:focus,select:focus{border-color:#3b82f6}
 <div class="page active" id="page-dashboard">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
     <div>
-      <div style="font-size:11px;color:#374151;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Good morning, Vince</div>
-      <div style="font-size:20px;font-weight:800;color:#f9fafb" id="dash-date">Markets open · June 22, 2026</div>
+      <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px" id="dash-greeting">Good morning</div>
+      <div style="font-size:20px;font-weight:800;color:#f9fafb" id="dash-date">Loading market data…</div>
     </div>
-    <button class="btn btn-blue" onclick="nav('analyze');toast('Opening analyzer...')">Analyze a Ticker →</button>
+    <button class="btn btn-blue" onclick="nav('analyze')">Analyze a Ticker →</button>
   </div>
 
+  <!-- Market indices -->
   <div class="g4" style="margin-bottom:20px">
-    <div class="metric-card"><div class="mc-label">SPY <span style="font-weight:400;color:#6b7280;font-size:9px">S&amp;P 500 ETF</span></div><div class="mc-val green" id="d-spy">—</div><div class="mc-sub green" id="d-spy-chg">Loading…</div></div>
-    <div class="metric-card"><div class="mc-label">QQQ <span style="font-weight:400;color:#6b7280;font-size:9px">Nasdaq ETF</span></div><div class="mc-val green" id="d-qqq">—</div><div class="mc-sub green" id="d-qqq-chg">Loading…</div></div>
-    <div class="metric-card"><div class="mc-label">VXX <span style="font-weight:400;color:#6b7280;font-size:9px">VIX Futures ETN</span></div><div class="mc-val yellow" id="d-vix">—</div><div class="mc-sub muted" id="d-vix-sub">Loading…</div></div>
-    <div class="metric-card"><div class="mc-label">Analyses Today</div><div class="mc-val blue">2 / 3</div><div class="mc-sub muted">1 remaining (Free)</div></div>
+    <div class="metric-card"><div class="mc-label">SPY <span style="font-weight:400;color:#6b7280;font-size:9px">S&amp;P 500 ETF</span></div><div class="mc-val" id="d-spy">—</div><div class="mc-sub" id="d-spy-chg">Loading…</div></div>
+    <div class="metric-card"><div class="mc-label">QQQ <span style="font-weight:400;color:#6b7280;font-size:9px">Nasdaq ETF</span></div><div class="mc-val" id="d-qqq">—</div><div class="mc-sub" id="d-qqq-chg">Loading…</div></div>
+    <div class="metric-card"><div class="mc-label">VXX <span style="font-weight:400;color:#6b7280;font-size:9px">Volatility ETN</span></div><div class="mc-val yellow" id="d-vix">—</div><div class="mc-sub muted" id="d-vix-sub">Loading…</div></div>
+    <div class="metric-card"><div class="mc-label">Market Breadth</div><div class="mc-val" id="d-breadth">—</div><div class="mc-sub muted" id="d-breadth-sub">Loading…</div></div>
   </div>
 
-  <div class="g2">
-    <div>
-      <div class="section">Recent Analyses</div>
-      <div class="card" style="padding:0;overflow:hidden">
-        <div class="quick-ticker" onclick="goAnalyze('NVDA')">
-          <div class="qt-sym">NVDA</div><div class="qt-name">Nvidia · <span class="pill pg">S2A</span></div>
-          <div class="qt-price" id="da-nvda-price">—</div><div class="qt-chg green" id="da-nvda-chg">Loading…</div>
-        </div>
-        <div class="quick-ticker" onclick="goAnalyze('TSLA')">
-          <div class="qt-sym">TSLA</div><div class="qt-name">Tesla · <span class="pill pg">S2A</span></div>
-          <div class="qt-price" id="da-tsla-price">—</div><div class="qt-chg green" id="da-tsla-chg">Loading…</div>
-        </div>
-        <div class="quick-ticker" onclick="nav('analyze')">
-          <div style="width:100%;text-align:center;font-size:12px;color:#374151;padding:4px 0">+ Analyze new ticker (1 free left today)</div>
-        </div>
-      </div>
+  <!-- SPY Sector Rotation -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <div class="section" style="margin:0">SPY Sector Rotation</div>
+    <div style="display:flex;gap:6px" id="dash-spy-tf">
+      <button class="ctab active" onclick="switchDashSpyTF(this,'4w')" style="font-size:11px;padding:4px 10px">4W</button>
+      <button class="ctab" onclick="switchDashSpyTF(this,'13w')" style="font-size:11px;padding:4px 10px">13W</button>
+      <button class="ctab" onclick="switchDashSpyTF(this,'26w')" style="font-size:11px;padding:4px 10px">26W</button>
     </div>
+  </div>
+  <div class="card" style="padding:14px;margin-bottom:20px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px" id="dash-spy-grid"></div>
+  </div>
 
+  <!-- Watchlist + Recent -->
+  <div class="g2">
     <div>
       <div class="section">Watchlist Snapshot</div>
       <div class="card" style="padding:0;overflow:hidden">
         <div class="quick-ticker" onclick="goAnalyze('NVDA')">
-          <div class="qt-sym">NVDA</div><div class="qt-name"><span class="pill pg">Stage 2</span></div>
+          <div class="qt-sym">NVDA</div><div class="qt-name" id="dw-nvda-stage"><span class="pill pg">Stage 2</span></div>
           <div class="qt-price" id="dw-nvda-price">—</div><div class="qt-chg" id="dw-nvda-chg">Loading…</div>
         </div>
         <div class="quick-ticker" onclick="goAnalyze('TSLA')">
-          <div class="qt-sym">TSLA</div><div class="qt-name"><span class="pill pg">Stage 2</span></div>
+          <div class="qt-sym">TSLA</div><div class="qt-name" id="dw-tsla-stage"><span class="pill pg">Stage 2</span></div>
           <div class="qt-price" id="dw-tsla-price">—</div><div class="qt-chg" id="dw-tsla-chg">Loading…</div>
         </div>
         <div class="quick-ticker" onclick="goAnalyze('AMZN')">
-          <div class="qt-sym">AMZN</div><div class="qt-name"><span class="pill pg">Stage 2</span></div>
+          <div class="qt-sym">AMZN</div><div class="qt-name" id="dw-amzn-stage"><span class="pill pg">Stage 2</span></div>
           <div class="qt-price" id="dw-amzn-price">—</div><div class="qt-chg" id="dw-amzn-chg">Loading…</div>
+        </div>
+        <div class="quick-ticker" onclick="goAnalyze('META')">
+          <div class="qt-sym">META</div><div class="qt-name"><span class="pill pg">Stage 2</span></div>
+          <div class="qt-price" id="dw-meta-price">—</div><div class="qt-chg" id="dw-meta-chg">Loading…</div>
         </div>
         <div class="quick-ticker" onclick="nav('watchlist')">
           <div style="width:100%;text-align:center;font-size:12px;color:#374151;padding:4px 0">View full watchlist →</div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="section">Recent Alerts Fired</div>
-  <div class="card" style="padding:0;overflow:hidden">
-    <table class="t">
-      <thead><tr><th>Date</th><th>Ticker</th><th>Alert</th><th>Price</th><th>Result</th></tr></thead>
-      <tbody>
-        <tr onclick="goAnalyze('NVDA')"><td class="muted">Today 4:02pm</td><td style="font-weight:800;color:#f9fafb">NVDA</td><td>Closed above resistance $132.00</td><td class="green" style="font-weight:700">$132.48</td><td><span class="pill pg">▲ +1.8% next day</span></td></tr>
-        <tr onclick="goAnalyze('META')"><td class="muted">Jun 17</td><td style="font-weight:800;color:#f9fafb">META</td><td>Pocket Pivot detected</td><td class="green" style="font-weight:700">$622.10</td><td><span class="pill pg">▲ +3.2% next day</span></td></tr>
-        <tr onclick="goAnalyze('TSLA')"><td class="muted">Jun 15</td><td style="font-weight:800;color:#f9fafb">TSLA</td><td>TicScore rose above 70</td><td style="font-weight:700">$241.30</td><td><span class="pill pg">▲ +5.1% / 3 days</span></td></tr>
-      </tbody>
-    </table>
+    <div>
+      <div class="section">Top Scanner Results</div>
+      <div class="card" style="padding:0;overflow:hidden" id="dash-scan-preview">
+        <div style="text-align:center;color:#6b7280;font-size:12px;padding:20px">Loading top picks…</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -357,24 +354,24 @@ input:focus,select:focus{border-color:#3b82f6}
   <div class="report-section show" id="report-output">
     <!-- HEADER -->
     <div style="margin-bottom:20px">
-      <div style="font-size:11px;color:#6b7280;margin-bottom:4px" id="r-meta">NVDA · Technology · Semiconductors · <span class="pill pg" style="font-size:9px">Schwab API</span> <span style="color:#374151;font-size:9px">Real-time · 15s delay</span></div>
-      <div style="font-size:22px;font-weight:800;color:#f9fafb" id="r-company">Nvidia Corporation</div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:4px" id="r-meta">Enter a ticker above and click Run Analysis</div>
+      <div style="font-size:22px;font-weight:800;color:#f9fafb" id="r-company">— —</div>
       <div style="display:flex;align-items:baseline;gap:12px;margin-top:6px">
-        <span style="font-size:34px;font-weight:800;color:#f9fafb" id="r-price">$134.21</span>
-        <span style="font-size:16px;font-weight:600" id="r-chg" class="green">▲ +$2.34 (+1.78%)</span>
+        <span style="font-size:34px;font-weight:800;color:#f9fafb" id="r-price">—</span>
+        <span style="font-size:16px;font-weight:600" id="r-chg" class="muted"></span>
       </div>
     </div>
 
     <!-- OVERVIEW -->
     <div class="g4" style="margin-bottom:6px">
-      <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">TicScore <span class="pill pg" style="margin-left:4px">✓ Pass</span></div><div class="mc-val green" id="r-score">82</div><div class="mc-sub" id="r-bd">G:40 · V:20 · Q:14 · S:8</div></div>
-      <div class="card" style="border-left:3px solid #3b82f6"><div class="mc-label">TicStage</div><div class="mc-val blue" style="font-size:17px" id="r-stage">Stage 2A</div><div class="mc-sub green" id="r-stage-desc">Advancing — optimal long zone</div></div>
-      <div class="card"><div class="mc-label">ADX (14)</div><div class="mc-val" id="r-adx">38.4</div><div class="mc-sub" id="r-adx-str">Strong trend</div></div>
-      <div class="card"><div class="mc-label">RS Rating</div><div class="mc-val green" id="r-rs">91</div><div class="mc-sub green" id="r-rs-l">Leader · Stack Aligned ✓</div></div>
+      <div class="card" style="border-left:3px solid #374151"><div class="mc-label">TicScore</div><div class="mc-val" id="r-score">—</div><div class="mc-sub muted" id="r-bd">Run analysis to score</div></div>
+      <div class="card" style="border-left:3px solid #374151"><div class="mc-label">TicStage</div><div class="mc-val" style="font-size:17px" id="r-stage">—</div><div class="mc-sub muted" id="r-stage-desc">—</div></div>
+      <div class="card"><div class="mc-label">ADX (14)</div><div class="mc-val" id="r-adx">—</div><div class="mc-sub muted" id="r-adx-str">—</div></div>
+      <div class="card"><div class="mc-label">RS Rating</div><div class="mc-val" id="r-rs">—</div><div class="mc-sub muted" id="r-rs-l">—</div></div>
     </div>
 
     <div class="section">TIC Signal</div>
-    <div style="background:#0b1320;border:1px solid #1e3a5f;border-radius:10px;padding:16px 20px;font-size:14px;line-height:1.8;color:#cbd5e1" id="r-signal">Pocket Pivot active — volume confirms institutional accumulation. Golden Cross (50 SMA above 200 SMA) supports bullish macro structure. Stage 2A — optimal long exposure on pullback to $126.80 support zone.</div>
+    <div style="background:#0b1320;border:1px solid #1e3a5f;border-radius:10px;padding:16px 20px;font-size:14px;line-height:1.8;color:#cbd5e1" id="r-signal">Enter a ticker above and click Run Analysis → to generate a live TIC Signal.</div>
 
     <!-- CHART V3 — Full TA -->
     <div class="section">Price Chart — Technical Analysis</div>
@@ -1284,15 +1281,6 @@ setTimeout(function(){
   if (inp) inp.value = k;
   var inp2 = document.getElementById('fh-key-analyze');
   if (inp2) inp2.value = k;
-  // Update dashboard date dynamically
-  var dd = document.getElementById('dash-date');
-  if(dd){
-    var now = new Date();
-    var hr = now.getHours();
-    var timeLabel = hr < 9.5 ? 'Pre-market' : hr < 16 ? 'Markets open' : 'After hours';
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    dd.textContent = timeLabel + ' · ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
-  }
   if(k) initDashboard();
 }, 350);
 
@@ -1301,38 +1289,38 @@ function fgetQ(url){ return fetch(url).then(function(r){return r.json();}).catch
 function initDashboard() {
   var key = getFHKey();
   if(!key) return;
-  var tickers = ['SPY','QQQ','VXX','NVDA','TSLA','AMZN'];
+  var tickers = ['SPY','QQQ','VXX','NVDA','TSLA','AMZN','META'];
   Promise.all(tickers.map(function(t){
     return fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key);
   })).then(function(res){
-    var spy=res[0]||{}, qqq=res[1]||{}, vxx=res[2]||{}, nvda=res[3]||{}, tsla=res[4]||{}, amzn=res[5]||{};
+    var spy=res[0]||{}, qqq=res[1]||{}, vxx=res[2]||{}, nvda=res[3]||{}, tsla=res[4]||{}, amzn=res[5]||{}, meta=res[6]||{};
     function fmt(v){ return v!=null ? v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—'; }
-    function chgStr(d,dp){ if(d==null) return '—'; var up=d>=0; return (up?'▲ +':'▼ -')+Math.abs(dp).toFixed(2)+'% today'; }
+    function chgStr(d,dp){ if(d==null) return '—'; var up=d>=0; return (up?'▲ +':'▼ ')+Math.abs(dp).toFixed(2)+'% today'; }
     function setEl(id,val){ var e=document.getElementById(id); if(e) e.textContent=val; }
     function setCls(id,cls){ var e=document.getElementById(id); if(e) e.className=cls; }
-    // SPY → S&P 500 proxy
+    function qtRow(ticker, q){
+      var up=q.d>=0, pstr=(up?'▲ +':'▼ ')+Math.abs(q.dp).toFixed(2)+'%';
+      setEl('dw-'+ticker.toLowerCase()+'-price','$'+fmt(q.c));
+      setEl('dw-'+ticker.toLowerCase()+'-chg',pstr);
+      setCls('dw-'+ticker.toLowerCase()+'-chg','qt-chg '+(up?'green':'red'));
+    }
+    // Index cards
     if(spy.c){ setEl('d-spy','$'+fmt(spy.c)); setEl('d-spy-chg',chgStr(spy.d,spy.dp)); setCls('d-spy',spy.d>=0?'mc-val green':'mc-val red'); setCls('d-spy-chg',spy.d>=0?'mc-sub green':'mc-sub red'); }
-    // QQQ → Nasdaq proxy
     if(qqq.c){ setEl('d-qqq','$'+fmt(qqq.c)); setEl('d-qqq-chg',chgStr(qqq.d,qqq.dp)); setCls('d-qqq',qqq.d>=0?'mc-val green':'mc-val red'); setCls('d-qqq-chg',qqq.d>=0?'mc-sub green':'mc-sub red'); }
-    // VXX → VIX proxy
-    if(vxx.c){ setEl('d-vix','$'+fmt(vxx.c)); setEl('d-vix-sub',vxx.c<20?'Low fear — risk on':vxx.c<30?'Elevated — caution':'High fear — risk off'); }
-    // NVDA
-    if(nvda.c){
-      var up=nvda.d>=0, pstr=(up?'▲ +':'▼ ')+Math.abs(nvda.dp).toFixed(2)+'%';
-      setEl('da-nvda-price','$'+fmt(nvda.c)); setEl('da-nvda-chg',pstr); setCls('da-nvda-chg','qt-chg '+(up?'green':'red'));
-      setEl('dw-nvda-price','$'+fmt(nvda.c)); setEl('dw-nvda-chg',pstr); setCls('dw-nvda-chg','qt-chg '+(up?'green':'red'));
+    if(vxx.c){ setEl('d-vix','$'+fmt(vxx.c)); setCls('d-vix',vxx.c<20?'mc-val green':vxx.c<30?'mc-val yellow':'mc-val red'); setEl('d-vix-sub',vxx.c<20?'Low fear — risk on':vxx.c<30?'Elevated — caution':'High fear — risk off'); }
+    // Breadth proxy: if SPY & QQQ both green = bullish breadth
+    if(spy.c && qqq.c){
+      var bothUp=spy.d>=0&&qqq.d>=0, bothDn=spy.d<0&&qqq.d<0;
+      var bLabel=bothUp?'Bullish':bothDn?'Bearish':'Mixed';
+      var bSub=bothUp?'SPY & QQQ both advancing':bothDn?'SPY & QQQ both declining':'Split — sector rotation';
+      setEl('d-breadth',bLabel); setCls('d-breadth',bothUp?'mc-val green':bothDn?'mc-val red':'mc-val yellow');
+      setEl('d-breadth-sub',bSub);
     }
-    // TSLA
-    if(tsla.c){
-      var up=tsla.d>=0, pstr=(up?'▲ +':'▼ ')+Math.abs(tsla.dp).toFixed(2)+'%';
-      setEl('da-tsla-price','$'+fmt(tsla.c)); setEl('da-tsla-chg',pstr); setCls('da-tsla-chg','qt-chg '+(up?'green':'red'));
-      setEl('dw-tsla-price','$'+fmt(tsla.c)); setEl('dw-tsla-chg',pstr); setCls('dw-tsla-chg','qt-chg '+(up?'green':'red'));
-    }
-    // AMZN
-    if(amzn.c){
-      var up=amzn.d>=0, pstr=(up?'▲ +':'▼ ')+Math.abs(amzn.dp).toFixed(2)+'%';
-      setEl('dw-amzn-price','$'+fmt(amzn.c)); setEl('dw-amzn-chg',pstr); setCls('dw-amzn-chg','qt-chg '+(up?'green':'red'));
-    }
+    // Watchlist rows
+    if(nvda.c) qtRow('NVDA',nvda);
+    if(tsla.c) qtRow('TSLA',tsla);
+    if(amzn.c) qtRow('AMZN',amzn);
+    if(meta.c) qtRow('META',meta);
   }).catch(function(){});
 }
 
@@ -2326,6 +2314,71 @@ function buildSpySectors(tf){
   });
 }
 
+function buildDashSpySectors(tf){
+  var data=spyData[tf];
+  var grid=document.getElementById('dash-spy-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+  data.forEach(function(s){
+    var isPos=s.rs>=0;
+    var intensity=Math.min(Math.abs(s.rs)/15,1);
+    var bg=isPos?'rgba(34,197,94,'+(0.06+intensity*0.14)+')':'rgba(239,68,68,'+(0.06+intensity*0.14)+')';
+    var border=isPos?'rgba(34,197,94,'+(0.25+intensity*0.4)+')':'rgba(239,68,68,'+(0.25+intensity*0.4)+')';
+    var rsColor=isPos?'#22c55e':'#ef4444';
+    grid.innerHTML+='<div style="background:'+bg+';border:1px solid '+border+';border-radius:8px;padding:9px 11px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">'
+      +'<span style="font-size:10px;font-weight:700;color:#9ca3af">'+s.etf+'</span>'
+      +'<span style="font-size:10px;color:'+(isPos?'#22c55e':'#ef4444')+';font-weight:700">#'+s.rank+'</span>'
+      +'</div>'
+      +'<div style="font-size:11px;font-weight:700;color:#d1d5db;margin-bottom:3px">'+s.sector+'</div>'
+      +'<div style="font-size:15px;font-weight:800;color:'+rsColor+'">'+(isPos?'+':'')+s.rs.toFixed(1)+'%</div>'
+      +'<div style="height:2px;border-radius:2px;background:'+border+';margin-top:5px;width:'+Math.min(Math.abs(s.rs)/20*100,100)+'%"></div>'
+      +'</div>';
+  });
+}
+
+function switchDashSpyTF(btn,tf){
+  document.querySelectorAll('#dash-spy-tf .ctab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  buildDashSpySectors(tf);
+}
+
+function buildDashScanPreview(){
+  var el=document.getElementById('dash-scan-preview');
+  if(!el) return;
+  // Show top 4 RS leaders from SCANNER_DB that are Stage 2
+  var top=SCANNER_DB.filter(function(s){return s.stage.startsWith('2');})
+    .sort(function(a,b){return b.rs-a.rs;}).slice(0,4);
+  var html='';
+  top.forEach(function(s){
+    var isUp=true;
+    var sc=s.score>=70?'green':s.score>=50?'yellow':'red';
+    html+='<div class="quick-ticker" onclick="goAnalyze(\''+s.ticker+'\')">'
+      +'<div class="qt-sym">'+s.ticker+'</div>'
+      +'<div class="qt-name" style="font-size:11px">'+s.company+' · <span class="pill pg" style="font-size:9px">S'+s.stage+'</span></div>'
+      +'<div class="qt-price">$'+s.price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'
+      +'<div class="qt-chg '+sc+'" style="font-size:11px">RS '+s.rs+'</div>'
+      +'</div>';
+  });
+  html+='<div class="quick-ticker" onclick="nav(\'scanner\')" style="justify-content:center">'
+    +'<div style="font-size:12px;color:#374151;text-align:center">View full scanner →</div>'
+    +'</div>';
+  el.innerHTML=html;
+}
+
+function initDashboardGreeting(){
+  var now=new Date();
+  var h=now.getHours();
+  var greeting=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var dateStr=days[now.getDay()]+', '+months[now.getMonth()]+' '+now.getDate()+', '+now.getFullYear();
+  var el=document.getElementById('dash-greeting');
+  var ed=document.getElementById('dash-date');
+  if(el) el.textContent=greeting;
+  if(ed) ed.textContent=dateStr+' · Markets';
+}
+
 function switchSpyTF(btn,tf){
   document.querySelectorAll('#spy-tf-tabs .ctab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -2333,7 +2386,7 @@ function switchSpyTF(btn,tf){
   buildSpySectors(tf);
 }
 
-setTimeout(()=>{buildChart();buildEpsChart();buildRevChart();buildPeerChart();buildSpySectors('4w');runScan();},400);
+setTimeout(()=>{buildChart();buildEpsChart();buildRevChart();buildPeerChart();buildSpySectors('4w');buildDashSpySectors('4w');buildDashScanPreview();initDashboardGreeting();runScan();},400);
 
 var SCANNER_DB = [
   // ── MEGA CAP TECH ──
