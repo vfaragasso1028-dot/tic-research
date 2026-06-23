@@ -1505,92 +1505,87 @@ function goAnalyze(ticker) {
   document.getElementById('analyze-ticker').value=ticker;
   setStatus('⟳ Fetching live data…');
 
-  var T=encodeURIComponent(ticker), K=encodeURIComponent(key);
-  var now=Math.floor(Date.now()/1000), from=now-420*86400;
-  var res={}, pending=5, errs=[];
-
-  function done(name,err,data){
-    if(err) errs.push(name+': '+err); else res[name]=data;
-    if(--pending===0) processAll();
-  }
-
-  xget(FH_BASE+'/quote?symbol='+T+'&token='+K, function(e,d){done('quote',e,d);});
-  xget(FH_BASE+'/stock/profile2?symbol='+T+'&token='+K, function(e,d){done('profile',e,d);});
-  xget(FH_BASE+'/stock/metric?symbol='+T+'&metric=all&token='+K, function(e,d){done('metrics',e,d);});
-  xget(FH_BASE+'/stock/earnings?symbol='+T+'&token='+K, function(e,d){done('earnings',e,d);});
-  // Yahoo Finance via CORS proxy for historical OHLCV (Finnhub candles require paid plan)
+  var T=encodeURIComponent(ticker);
+  var now=Math.floor(Date.now()/1000);
+  var nFrom=new Date(Date.now()-7*864e5).toISOString().slice(0,10);
+  var nTo=new Date().toISOString().slice(0,10);
   var yhUrl='https://corsproxy.io/?'+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?range=2y&interval=1d');
-  xget(yhUrl, function(e,d){done('candle',e,d);});
 
-  function processAll(){
-    var yhData=res.candle;
+  function fget(url){ return fetch(url).then(function(r){return r.json();}).catch(function(){return null;}); }
+
+  Promise.all([
+    fget(FH_BASE+'/quote?symbol='+T+'&token='+key),
+    fget(FH_BASE+'/stock/profile2?symbol='+T+'&token='+key),
+    fget(FH_BASE+'/stock/metric?symbol='+T+'&metric=all&token='+key),
+    fget(FH_BASE+'/stock/earnings?symbol='+T+'&token='+key),
+    fget(yhUrl),
+    fget(FH_BASE+'/stock/recommendation?symbol='+T+'&token='+key),
+    fget(FH_BASE+'/company-news?symbol='+T+'&from='+nFrom+'&to='+nTo+'&token='+key)
+  ]).then(function(results){
+    var quote=results[0]||{}, prof=results[1]||{}, metricsResp=results[2]||{};
+    var earns=Array.isArray(results[3])?results[3]:[];
+    var yhData=results[4], recs=Array.isArray(results[5])?results[5]:[];
+    var news=Array.isArray(results[6])?results[6]:[];
+
     var yhResult=yhData&&yhData.chart&&yhData.chart.result&&yhData.chart.result[0];
     if(!yhResult||!yhResult.timestamp||yhResult.timestamp.length===0){
-      var errMsg=errs.length?errs[0]:'No price data — check ticker symbol';
-      setStatus('Error: '+errMsg); toast(errMsg); return;
+      setStatus('Error: No price data — check ticker symbol'); toast('No price data for '+ticker); return;
     }
 
-    // Build daily array (newest first) from Yahoo Finance response
+    // Build daily array newest-first from Yahoo Finance
     var daily=[];
-    var ts=yhResult.timestamp, q=yhResult.indicators.quote[0];
+    var ts=yhResult.timestamp, yq=yhResult.indicators.quote[0];
     for(var i=ts.length-1;i>=0;i--){
-      if(q.close[i]==null) continue;
-      daily.push({date:new Date(ts[i]*1000).toISOString().slice(0,10),open:q.open[i]||q.close[i],high:q.high[i]||q.close[i],low:q.low[i]||q.close[i],close:q.close[i],vol:q.volume[i]||0});
+      if(yq.close[i]==null) continue;
+      daily.push({date:new Date(ts[i]*1000).toISOString().slice(0,10),open:yq.open[i]||yq.close[i],high:yq.high[i]||yq.close[i],low:yq.low[i]||yq.close[i],close:yq.close[i],vol:yq.volume[i]||0});
     }
 
     var newTF=buildTFDataFromCandles(daily);
     tfData.daily=newTF.daily; tfData.weekly=newTF.weekly; tfData.monthly=newTF.monthly;
 
-    var q=res.quote||{}, price=q.c||daily[0].close, chg=q.d||0, chgPct=q.dp||0, isUp=chg>=0;
-    var prof=res.profile||{}, coName=prof.name||ticker, industry=prof.finnhubIndustry||'';
-    var met=(res.metrics||{}).metric||{};
-    var earns=res.earnings||[];
+    var price=quote.c||daily[0].close, chg=quote.d||0, chgPct=quote.dp||0, isUp=chg>=0;
+    var coName=prof.name||ticker, industry=prof.finnhubIndustry||'';
+    var met=metricsResp.metric||{};
 
-    setStatus('⟳ Loading news & analyst data…');
-    var recsDone=false, newsDone=false, recsData=[], newsData=[];
-    function afterSecondary(){
-      if(!recsDone||!newsDone) return;
-      var score=calcTicScore(met,earns,recsData,daily);
-      var stageInfo=calcTicStage(newTF.daily.closes,newTF.daily.mas);
-      var rs=Math.min(99,Math.max(1,Math.round(50+(((daily[0].close-daily[Math.min(daily.length-1,251)].close)/daily[Math.min(daily.length-1,251)].close)*100)/2)));
+    var score=calcTicScore(met,earns,recs,daily);
+    var stageInfo=calcTicStage(newTF.daily.closes,newTF.daily.mas);
+    var lookback=Math.min(daily.length-1,251);
+    var rs=Math.min(99,Math.max(1,Math.round(50+(((daily[0].close-daily[lookback].close)/daily[lookback].close)*100)/2)));
 
-      var el=function(id){return document.getElementById(id);};
-      if(el('r-company')) el('r-company').textContent=coName;
-      if(el('r-meta')) el('r-meta').innerHTML=ticker+' · '+industry+' <span class="pill pb" style="font-size:9px">Finnhub · Live</span>';
-      if(el('r-price')) el('r-price').textContent='$'+price.toFixed(2);
-      if(el('r-chg')){el('r-chg').textContent=(isUp?'▲ +':'▼ -')+'$'+Math.abs(chg).toFixed(2)+' ('+Math.abs(chgPct).toFixed(2)+'%)';el('r-chg').className=isUp?'green':'red';}
-      var scoreColor=score.total>=70?'#22c55e':score.total>=50?'#f59e0b':'#ef4444';
-      if(el('r-score')){el('r-score').textContent=score.total;el('r-score').style.color=scoreColor;}
-      if(el('r-bd')) el('r-bd').textContent='G:'+score.G+' · V:'+score.V+' · Q:'+score.Q+' · S:'+score.S;
-      if(el('r-stage')) el('r-stage').textContent=stageInfo.stage;
-      if(el('r-stage-desc')) el('r-stage-desc').textContent=stageInfo.desc;
-      var adxApprox=met.beta?Math.round(Math.abs(met.beta)*20+15):28;
-      if(el('r-adx')) el('r-adx').textContent=adxApprox;
-      if(el('r-adx-str')) el('r-adx-str').textContent=adxApprox>=40?'Very Strong':adxApprox>=25?'Strong trend':'Developing';
-      if(el('r-rs')) el('r-rs').textContent=rs;
-      if(el('r-rs-l')) el('r-rs-l').textContent=rs>=80?'Leader · Stack Aligned ✓':rs>=50?'Neutral · Partial Stack':'Laggard · Stack Unaligned ✗';
-      var sup=newTF.daily.sr.find(function(z){return z.type==='sup';})||{lo:'—'};
-      var res2=newTF.daily.sr.find(function(z){return z.type==='res';})||{hi:'—'};
-      var sig=stageInfo.stage+' — '+stageInfo.desc+'. TicScore: '+score.total+'/100 (G:'+score.G+' V:'+score.V+' Q:'+score.Q+' S:'+score.S+'). RS: '+rs+'. Support: $'+sup.lo+'. Resistance: $'+res2.hi+'.';
-      if(el('r-signal')) el('r-signal').textContent=sig;
+    var el=function(id){return document.getElementById(id);};
+    if(el('r-company')) el('r-company').textContent=coName;
+    if(el('r-meta')) el('r-meta').innerHTML=ticker+' · '+industry+' <span class="pill pb" style="font-size:9px">Live Data</span>';
+    if(el('r-price')) el('r-price').textContent='$'+price.toFixed(2);
+    if(el('r-chg')){el('r-chg').textContent=(isUp?'▲ +':'▼ -')+'$'+Math.abs(chg).toFixed(2)+' ('+Math.abs(chgPct).toFixed(2)+'%)';el('r-chg').className=isUp?'green':'red';}
+    var scoreColor=score.total>=70?'#22c55e':score.total>=50?'#f59e0b':'#ef4444';
+    if(el('r-score')){el('r-score').textContent=score.total;el('r-score').style.color=scoreColor;}
+    if(el('r-bd')) el('r-bd').textContent='G:'+score.G+' · V:'+score.V+' · Q:'+score.Q+' · S:'+score.S;
+    if(el('r-stage')) el('r-stage').textContent=stageInfo.stage;
+    if(el('r-stage-desc')) el('r-stage-desc').textContent=stageInfo.desc;
+    var adxApprox=met.beta?Math.round(Math.abs(met.beta)*20+15):28;
+    if(el('r-adx')) el('r-adx').textContent=adxApprox;
+    if(el('r-adx-str')) el('r-adx-str').textContent=adxApprox>=40?'Very Strong':adxApprox>=25?'Strong trend':'Developing';
+    if(el('r-rs')) el('r-rs').textContent=rs;
+    if(el('r-rs-l')) el('r-rs-l').textContent=rs>=80?'Leader · Stack Aligned ✓':rs>=50?'Neutral · Partial Stack':'Laggard · Stack Unaligned ✗';
+    var sup=newTF.daily.sr.find(function(z){return z.type==='sup';})||{lo:'—'};
+    var resZ=newTF.daily.sr.find(function(z){return z.type==='res';})||{hi:'—'};
+    var sig=stageInfo.stage+' — '+stageInfo.desc+'. TicScore: '+score.total+'/100 (G:'+score.G+' V:'+score.V+' Q:'+score.Q+' S:'+score.S+'). RS: '+rs+'. Support: $'+sup.lo+'. Resistance: $'+resZ.hi+'.';
+    if(el('r-signal')) el('r-signal').textContent=sig;
 
-      currentTF='daily';
-      document.querySelectorAll('#tf-tabs .ctab').forEach(function(b,i){b.classList.toggle('active',i===0);});
-      if(priceChart){priceChart.destroy();priceChart=null;}
-      if(volChart){volChart.destroy();volChart=null;}
-      setTimeout(function(){buildChart();},100);
+    currentTF='daily';
+    document.querySelectorAll('#tf-tabs .ctab').forEach(function(b,i){b.classList.toggle('active',i===0);});
+    if(priceChart){priceChart.destroy();priceChart=null;}
+    if(volChart){volChart.destroy();volChart=null;}
+    setTimeout(function(){buildChart();},100);
 
-      buildEpsChartReal(earns);
-      buildRevChart();
-      renderNews(newsData);
-      setStatus('Live · '+new Date().toLocaleTimeString());
-      toast('✓ '+ticker+' loaded — live Finnhub data');
-    }
-
-    xget(FH_BASE+'/stock/recommendation?symbol='+T+'&token='+K, function(e,d){recsData=Array.isArray(d)?d:[];recsDone=true;afterSecondary();});
-    var nFrom=new Date(Date.now()-7*864e5).toISOString().slice(0,10), nTo=new Date().toISOString().slice(0,10);
-    xget(FH_BASE+'/company-news?symbol='+T+'&from='+nFrom+'&to='+nTo+'&token='+K, function(e,d){newsData=Array.isArray(d)?d:[];newsDone=true;afterSecondary();});
-  }
+    buildEpsChartReal(earns);
+    buildRevChart();
+    renderNews(news);
+    setStatus('Live · '+new Date().toLocaleTimeString());
+    toast('✓ '+ticker+' loaded with live data');
+  }).catch(function(e){
+    setStatus('Error: '+e.message); toast('Error: '+e.message);
+  });
 }
 
 function runAnalyze() {
