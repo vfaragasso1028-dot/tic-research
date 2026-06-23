@@ -1363,26 +1363,42 @@ function toMonthly(daily) {
 
 function buildTFDataFromCandles(dailyNewestFirst) {
   var dailyOld = dailyNewestFirst.slice().reverse();
+
+  // Compute MAs on FULL dataset so 150/200 SMA are valid
+  var allCloses = dailyOld.map(function(d){return d.close;});
+  var allMAs = buildMAsFromCloses(allCloses);
+
+  function sliceTail(mas, n) {
+    return {ema9:mas.ema9.slice(-n),ema21:mas.ema21.slice(-n),sma50:mas.sma50.slice(-n),sma150:mas.sma150.slice(-n),sma200:mas.sma200.slice(-n)};
+  }
+
+  // Last 60 bars for display, MAs sliced to match
   var dn = dailyOld.slice(-60);
   var dc = dn.map(function(d){return d.close;});
-  var dmas = buildMAsFromCloses(dc);
-  var dsr = buildSRZones(dn.map(function(d){return d.high;}), dn.map(function(d){return d.low;}));
+  var dmas = sliceTail(allMAs, 60);
+  // S/R from last 120 bars for more pivot points
+  var srWin = dailyOld.slice(-120);
+  var dsr = buildSRZones(srWin.map(function(d){return d.high;}), srWin.map(function(d){return d.low;}));
   var dlabels = dn.map(function(d){return d.date.slice(5).replace('-','/');});
 
   var weeklyAll = toWeekly(dailyOld);
+  var allWC = weeklyAll.map(function(d){return d.close;});
+  var allWMAs = buildMAsFromCloses(allWC);
   var wn = weeklyAll.slice(-40);
   var wc = wn.map(function(d){return d.close;});
-  var wmas = buildMAsFromCloses(wc);
+  var wmas = sliceTail(allWMAs, Math.min(40, weeklyAll.length));
   var wsr = buildSRZones(wn.map(function(d){return d.high;}), wn.map(function(d){return d.low;}));
 
   var monthlyAll = toMonthly(dailyOld);
+  var allMC = monthlyAll.map(function(d){return d.close;});
+  var allMMAs = buildMAsFromCloses(allMC);
   var mn = monthlyAll.slice(-20);
   var mc = mn.map(function(d){return d.close;});
-  var mmas = buildMAsFromCloses(mc);
+  var mmas = sliceTail(allMMAs, Math.min(20, monthlyAll.length));
   var msr = buildSRZones(mn.map(function(d){return d.high;}), mn.map(function(d){return d.low;}));
 
   return {
-    daily:{labels:dlabels,closes:dc,vol:dn.map(function(d){return d.vol;}),sr:dsr,mas:dmas,raw:dn},
+    daily:{labels:dlabels,closes:dc,vol:dn.map(function(d){return d.vol;}),sr:dsr,mas:dmas,raw:dn,allCloses:allCloses,allMAs:allMAs},
     weekly:{labels:wn.map(function(d){return d.date.slice(0,7);}),closes:wc,vol:wn.map(function(d){return d.vol;}),sr:wsr,mas:wmas},
     monthly:{labels:mn.map(function(d){return d.date.slice(0,7);}),closes:mc,vol:mn.map(function(d){return d.vol;}),sr:msr,mas:mmas}
   };
@@ -1548,7 +1564,7 @@ function goAnalyze(ticker) {
     var met=metricsResp.metric||{};
 
     var score=calcTicScore(met,earns,recs,daily);
-    var stageInfo=calcTicStage(newTF.daily.closes,newTF.daily.mas);
+    var stageInfo=calcTicStage(newTF.daily.allCloses,newTF.daily.allMAs);
     var lookback=Math.min(daily.length-1,251);
     var rs=Math.min(99,Math.max(1,Math.round(50+(((daily[0].close-daily[lookback].close)/daily[lookback].close)*100)/2)));
 
