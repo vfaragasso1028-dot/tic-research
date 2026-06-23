@@ -1274,6 +1274,7 @@ function calcMACDVal(closes) {
   if(ema12[n]==null||ema26[n]==null) return null;
   return +(ema12[n]-ema26[n]).toFixed(2);
 }
+var calcMACD=calcMACDVal;
 
 function generateBullBear(ticker, price, stageInfo, score, sup, res, met, earns, mas, daily) {
   var bullLines=[], bearLines=[];
