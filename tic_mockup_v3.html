@@ -327,9 +327,10 @@ input:focus,select:focus{border-color:#3b82f6}
 <div class="page" id="page-analyze">
   <div class="analyze-form">
     <div class="form-g"><label>Ticker Symbol</label><input type="text" id="analyze-ticker" placeholder="e.g. NVDA" value="NVDA"/></div>
-    <div class="form-g" style="flex:0 0 auto;align-self:flex-end"><span id="analyze-status" style="font-size:12px;color:#6b7280;white-space:nowrap"></span></div>
+    <div class="form-g" style="flex:0 0 220px"><label>Finnhub API Key <span style="color:#374151;font-weight:400">(free at finnhub.io)</span></label><input type="password" id="fh-key-analyze" placeholder="Paste key here" oninput="localStorage.setItem('fh_key',this.value.trim())"/></div>
     <button class="btn btn-blue" style="height:40px;align-self:flex-end;white-space:nowrap" onclick="runAnalyze()">Run Analysis →</button>
   </div>
+  <div id="analyze-status" style="font-size:12px;color:#6b7280;margin-bottom:8px"></div>
 
   <div class="report-section show" id="report-output">
     <!-- HEADER -->
@@ -1269,10 +1270,13 @@ function saveFHKey(k) {
   toast('Finnhub API key saved! Try analyzing a ticker now.');
 }
 
-// Load saved key into input on page ready
+// Load saved key into inputs on page ready
 setTimeout(function(){
+  var k = getFHKey();
   var inp = document.getElementById('fh-key-input');
-  if (inp) inp.value = getFHKey();
+  if (inp) inp.value = k;
+  var inp2 = document.getElementById('fh-key-analyze');
+  if (inp2) inp2.value = k;
 }, 300);
 
 function xget(url, cb) {
