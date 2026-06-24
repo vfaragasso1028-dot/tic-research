@@ -2699,7 +2699,7 @@ let spyChart=null;
 function buildSpySectors(tf){
   const data=spyData[tf];
   const grid=document.getElementById('spy-grid');
-  if(!grid) return;
+  if(!grid||!data||!data.length) return;
   grid.innerHTML='';
   data.forEach(s=>{
     const isPos=s.rs>=0;
@@ -2761,7 +2761,7 @@ function buildSpySectors(tf){
 function buildDashSpySectors(tf){
   var data=spyData[tf];
   var grid=document.getElementById('dash-spy-grid');
-  if(!grid) return;
+  if(!grid||!data||!data.length) return;
   grid.innerHTML='';
   data.forEach(function(s){
     var isPos=s.rs>=0;
@@ -2942,6 +2942,7 @@ var SCANNER_DB = [
 
 function runScan() {
   var page = document.getElementById('page-scanner');
+  if(!page) return;
   var active = Array.from(page.querySelectorAll('.fc.active')).map(function(b){return b.textContent.trim();});
 
   var stageF = active.includes('Stage 2 Only') ? '2' : active.includes('Stage 1 (Basing)') ? '1' : 'all';
