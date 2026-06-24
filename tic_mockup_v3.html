@@ -1800,8 +1800,9 @@ function goAnalyze(ticker) {
       descWrap.style.display='block';
       var rawDesc=prof.description||'';
       // Trim to ~2 sentences for brevity
-      var sentences=rawDesc.split(/(?<=[.!?])\s+/);
-      var brief=sentences.slice(0,2).join(' ');
+      var sentences=rawDesc.split(/[.!?]\s+/);
+      var brief=sentences.slice(0,2).join('. ').trim();
+      if(brief&&!brief.match(/[.!?]$/)) brief+='.';
       if(!brief&&rawDesc) brief=rawDesc.slice(0,220)+'…';
       var descEl=el('r-desc');
       if(descEl) descEl.textContent=brief||'No description available.';
@@ -2830,7 +2831,23 @@ function switchSpyTF(btn,tf){
   buildSpySectors(tf);
 }
 
-setTimeout(()=>{buildEpsChart();buildRevChart();buildPeerChart();buildDashScanPreview();initDashboardGreeting();runScan();initWatchlist();initSectorRotation();initThemeGroups();initEarningsCalendar();initEconCalendar();},400);
+// Stagger Finnhub calls to stay under 60/min free tier rate limit
+// Wave 1 (400ms): UI-only builds + sector rotation (12 calls — highest priority)
+setTimeout(function(){
+  buildEpsChart();buildRevChart();buildPeerChart();
+  buildDashScanPreview();initDashboardGreeting();
+  runScan();initWatchlist();
+  initSectorRotation(); // 12 calls: SPY + 11 ETFs
+},400);
+// Wave 2 (5s): earnings + econ calendars (2-3 calls)
+setTimeout(function(){
+  initEarningsCalendar();
+  initEconCalendar();
+},5000);
+// Wave 3 (10s): themes (80 ticker quotes — largest batch, runs last)
+setTimeout(function(){
+  initThemeGroups();
+},10000);
 
 var SCANNER_DB = [
   // ── MEGA CAP TECH ──
