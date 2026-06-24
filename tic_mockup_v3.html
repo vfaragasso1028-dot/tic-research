@@ -307,6 +307,10 @@ input:focus,select:focus{border-color:#3b82f6}
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px" id="dash-spy-grid"></div>
   </div>
 
+  <!-- THEME GROUPS -->
+  <div class="section">Market Themes — Click to Expand Leaders</div>
+  <div id="theme-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:20px"></div>
+
   <!-- Watchlist + Recent -->
   <div class="g2">
     <div>
@@ -2226,6 +2230,127 @@ var SECTOR_ETFS = [
 var spyData = {'1d':[],'4w':[],'13w':[],'26w':[]};
 let currentSpyTF='4w';
 
+// ── THEME GROUPS ──
+var THEME_GROUPS = [
+  {name:'AI / Data Centers',   emoji:'🤖', leaders:['NVDA','AVGO','AMD','ORCL']},
+  {name:'Semiconductors',      emoji:'🔬', leaders:['NVDA','AVGO','AMAT','LRCX','KLAC']},
+  {name:'Cybersecurity',       emoji:'🛡️', leaders:['CRWD','PANW','ZS','FTNT','NET']},
+  {name:'Software / SaaS',     emoji:'💾', leaders:['NOW','CRM','SNOW','MDB','DDOG']},
+  {name:'Cloud Infrastructure',emoji:'☁️', leaders:['AMZN','MSFT','GOOGL','ORCL']},
+  {name:'Fintech',             emoji:'💳', leaders:['V','MA','PYPL','SQ','COIN']},
+  {name:'Biotech / Healthcare',emoji:'🧬', leaders:['LLY','VRTX','ISRG','REGN','DXCM']},
+  {name:'Defense / Aerospace', emoji:'🚀', leaders:['AXON','LMT','RTX','GE','HWM']},
+  {name:'Consumer / Retail',   emoji:'🛍️', leaders:['SHOP','AMZN','UBER','ABNB','NKE']},
+  {name:'Energy',              emoji:'⚡', leaders:['XOM','CVX','COP']},
+  {name:'Crypto / Digital',    emoji:'₿',  leaders:['COIN','MSTR','MARA']},
+  {name:'EV / Clean Energy',   emoji:'🔋', leaders:['TSLA','RIVN','ENPH','SEDG']},
+];
+
+var _themeQuotes = {}; // cache: ticker -> quote
+
+function initThemeGroups() {
+  var key = getFHKey();
+  if(!key) return;
+  var grid = document.getElementById('theme-grid');
+  if(!grid) return;
+
+  // Render placeholder cards immediately
+  THEME_GROUPS.forEach(function(theme, idx) {
+    var card = document.createElement('div');
+    card.id = 'theme-card-'+idx;
+    card.style.cssText = 'background:#111;border:1px solid #1f2937;border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .2s';
+    card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+      +'<span style="font-size:13px;font-weight:700;color:#f9fafb">'+theme.emoji+' '+theme.name+'</span>'
+      +'<span class="pill pgr" id="theme-bias-'+idx+'">...</span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:#6b7280;margin-bottom:4px" id="theme-rs-'+idx+'">Loading…</div>'
+      +'<div style="font-size:10px;color:#374151">'+theme.leaders.slice(0,4).join(' · ')+'</div>'
+      +'<div id="theme-expand-'+idx+'" style="display:none;margin-top:10px;border-top:1px solid #1f2937;padding-top:10px"></div>';
+    card.onclick = function() { toggleTheme(idx, theme, key); };
+    card.onmouseenter = function(){ card.style.borderColor='#3b82f6'; };
+    card.onmouseleave = function(){ card.style.borderColor=card._open?'#3b82f6':'#1f2937'; };
+    grid.appendChild(card);
+  });
+
+  // Fetch one lead ticker per theme to get bias
+  THEME_GROUPS.forEach(function(theme, idx) {
+    var lead = theme.leaders[0];
+    fgetQ(FH_BASE+'/quote?symbol='+lead+'&token='+key).then(function(q) {
+      if(!q||q.c==null) return;
+      _themeQuotes[lead] = q;
+      var dp = q.dp||0;
+      var bias = dp>=1?'BULL':dp>=-0.5?'FADING':'BEAR';
+      var cls  = dp>=1?'pg':dp>=-0.5?'py':'pr';
+      var flow = dp>=0?'▲ inflow':'▼ outflow';
+      var flowColor = dp>=0?'#22c55e':'#ef4444';
+      var biasEl = document.getElementById('theme-bias-'+idx);
+      var rsEl   = document.getElementById('theme-rs-'+idx);
+      if(biasEl){ biasEl.textContent=bias; biasEl.className='pill '+cls; }
+      if(rsEl) rsEl.innerHTML='<span style="color:'+flowColor+'">'+flow+'</span>'
+        +'  <span style="color:'+(dp>=0?'#22c55e':'#ef4444')+';font-weight:700">'+(dp>=0?'+':'')+dp.toFixed(2)+'% today</span>';
+    }).catch(function(){});
+  });
+}
+
+function toggleTheme(idx, theme, key) {
+  var card = document.getElementById('theme-card-'+idx);
+  var expand = document.getElementById('theme-expand-'+idx);
+  if(!card||!expand) return;
+  var isOpen = card._open;
+  // Close all
+  THEME_GROUPS.forEach(function(_,i){
+    var c=document.getElementById('theme-card-'+i);
+    var e=document.getElementById('theme-expand-'+i);
+    if(c){ c._open=false; c.style.borderColor='#1f2937'; }
+    if(e) e.style.display='none';
+  });
+  if(isOpen) return; // was open, just close
+  card._open = true;
+  card.style.borderColor = '#3b82f6';
+  expand.style.display = 'block';
+  expand.innerHTML = '<div style="font-size:11px;color:#6b7280;margin-bottom:8px">Fetching live data…</div>';
+
+  // Fetch all leaders
+  Promise.all(theme.leaders.map(function(t){
+    if(_themeQuotes[t]) return Promise.resolve(_themeQuotes[t]);
+    return fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key).then(function(q){
+      if(q&&q.c!=null) _themeQuotes[t]=q; return q;
+    });
+  })).then(function(quotes){
+    var rows = theme.leaders.map(function(t,i){
+      var q = quotes[i];
+      var db = SCANNER_DB.find(function(s){return s.ticker===t;})||{};
+      var price  = q&&q.c!=null ? '$'+q.c.toFixed(2) : '—';
+      var dp     = q&&q.dp!=null ? q.dp : null;
+      var chgStr = dp!=null ? (dp>=0?'<span style="color:#22c55e">▲ +'+dp.toFixed(2)+'%</span>':'<span style="color:#ef4444">▼ '+dp.toFixed(2)+'%</span>') : '—';
+      var score  = db.score!=null ? db.score : '—';
+      var scoreCls = db.score>=70?'#22c55e':db.score>=50?'#f59e0b':'#ef4444';
+      var stage  = db.stage ? db.stage : '—';
+      var stageCls = stage.startsWith('2')?'pg':stage==='1'?'pb':stage==='3'?'py':'pr';
+      var rs     = db.rs!=null ? db.rs : '—';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #1a1a1a">'
+        +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<span style="font-size:13px;font-weight:800;color:#60a5fa;min-width:48px">'+t+'</span>'
+        +'<span class="pill '+stageCls+'" style="font-size:10px">S'+stage+'</span>'
+        +'</div>'
+        +'<div style="display:flex;align-items:center;gap:12px">'
+        +'<span style="font-size:12px;font-weight:700;color:#f9fafb">'+price+'</span>'
+        +'<span style="font-size:11px">'+chgStr+'</span>'
+        +'<span style="font-size:11px;font-weight:700;color:'+scoreCls+'">'+score+'</span>'
+        +'<span style="font-size:10px;color:#6b7280">RS '+rs+'</span>'
+        +'<button class="btn btn-blue" style="font-size:10px;padding:4px 8px" onclick="event.stopPropagation();goAnalyze(\''+t+'\')">Analyze</button>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+    expand.innerHTML = '<div style="font-size:10px;color:#4b5563;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Ticker · Stage · Price · 1D · TicScore · RS</div>'
+      + rows
+      +'<button class="btn" style="margin-top:10px;font-size:11px;width:100%" onclick="event.stopPropagation();sectorToScanner(\''+theme.name+'\')">'
+      +'View all '+theme.name+' stocks in Scanner →</button>';
+  }).catch(function(){
+    expand.innerHTML='<div style="color:#ef4444;font-size:11px">Failed to load data</div>';
+  });
+}
+
 function initSectorRotation() {
   var key = getFHKey();
   if(!key) return;
@@ -2432,7 +2557,7 @@ function switchSpyTF(btn,tf){
   buildSpySectors(tf);
 }
 
-setTimeout(()=>{buildEpsChart();buildRevChart();buildPeerChart();buildDashScanPreview();initDashboardGreeting();runScan();initWatchlist();initSectorRotation();},400);
+setTimeout(()=>{buildEpsChart();buildRevChart();buildPeerChart();buildDashScanPreview();initDashboardGreeting();runScan();initWatchlist();initSectorRotation();initThemeGroups();},400);
 
 var SCANNER_DB = [
   // ── MEGA CAP TECH ──
