@@ -318,8 +318,8 @@ input:focus,select:focus{border-color:#3b82f6}
       <div style="text-align:center;color:#6b7280;font-size:12px;padding:20px">Loading upcoming earnings…</div>
     </div>
     <div class="section">Economic Calendar — High Impact · Next 7 Days</div>
-    <div class="card" style="padding:0;overflow:hidden;border-radius:10px">
-      <iframe src="https://www.tradingview.com/embed-widget/events/?locale=en#%7B%22colorTheme%22%3A%22dark%22%2C%22isTransparent%22%3Atrue%2C%22width%22%3A%22100%25%22%2C%22height%22%3A%22360%22%2C%22importanceFilter%22%3A%221%22%2C%22countryFilter%22%3A%22us%22%2C%22dateRange%22%3A%22custom_range%22%2C%22customDateRange%22%3A%227%22%7D" style="width:100%;height:360px;border:none;display:block" allowtransparency="true" scrolling="no"></iframe>
+    <div class="card" style="padding:0;overflow:hidden;border-radius:10px" id="econ-cal-card">
+      <div style="padding:20px;text-align:center;color:#6b7280;font-size:12px">Loading economic events…</div>
     </div>
   </div>
 </div>
@@ -2334,6 +2334,93 @@ function toggleTheme(idx, theme, key) {
     +'View all '+theme.name+' stocks in Scanner →</button>';
 }
 
+function initEconCalendar() {
+  var key = getFHKey();
+  var card = document.getElementById('econ-cal-card');
+  if(!card) return;
+
+  // Fallback curated events if API not available
+  var fallback = [
+    {date:'2026-06-25',time:'8:30 AM ET',event:'Durable Goods Orders',impact:'medium',category:'OTHER'},
+    {date:'2026-06-26',time:'8:30 AM ET',event:'PCE Price Index',impact:'high',category:'CPI/PPI'},
+    {date:'2026-06-30',time:'10:00 AM ET',event:'Consumer Confidence',impact:'medium',category:'OTHER'},
+    {date:'2026-07-01',time:'10:00 AM ET',event:'ISM Manufacturing PMI',impact:'medium',category:'OTHER'},
+    {date:'2026-07-02',time:'8:30 AM ET',event:'Non-Farm Payrolls',impact:'high',category:'JOBS'},
+    {date:'2026-07-02',time:'8:30 AM ET',event:'Unemployment Rate',impact:'high',category:'JOBS'},
+  ];
+
+  function renderEcon(events) {
+    var now = new Date();
+    var todayStr = now.toISOString().slice(0,10);
+    var tomorrow = new Date(now.getTime()+86400000).toISOString().slice(0,10);
+    var days7 = new Date(now.getTime()+7*86400000).toISOString().slice(0,10);
+
+    // Filter next 7 days, high/medium only
+    var filtered = events.filter(function(e){
+      return e.date >= todayStr && e.date <= days7;
+    }).sort(function(a,b){ return a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||''); });
+
+    if(!filtered.length){ card.innerHTML='<div style="padding:20px;text-align:center;color:#6b7280;font-size:12px">No high-impact events in next 7 days</div>'; return; }
+
+    // Group by date
+    var byDate = {};
+    filtered.forEach(function(e){ if(!byDate[e.date]) byDate[e.date]=[]; byDate[e.date].push(e); });
+
+    var catColors = {'CPI/PPI':'#f59e0b','JOBS':'#ef4444','GDP':'#3b82f6','FED':'#a78bfa','HOUSING':'#22c55e','OTHER':'#6b7280'};
+    var dotColor  = function(imp){ return imp==='high'?'#ef4444':imp==='medium'?'#f59e0b':'#4b5563'; };
+
+    var html = '';
+    Object.keys(byDate).sort().forEach(function(date, gi){
+      var d = new Date(date+'T12:00:00');
+      var isToday    = date===todayStr;
+      var isTomorrow = date===tomorrow;
+      var label = isToday?'TODAY — ':(isTomorrow?'TOMORROW — ':'UPCOMING — ');
+      label += d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase();
+      var borderColor = isToday?'#3b82f6':isTomorrow?'#f59e0b':'#374151';
+      var labelColor  = isToday?'#60a5fa':isTomorrow?'#f59e0b':'#6b7280';
+
+      html += '<div style="border-left:3px solid '+borderColor+';margin:0;padding:10px 16px;background:'+(gi%2===0?'#0a0a0a':'#0d0d0d')+'">'
+        +'<div style="font-size:10px;font-weight:800;color:'+labelColor+';letter-spacing:1px;margin-bottom:8px">'+label+'</div>';
+
+      byDate[date].forEach(function(e){
+        var cat = e.category||'OTHER';
+        var catCol = catColors[cat]||'#6b7280';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #1a1a1a">'
+          +'<div style="display:flex;align-items:center;gap:12px">'
+          +'<span style="width:8px;height:8px;border-radius:50%;background:'+dotColor(e.impact)+';flex-shrink:0;display:inline-block"></span>'
+          +'<span style="font-size:11px;color:#6b7280;min-width:80px">'+( e.time||'')+'</span>'
+          +'<span style="font-size:13px;font-weight:700;color:#f9fafb">'+e.event+'</span>'
+          +'</div>'
+          +'<span style="font-size:10px;font-weight:700;color:'+catCol+';background:'+catCol+'22;padding:2px 8px;border-radius:4px;border:1px solid '+catCol+'55;white-space:nowrap">'+cat+'</span>'
+          +'</div>';
+      });
+      html += '</div>';
+    });
+
+    card.innerHTML = html;
+  }
+
+  // Try Finnhub economic calendar
+  if(key) {
+    var now = new Date();
+    var from = now.toISOString().slice(0,10);
+    var to   = new Date(now.getTime()+7*86400000).toISOString().slice(0,10);
+    fgetQ(FH_BASE+'/calendar/economic?from='+from+'&to='+to+'&token='+key).then(function(data){
+      if(data && data.economicCalendar && data.economicCalendar.length) {
+        var events = data.economicCalendar.filter(function(e){ return e.country==='US'&&e.impact!=='low'; }).map(function(e){
+          var cat = /cpi|ppi|inflation|price/i.test(e.event)?'CPI/PPI'
+                  : /payroll|unemployment|job|nonfarm/i.test(e.event)?'JOBS'
+                  : /gdp|growth/i.test(e.event)?'GDP'
+                  : /fed|fomc|rate|powell/i.test(e.event)?'FED'
+                  : /housing|home|permit/i.test(e.event)?'HOUSING':'OTHER';
+          return {date:e.time?e.time.slice(0,10):e.date, time:e.time?new Date(e.time).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/New_York'})+' ET':'', event:e.event, impact:e.impact, category:cat};
+        });
+        renderEcon(events.length ? events : fallback);
+      } else { renderEcon(fallback); }
+    }).catch(function(){ renderEcon(fallback); });
+  } else { renderEcon(fallback); }
+}
+
 function initEarningsCalendar() {
   var key = getFHKey();
   if(!key) return;
@@ -2587,7 +2674,7 @@ function switchSpyTF(btn,tf){
   buildSpySectors(tf);
 }
 
-setTimeout(()=>{buildEpsChart();buildRevChart();buildPeerChart();buildDashScanPreview();initDashboardGreeting();runScan();initWatchlist();initSectorRotation();initThemeGroups();initEarningsCalendar();},400);
+setTimeout(()=>{buildEpsChart();buildRevChart();buildPeerChart();buildDashScanPreview();initDashboardGreeting();runScan();initWatchlist();initSectorRotation();initThemeGroups();initEarningsCalendar();initEconCalendar();},400);
 
 var SCANNER_DB = [
   // ── MEGA CAP TECH ──
