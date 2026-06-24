@@ -313,19 +313,19 @@ input:focus,select:focus{border-color:#3b82f6}
       <div class="section">Watchlist Snapshot</div>
       <div class="card" style="padding:0;overflow:hidden">
         <div class="quick-ticker" onclick="goAnalyze('NVDA')">
-          <div class="qt-sym">NVDA</div><div class="qt-name" id="dw-nvda-stage"><span class="pill pg">Stage 2</span></div>
+          <div class="qt-sym">NVDA</div><div class="qt-name" id="dw-nvda-stage"><span class="pill pgr">—</span></div>
           <div class="qt-price" id="dw-nvda-price">—</div><div class="qt-chg" id="dw-nvda-chg">Loading…</div>
         </div>
         <div class="quick-ticker" onclick="goAnalyze('TSLA')">
-          <div class="qt-sym">TSLA</div><div class="qt-name" id="dw-tsla-stage"><span class="pill pg">Stage 2</span></div>
+          <div class="qt-sym">TSLA</div><div class="qt-name" id="dw-tsla-stage"><span class="pill pgr">—</span></div>
           <div class="qt-price" id="dw-tsla-price">—</div><div class="qt-chg" id="dw-tsla-chg">Loading…</div>
         </div>
         <div class="quick-ticker" onclick="goAnalyze('AMZN')">
-          <div class="qt-sym">AMZN</div><div class="qt-name" id="dw-amzn-stage"><span class="pill pg">Stage 2</span></div>
+          <div class="qt-sym">AMZN</div><div class="qt-name" id="dw-amzn-stage"><span class="pill pgr">—</span></div>
           <div class="qt-price" id="dw-amzn-price">—</div><div class="qt-chg" id="dw-amzn-chg">Loading…</div>
         </div>
         <div class="quick-ticker" onclick="goAnalyze('META')">
-          <div class="qt-sym">META</div><div class="qt-name"><span class="pill pg">Stage 2</span></div>
+          <div class="qt-sym">META</div><div class="qt-name" id="dw-meta-stage"><span class="pill pgr">—</span></div>
           <div class="qt-price" id="dw-meta-price">—</div><div class="qt-chg" id="dw-meta-chg">Loading…</div>
         </div>
         <div class="quick-ticker" onclick="nav('watchlist')">
@@ -1247,7 +1247,16 @@ function initDashboard() {
       setEl('d-breadth',bLabel); setCls('d-breadth',bothUp?'mc-val green':bothDn?'mc-val red':'mc-val yellow');
       setEl('d-breadth-sub',bSub);
     }
-    // Watchlist rows
+    // Watchlist rows — price + stage from WL_TICKERS / SCANNER_DB
+    function dashStage(t){
+      var src=WL_TICKERS.find(function(x){return x.t===t;})||SCANNER_DB.find(function(x){return x.ticker===t;});
+      var stage=src?src.stage:null;
+      if(!stage) return;
+      var cls=stage.startsWith('2')?'pg':stage==='1'?'pb':stage==='3'?'py':'pr';
+      var el=document.getElementById('dw-'+t.toLowerCase()+'-stage');
+      if(el) el.innerHTML='<span class="pill '+cls+'">S'+stage+'</span>';
+    }
+    ['NVDA','TSLA','AMZN','META'].forEach(dashStage);
     if(nvda.c) qtRow('NVDA',nvda);
     if(tsla.c) qtRow('TSLA',tsla);
     if(amzn.c) qtRow('AMZN',amzn);
