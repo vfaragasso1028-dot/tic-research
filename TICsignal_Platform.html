@@ -614,18 +614,67 @@ input:focus,select:focus{border-color:#3b82f6}
   </div>
 
   <div class="card" style="margin-bottom:14px;padding:16px 18px">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:12px">Quick Scan Presets</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px" id="scan-presets">
-      <button class="fc active" onclick="runPreset(this,'stage2leaders')">⭐ Stage 2 Leaders</button>
-      <button class="fc" onclick="runPreset(this,'highconviction')">🔥 High Conviction ≥70</button>
-      <button class="fc" onclick="runPreset(this,'rs90')">🚀 RS ≥ 90</button>
-      <button class="fc" onclick="runPreset(this,'pocketpivot')">📌 Pocket Pivots</button>
-      <button class="fc" onclick="runPreset(this,'goldencross')">✨ Golden Cross</button>
-      <button class="fc" onclick="runPreset(this,'eps')">📈 EPS + Sales Growth</button>
-      <button class="fc" onclick="runPreset(this,'stage1')">⏳ Stage 1 Basing</button>
-      <button class="fc" onclick="runPreset(this,'avoid')">⚠️ Stage 3/4 Avoid</button>
-      <button class="fc" onclick="runPreset(this,'all')">All Stocks</button>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:12px">Universe</div>
+    <div class="filter-bar">
+      <button class="fc active" onclick="setFilter(this)">S&amp;P 500 (503)</button>
+      <button class="fc" onclick="setFilter(this)">Nasdaq 100</button>
+      <button class="fc" onclick="setFilter(this)">Russell 2000</button>
+      <button class="fc" onclick="setFilter(this)">My Watchlist</button>
     </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Stage</div>
+    <div class="filter-bar">
+      <button class="fc active" onclick="setFilter(this)">Stage 2 Only</button>
+      <button class="fc" onclick="setFilter(this)">All Stages</button>
+      <button class="fc" onclick="setFilter(this)">Stage 1 (Basing)</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">TicScore</div>
+    <div class="filter-bar">
+      <button class="fc" onclick="setFilter(this)">Any</button>
+      <button class="fc active" onclick="setFilter(this)">≥ 50 Pass</button>
+      <button class="fc" onclick="setFilter(this)">≥ 70 High Conviction</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Moving Average Filters</div>
+    <div class="filter-bar">
+      <button class="fc active" onclick="setFilter(this)">Price &gt; 50 SMA</button>
+      <button class="fc active" onclick="setFilter(this)">Price &gt; 200 SMA</button>
+      <button class="fc" onclick="setFilter(this)">Price &gt; 150 SMA</button>
+      <button class="fc" onclick="setFilter(this)">50 SMA &gt; 200 SMA</button>
+      <button class="fc" onclick="setFilter(this)">150 SMA Rising</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Price Patterns</div>
+    <div class="filter-bar">
+      <button class="fc active" onclick="setFilter(this)">Golden Cross</button>
+      <button class="fc" onclick="setFilter(this)">Pocket Pivot</button>
+      <button class="fc" onclick="setFilter(this)">Cup &amp; Handle</button>
+      <button class="fc" onclick="setFilter(this)">Flat Base</button>
+      <button class="fc" onclick="setFilter(this)">Double Bottom</button>
+      <button class="fc" onclick="setFilter(this)">Bull Flag</button>
+      <button class="fc" onclick="setFilter(this)">High Tight Flag</button>
+      <button class="fc" onclick="setFilter(this)">Ascending Triangle</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Relative Strength</div>
+    <div class="filter-bar">
+      <button class="fc active" onclick="setFilter(this)">RS ≥ 80</button>
+      <button class="fc" onclick="setFilter(this)">RS ≥ 90</button>
+      <button class="fc" onclick="setFilter(this)">RS Improving</button>
+      <button class="fc" onclick="setFilter(this)">RS New High</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Fundamental Filters</div>
+    <div class="filter-bar">
+      <button class="fc" onclick="setFilter(this)">EPS Growth &gt; 25%</button>
+      <button class="fc" onclick="setFilter(this)">Sales Growth &gt; 20%</button>
+      <button class="fc" onclick="setFilter(this)">ROE &gt; 17%</button>
+      <button class="fc" onclick="setFilter(this)">Low Debt</button>
+      <button class="fc" onclick="setFilter(this)">Accelerating EPS</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px;margin-top:12px">Volume</div>
+    <div class="filter-bar">
+      <button class="fc" onclick="setFilter(this)">Volume Surge 1.5×+</button>
+      <button class="fc" onclick="setFilter(this)">Volume Surge 2×+</button>
+      <button class="fc" onclick="setFilter(this)">Up Day on Heavy Vol</button>
+    </div>
+    <button class="btn btn-blue" style="margin-top:12px" onclick="runScan()">Run Scanner →</button>
+    <button class="btn" style="margin-top:12px;margin-left:8px" onclick="document.getElementById('page-scanner').querySelectorAll('.fc').forEach(function(b){b.classList.remove('active')});document.getElementById('page-scanner').querySelectorAll('.fc:first-child').forEach(function(b){b.classList.add('active')});runScan()">Clear All</button>
   </div>
 
   <div class="result-bar">
@@ -2374,7 +2423,7 @@ function switchSpyTF(btn,tf){
   buildSpySectors(tf);
 }
 
-setTimeout(()=>{buildEpsChart();buildRevChart();buildPeerChart();buildDashScanPreview();initDashboardGreeting();runPreset(document.querySelector('#scan-presets .fc'),'stage2leaders');initWatchlist();initSectorRotation();},400);
+setTimeout(()=>{buildEpsChart();buildRevChart();buildPeerChart();buildDashScanPreview();initDashboardGreeting();runScan();initWatchlist();initSectorRotation();},400);
 
 var SCANNER_DB = [
   // ── MEGA CAP TECH ──
