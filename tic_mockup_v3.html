@@ -1853,10 +1853,8 @@ function goAnalyze(ticker) {
     var l52=Math.min.apply(null,hist252.map(function(d){return d.low;}));
     populatePDF(ticker,coName,price,chg,chgPct,score,score,stageInfo,rs,sup,resZ,h52,l52,newTF.daily.allMAs,rsiVal,macdVal,adxVal,atrVal,sigTxt);
 
-    // Fill peer table with semi peers from SCANNER_DB
-    var semiPeers=['NVDA','AVGO','AMD'];
-    var peerRows=semiPeers.map(function(t){return SCANNER_DB.find(function(s){return s.ticker===t;})||{t:t,co:t,score:0,stage:'—',rs:0,eps:false,sales:false};});
-    updatePeerTable(ticker,peerRows.map(function(p){return {t:p.ticker,co:p.company,score:p.score,stage:p.stage,rs:p.rs,eps:p.eps,sales:p.sales};}));
+    // Fill peer table with live data — dynamic peer group by ticker
+    loadLivePeers(ticker);
 
     currentTF='daily';
     loadTVWidget(ticker);
@@ -2144,27 +2142,41 @@ function buildRevChart(){
   });
 }
 
-// ── PEER CHART ──
+// ── PEER CHART ── placeholder until live data loads
+var _peerChartInst = null;
 function buildPeerChart(){
-  const c=document.getElementById('peerChart');
+  var c=document.getElementById('peerChart');
   if(!c) return;
-  new Chart(c,{
+  if(_peerChartInst){_peerChartInst.destroy();_peerChartInst=null;}
+  _peerChartInst=new Chart(c,{
     type:'bar',
-    data:{
-      labels:['NVDA','AVGO','AMD','QCOM','INTC'],
-      datasets:[
-        {label:'TicScore',data:[82,74,61,55,18],backgroundColor:['rgba(34,197,94,0.8)','rgba(34,197,94,0.7)','rgba(245,158,11,0.7)','rgba(245,158,11,0.6)','rgba(239,68,68,0.7)'],borderRadius:4},
-        {label:'RS Rating',data:[91,82,68,58,12],backgroundColor:['rgba(59,130,246,0.5)','rgba(59,130,246,0.45)','rgba(59,130,246,0.35)','rgba(59,130,246,0.3)','rgba(239,68,68,0.35)'],borderRadius:4}
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}`,}}},
-      scales:{
-        x:{ticks:{font:{size:10},color:'#9ca3af'},grid:{display:false}},
-        y:{display:false,max:110}
-      }
-    }
+    data:{labels:['—','—','—','—','—'],datasets:[
+      {label:'TicScore',data:[0,0,0,0,0],backgroundColor:'rgba(34,197,94,0.7)',borderRadius:4},
+      {label:'RS Rating',data:[0,0,0,0,0],backgroundColor:'rgba(59,130,246,0.45)',borderRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': '+c.parsed.y;}}}},
+      scales:{x:{ticks:{font:{size:10},color:'#9ca3af'},grid:{display:false}},y:{display:false,max:110}}}
+  });
+}
+
+function buildPeerChartLive(rows) {
+  var c=document.getElementById('peerChart');
+  if(!c) return;
+  if(_peerChartInst){_peerChartInst.destroy();_peerChartInst=null;}
+  var labels=rows.map(function(r){return r.t;});
+  var scores=rows.map(function(r){return typeof r.score==='number'?r.score:0;});
+  var rsVals=rows.map(function(r){return typeof r.rs==='number'?r.rs:0;});
+  var scoreBg=scores.map(function(s){return s>=70?'rgba(34,197,94,0.8)':s>=50?'rgba(245,158,11,0.75)':'rgba(239,68,68,0.7)';});
+  _peerChartInst=new Chart(c,{
+    type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'TicScore',data:scores,backgroundColor:scoreBg,borderRadius:4},
+      {label:'RS Rating',data:rsVals,backgroundColor:'rgba(59,130,246,0.45)',borderRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': '+c.parsed.y;}}}},
+      scales:{x:{ticks:{font:{size:10},color:'#9ca3af'},grid:{display:false}},y:{display:false,max:110}}}
   });
 }
 
@@ -2984,22 +2996,127 @@ function initWatchlist() {
   }).catch(function(){});
 }
 
-// ── PEER COMPARISON FILL (called from goAnalyze) ──
+// ── PEER GROUP LOOKUP (industry-based, dynamic) ──
+var PEER_GROUPS = {
+  // Semis / Semi Equipment
+  NVDA:['AVGO','AMD','QCOM','MRVL','MU'],  AVGO:['NVDA','AMD','QCOM','MRVL','TXN'],
+  AMD: ['NVDA','AVGO','QCOM','MU','INTC'],  AMAT:['LRCX','KLAC','MU','NVDA','AVGO'],
+  LRCX:['AMAT','KLAC','MU','NVDA','AVGO'],  KLAC:['AMAT','LRCX','MU','NVDA','AVGO'],
+  MRVL:['NVDA','AVGO','AMD','QCOM','AMAT'], QCOM:['NVDA','AVGO','AMD','MRVL','TXN'],
+  TXN: ['QCOM','INTC','MRVL','AVGO','AMD'], MU:  ['NVDA','AMD','QCOM','AMAT','LRCX'],
+  INTC:['AMD','QCOM','NVDA','TXN','AVGO'],
+  // Mega-cap Tech
+  MSFT:['GOOGL','AMZN','ORCL','META','AAPL'], GOOGL:['MSFT','META','AMZN','AAPL','ORCL'],
+  META:['GOOGL','MSFT','AMZN','SNAP','PINS'],  AMZN:['MSFT','GOOGL','ORCL','CRM','SHOP'],
+  AAPL:['MSFT','GOOGL','META','AMZN','QCOM'],
+  // Cloud / SaaS
+  NOW: ['CRM','DDOG','SNOW','MDB','TEAM'],  CRM: ['NOW','DDOG','ADBE','SNOW','TEAM'],
+  SNOW:['MDB','DDOG','CRM','NOW','TEAM'],   MDB: ['SNOW','DDOG','CRM','TEAM','HUBS'],
+  DDOG:['NOW','CRM','SNOW','MDB','TEAM'],   TEAM:['NOW','CRM','DDOG','HUBS','ADBE'],
+  ADBE:['CRM','NOW','TEAM','HUBS','MSFT'],  HUBS:['CRM','DDOG','TEAM','ADBE','MDB'],
+  ORCL:['MSFT','SAP','CRM','NOW','AMZN'],   WDAY:['NOW','CRM','SAP','TEAM','HUBS'],
+  PLTR:['DDOG','NOW','CRM','MSFT','GOOGL'],
+  // Cybersecurity
+  CRWD:['PANW','ZS','FTNT','NET','OKTA'],  PANW:['CRWD','ZS','FTNT','NET','OKTA'],
+  ZS:  ['CRWD','PANW','FTNT','NET','S'],   FTNT:['CRWD','PANW','ZS','NET','OKTA'],
+  NET: ['CRWD','ZS','PANW','FTNT','S'],    OKTA:['CRWD','ZS','PANW','FTNT','S'],
+  S:   ['CRWD','PANW','ZS','FTNT','OKTA'],
+  // Fintech / Payments
+  V:   ['MA','PYPL','SQ','FIS','FI'],  MA:  ['V','PYPL','SQ','FIS','FI'],
+  PYPL:['V','MA','SQ','AFRM','SOFI'], SQ:  ['PYPL','V','MA','AFRM','SOFI'],
+  COIN:['MSTR','MARA','RIOT','SQ','PYPL'],
+  // Biotech / Healthcare
+  LLY: ['VRTX','REGN','AMGN','ABBV','NVO'], VRTX:['LLY','REGN','AMGN','ABBV','BIIB'],
+  ISRG:['LLY','VRTX','EW','SYK','MDT'],     REGN:['LLY','VRTX','AMGN','ABBV','BIIB'],
+  AMGN:['LLY','VRTX','REGN','ABBV','GILD'], ABBV:['LLY','AMGN','REGN','VRTX','MRK'],
+  UNH: ['CVS','CI','HUM','ELV','MOH'],
+  // Defense
+  LMT: ['RTX','NOC','GD','BA','HWM'],  RTX:['LMT','NOC','GD','BA','HWM'],
+  NOC: ['LMT','RTX','GD','BA','L3'],   GD: ['LMT','RTX','NOC','BA','HII'],
+  AXON:['LMT','RTX','NOC','CACI','SAIC'],
+  // Consumer / Retail
+  SHOP:['AMZN','EBAY','WMT','TGT','ETSY'], WMT:['COST','TGT','AMZN','KR','BJ'],
+  COST:['WMT','TGT','AMZN','KR','BJ'],     NKE:['LULU','UAA','SKX','VFC','ADDYY'],
+  SBUX:['MCD','CMG','YUM','QSR','DNUT'],   MCD:['SBUX','CMG','YUM','QSR','DPZ'],
+  AMZN_RETAIL:['SHOP','EBAY','WMT','TGT','COST'],
+  // Energy
+  XOM:['CVX','COP','SLB','OXY','PXD'],  CVX:['XOM','COP','SLB','OXY','PXD'],
+  COP:['XOM','CVX','SLB','OXY','PXD'],  SLB:['HAL','BKR','XOM','CVX','COP'],
+  // EV / Clean Energy
+  TSLA:['RIVN','LCID','NIO','F','GM'],  RIVN:['TSLA','LCID','NIO','F','GM'],
+  ENPH:['SEDG','FSLR','CSIQ','PLUG','BE'], FSLR:['ENPH','SEDG','CSIQ','PLUG','BE'],
+  // Default fallback (broad market leaders)
+  _default:['SPY','QQQ','AAPL','MSFT','GOOGL']
+};
+
+function getPeers(ticker) {
+  return PEER_GROUPS[ticker] || PEER_GROUPS._default;
+}
+
+// ── LOAD LIVE PEER DATA from Finnhub ──
+function loadLivePeers(ticker) {
+  var key = getFHKey();
+  var peers = getPeers(ticker);
+  var allTickers = [ticker].concat(peers.slice(0,4)); // analyzed + 4 peers = 5 rows
+  // Fetch quote + basic metric for each
+  Promise.all(allTickers.map(function(sym) {
+    return Promise.all([
+      fgetQ(FH_BASE+'/quote?symbol='+sym+'&token='+key),
+      fgetQ(FH_BASE+'/stock/metric?symbol='+sym+'&metric=all&token='+key)
+    ]).then(function(r){ return {sym:sym, q:r[0], m:r[1]}; })
+     .catch(function(){ return {sym:sym, q:null, m:null}; });
+  })).then(function(results) {
+    var rows = results.map(function(r) {
+      var q = r.q || {};
+      var met = (r.m && r.m.metric) ? r.m.metric : {};
+      var price = q.c || 0;
+      var chgPct = q.dp || 0;
+      var mc = met.marketCapitalization ? met.marketCapitalization : 0;
+      var epsG = met.epsGrowthTTMYoy != null ? met.epsGrowthTTMYoy : null;
+      var revG = met.revenueGrowthTTMYoy != null ? met.revenueGrowthTTMYoy : null;
+      var db = SCANNER_DB.find(function(s){return s.ticker===r.sym;}) || {};
+      return {
+        t: r.sym,
+        co: db.company || r.sym,
+        price: price,
+        chgPct: chgPct,
+        score: db.score || '—',
+        stage: db.stage || '—',
+        rs: db.rs || '—',
+        epsG: epsG,
+        revG: revG,
+        mc: mc
+      };
+    });
+    updatePeerTable(ticker, rows);
+    buildPeerChartLive(rows);
+  }).catch(function(e){ console.warn('Peer load error',e); });
+}
+
+// ── PEER COMPARISON FILL ──
 function updatePeerTable(ticker, peers) {
-  // peers = array of {t, co, score, stage, rs, epsG, revG, mc} from SCANNER_DB
   peers.forEach(function(p,i){
     var n=i+1;
     var setT=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
-    setT('peer-t'+n, i===0?ticker+' ★':p.t);
+    setT('peer-t'+n, i===0?p.t+' ★':p.t);
     setT('peer-c'+n, p.co);
-    setT('peer-p'+n, '—'); // price loads live
+    // Live price + change
+    var priceTxt = p.price ? '$'+p.price.toFixed(2)+(p.chgPct!=null?' ('+(p.chgPct>=0?'+':'')+p.chgPct.toFixed(2)+'%)':'') : '—';
+    setT('peer-p'+n, priceTxt);
     setT('peer-s'+n, p.score);
     setT('peer-rs'+n, p.rs);
-    setT('peer-eps'+n, p.eps?'+25%+':'—');
-    setT('peer-rev'+n, p.sales?'+20%+':'—');
-    setT('peer-mc'+n, '—');
+    // Live EPS growth
+    var epsStr = p.epsG!=null ? (p.epsG>=0?'+':'')+p.epsG.toFixed(1)+'%' : '—';
+    setT('peer-eps'+n, epsStr);
+    // Live Rev growth
+    var revStr = p.revG!=null ? (p.revG>=0?'+':'')+p.revG.toFixed(1)+'%' : '—';
+    setT('peer-rev'+n, revStr);
+    // Live market cap (in B)
+    var mcStr = p.mc ? (p.mc>=1000?'$'+(p.mc/1000).toFixed(1)+'T':'$'+p.mc.toFixed(0)+'B') : '—';
+    setT('peer-mc'+n, mcStr);
     var stEl=document.getElementById('peer-st'+n);
-    if(stEl){var cls=p.stage.startsWith('2')?'pg':p.stage==='1'?'pb':'pr';stEl.innerHTML='<span class="pill '+cls+'">S'+p.stage+'</span>';}
+    var stg=String(p.stage);
+    if(stEl){var cls=stg.startsWith('2')?'pg':stg==='1'?'pb':'pr';stEl.innerHTML='<span class="pill '+cls+'">S'+stg+'</span>';}
   });
 }
 
