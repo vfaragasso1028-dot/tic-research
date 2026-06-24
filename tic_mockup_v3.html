@@ -352,6 +352,22 @@ input:focus,select:focus{border-color:#3b82f6}
       <div class="card"><div class="mc-label">RS Rating</div><div class="mc-val" id="r-rs">—</div><div class="mc-sub muted" id="r-rs-l">—</div></div>
     </div>
 
+    <!-- COMPANY DESCRIPTION -->
+    <div id="r-desc-wrap" style="display:none;background:#0d1117;border:1px solid #1f2937;border-radius:10px;padding:14px 18px;margin-bottom:6px">
+      <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#4b5563;margin-bottom:6px">About</div>
+          <div style="font-size:13px;color:#9ca3af;line-height:1.7" id="r-desc">—</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:160px">
+          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:10px;color:#4b5563;width:70px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Industry</span><span style="font-size:12px;color:#d1d5db" id="r-desc-industry">—</span></div>
+          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:10px;color:#4b5563;width:70px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Exchange</span><span style="font-size:12px;color:#d1d5db" id="r-desc-exchange">—</span></div>
+          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:10px;color:#4b5563;width:70px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Country</span><span style="font-size:12px;color:#d1d5db" id="r-desc-country">—</span></div>
+          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:10px;color:#4b5563;width:70px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">IPO</span><span style="font-size:12px;color:#d1d5db" id="r-desc-ipo">—</span></div>
+        </div>
+      </div>
+    </div>
+
     <div class="section">TIC Signal</div>
     <div style="background:#0b1320;border:1px solid #1e3a5f;border-radius:10px;padding:16px 20px;font-size:14px;line-height:1.8;color:#cbd5e1" id="r-signal">Enter a ticker above and click Run Analysis → to generate a live TIC Signal.</div>
 
@@ -1778,6 +1794,23 @@ function goAnalyze(ticker) {
     var el=function(id){return document.getElementById(id);};
     if(el('r-company')) el('r-company').textContent=coName;
     if(el('r-meta')) el('r-meta').innerHTML=ticker+' · '+industry+' <span class="pill pb" style="font-size:9px">Live Data</span>';
+    // Company description panel
+    var descWrap=el('r-desc-wrap');
+    if(descWrap){
+      descWrap.style.display='block';
+      var rawDesc=prof.description||'';
+      // Trim to ~2 sentences for brevity
+      var sentences=rawDesc.split(/(?<=[.!?])\s+/);
+      var brief=sentences.slice(0,2).join(' ');
+      if(!brief&&rawDesc) brief=rawDesc.slice(0,220)+'…';
+      var descEl=el('r-desc');
+      if(descEl) descEl.textContent=brief||'No description available.';
+      var setText=function(id,v){var e=el(id);if(e)e.textContent=v||'—';};
+      setText('r-desc-industry', prof.finnhubIndustry);
+      setText('r-desc-exchange',  prof.exchange);
+      setText('r-desc-country',   prof.country);
+      setText('r-desc-ipo',       prof.ipo);
+    }
     if(el('r-price')) el('r-price').textContent='$'+price.toFixed(2);
     if(el('r-chg')){el('r-chg').textContent=(isUp?'▲ +$':'▼ -$')+Math.abs(chg).toFixed(2)+' ('+(isUp?'+':'-')+Math.abs(chgPct).toFixed(2)+'%)';el('r-chg').className=isUp?'green':'red';}
     var scoreColor=score.total>=70?'#22c55e':score.total>=50?'#f59e0b':'#ef4444';
