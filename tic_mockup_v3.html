@@ -1587,15 +1587,83 @@ function buildTFDataFromCandles(dailyNewestFirst) {
 }
 
 function calcTicStage(closes, mas) {
-  var n=closes.length-1, price=closes[n], ma150=mas.sma150[n], ma50=mas.sma50[n];
-  if(!ma150||!ma50) return {stage:'Stage 1',desc:'Basing — insufficient history'};
-  var ma150prev=null;
-  for(var i=n-1;i>=Math.max(0,n-10);i--){if(mas.sma150[i]){ma150prev=mas.sma150[i];break;}}
-  var rising=ma150prev?ma150>ma150prev:false;
-  if(price>ma150&&rising&&ma50>ma150) return {stage:price>ma50?'Stage 2A':'Stage 2B',desc:'Advancing — optimal long zone'};
-  if(price>ma150&&!rising) return {stage:'Stage 1',desc:'Basing — accumulation phase'};
-  if(price<ma150&&rising) return {stage:'Stage 3',desc:'Topping — reduce exposure'};
-  return {stage:'Stage 4',desc:'Declining — capital preservation'};
+  // Stan Weinstein Stage Analysis — proper implementation
+  // Uses 150 SMA (≈ 30-week MA, the Weinstein line) and slope over 20 days (4 weeks)
+  var n = closes.length - 1;
+  var price = closes[n];
+  var ma150 = mas.sma150[n];
+  var ma50  = mas.sma50[n];
+  var ma200 = mas.sma200[n];
+  if (!ma150 || !ma50) return {stage:'Stage 1', desc:'Basing — insufficient history', color:'#6b7280'};
+
+  // ── 150 SMA slope: compare current vs 20 bars ago (4 weeks) ──
+  var SLOPE_WINDOW = 20;
+  var ma150_20ago = null;
+  for (var i = n - SLOPE_WINDOW; i >= Math.max(0, n - SLOPE_WINDOW - 5); i--) {
+    if (mas.sma150[i]) { ma150_20ago = mas.sma150[i]; break; }
+  }
+  // Slope as % change over 20 days — thresholds prevent noise flips
+  var slope20 = ma150_20ago ? ((ma150 - ma150_20ago) / ma150_20ago) * 100 : 0;
+  var maRising  = slope20 >  0.3;  // MA must be up >0.3% over 4 weeks to call "rising"
+  var maFalling = slope20 < -0.3;  // MA must be down >0.3% over 4 weeks to call "falling"
+  var maFlat    = !maRising && !maFalling;
+
+  // ── How far is price from 150 SMA? ──
+  var pctAbove150 = ((price - ma150) / ma150) * 100;
+
+  // ── Did price recently cross the 150 SMA (breakout within 30 bars)? ──
+  var recentBreakout = false;
+  if (pctAbove150 > 0) {
+    for (var j = Math.max(0, n - 30); j < n; j++) {
+      if (closes[j] < ma150 && mas.sma150[j]) { recentBreakout = true; break; }
+    }
+  }
+
+  // ── Stage 4: price BELOW a FALLING 150 SMA ──
+  // The trend is down — no argument
+  if (price < ma150 && maFalling) {
+    return {stage:'Stage 4', desc:'Declining — capital preservation mode', color:'#ef4444'};
+  }
+
+  // ── Stage 3: price at/below 150 SMA that is FLATTENING after an uptrend ──
+  // Price breaks below or churns at the MA while MA turns flat
+  if (price < ma150 && (maFlat || maRising)) {
+    // If MA is still technically rising but price already broke below — Stage 3 transition
+    return {stage:'Stage 3', desc:'Topping — distribution, reduce exposure', color:'#f59e0b'};
+  }
+
+  // ── From here: price is ABOVE 150 SMA ──
+
+  // ── Stage 1: price above a FLAT 150 SMA — basing/accumulation ──
+  // MA flat, price oscillating sideways near it
+  if (maFlat && pctAbove150 < 5) {
+    return {stage:'Stage 1', desc:'Basing — accumulation phase, wait for breakout', color:'#60a5fa'};
+  }
+
+  // ── Stage 2A: Early Advance ──
+  // Price above rising 150 SMA but early in the move:
+  //   • Recent breakout (crossed 150 SMA within last 30 bars), OR
+  //   • 50 SMA still below 150 SMA (MA crossover hasn't confirmed yet), OR
+  //   • Price within 10% of the 150 SMA (not yet extended)
+  var earlyAdvance = recentBreakout || (ma50 <= ma150) || (pctAbove150 < 10 && maRising);
+  if (maRising && earlyAdvance) {
+    return {stage:'Stage 2A', desc:'Early Advance — optimal entry zone, trend confirming', color:'#4ade80'};
+  }
+
+  // ── Stage 2B: Mature Advance ──
+  // Price well above rising 150 SMA, 50 SMA confirmed above 150 SMA
+  // This is the extension phase — good for holds, higher risk for new entries
+  if (maRising && ma50 > ma150 && pctAbove150 >= 10) {
+    return {stage:'Stage 2B', desc:'Mature Advance — strong uptrend, extended from base', color:'#22c55e'};
+  }
+
+  // ── Stage 1: price above flat/slightly rising MA but not extended enough for Stage 2 ──
+  if (maFlat || (maRising && pctAbove150 < 3)) {
+    return {stage:'Stage 1', desc:'Basing — potential breakout developing', color:'#60a5fa'};
+  }
+
+  // Fallback
+  return {stage:'Stage 2A', desc:'Advancing — above rising 150 SMA', color:'#4ade80'};
 }
 
 function calcTicScore(met, earnings, recs, dailyNewestFirst) {
@@ -1758,8 +1826,11 @@ function goAnalyze(ticker) {
     var scoreColor=score.total>=70?'#22c55e':score.total>=50?'#f59e0b':'#ef4444';
     if(el('r-score')){el('r-score').textContent=score.total;el('r-score').style.color=scoreColor;}
     if(el('r-bd')) el('r-bd').textContent='G:'+score.G+' · V:'+score.V+' · Q:'+score.Q+' · S:'+score.S;
-    if(el('r-stage')) el('r-stage').textContent=stageInfo.stage;
+    if(el('r-stage')){el('r-stage').textContent=stageInfo.stage;el('r-stage').style.color=stageInfo.color||'';}
     if(el('r-stage-desc')) el('r-stage-desc').textContent=stageInfo.desc;
+    // Color the stage card border to match stage
+    var stCard=el('r-stage')&&el('r-stage').closest('.card');
+    if(stCard) stCard.style.borderLeftColor=stageInfo.color||'#374151';
     var adxApprox=met.beta?Math.round(Math.abs(met.beta)*20+15):28;
     if(el('r-adx')) el('r-adx').textContent=adxApprox;
     if(el('r-adx-str')) el('r-adx-str').textContent=adxApprox>=40?'Very Strong':adxApprox>=25?'Strong trend':'Developing';
