@@ -471,62 +471,19 @@ input:focus,select:focus{border-color:#3b82f6}
     <div class="section">Industry Group Ranking — Sector Rotation</div>
     <div class="g2" style="margin-bottom:12px">
       <div class="card" style="padding:14px 16px">
-        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">S&amp;P 500 Sector Rankings (RS-Based)</div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
-            <span class="green" style="font-weight:800">1</span><span style="color:#d1d5db">Energy</span><div style="height:6px;background:#22c55e;border-radius:3px;width:92%"></div><span class="green" style="font-weight:700">RS 92</span>
-          </div>
-          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px;background:#0c1a2e;padding:4px 6px;border-radius:5px;border-left:3px solid #3b82f6">
-            <span class="blue" style="font-weight:800">2</span><span style="color:#60a5fa;font-weight:700">Technology ★</span><div style="height:6px;background:#3b82f6;border-radius:3px;width:88%"></div><span class="blue" style="font-weight:700">RS 88</span>
-          </div>
-          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
-            <span style="color:#6b7280">3</span><span style="color:#9ca3af">Industrials</span><div style="height:6px;background:#4b5563;border-radius:3px;width:74%"></div><span style="color:#9ca3af">RS 74</span>
-          </div>
-          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
-            <span style="color:#6b7280">4</span><span style="color:#9ca3af">Healthcare</span><div style="height:6px;background:#4b5563;border-radius:3px;width:70%"></div><span style="color:#9ca3af">RS 70</span>
-          </div>
-          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
-            <span style="color:#6b7280">5</span><span style="color:#9ca3af">Financials</span><div style="height:6px;background:#4b5563;border-radius:3px;width:66%"></div><span style="color:#9ca3af">RS 66</span>
-          </div>
-          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
-            <span style="color:#6b7280">6</span><span style="color:#9ca3af">Comm. Services</span><div style="height:6px;background:#4b5563;border-radius:3px;width:61%"></div><span style="color:#9ca3af">RS 61</span>
-          </div>
-          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
-            <span class="red">9</span><span style="color:#9ca3af">Real Estate</span><div style="height:6px;background:#374151;border-radius:3px;width:38%"></div><span class="red">RS 38</span>
-          </div>
-          <div style="display:grid;grid-template-columns:20px 1fr 60px 50px;gap:8px;align-items:center;font-size:12px">
-            <span class="red">11</span><span style="color:#9ca3af">Utilities</span><div style="height:6px;background:#374151;border-radius:3px;width:22%"></div><span class="red">RS 22</span>
-          </div>
+        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">S&amp;P 500 Sector Rankings — Live RS vs SPY</div>
+        <div id="sector-rank-list" style="display:flex;flex-direction:column;gap:6px">
+          <div style="color:#4b5563;font-size:12px">Loading live sector data…</div>
         </div>
       </div>
       <div class="card" style="padding:14px 16px">
-        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Semiconductor Sub-Industry Breakdown</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="background:#0c1a2e;border:1px solid #1e3a5f;border-radius:7px;padding:10px 12px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <span style="font-size:12px;font-weight:700;color:#60a5fa">AI Chips / Data Center</span>
-              <span class="pill pg">Rank #1</span>
-            </div>
-            <div style="font-size:11px;color:#6b7280">NVDA, AVGO — 92% avg RS · Strongest money flow</div>
-          </div>
-          <div style="background:#111;border:1px solid #1f2937;border-radius:7px;padding:10px 12px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <span style="font-size:12px;font-weight:700;color:#9ca3af">Mobile / Wireless Chips</span>
-              <span class="pill py">Rank #3</span>
-            </div>
-            <div style="font-size:11px;color:#6b7280">QCOM, MRVL — 60% avg RS · Neutral rotation</div>
-          </div>
-          <div style="background:#111;border:1px solid #1f2937;border-radius:7px;padding:10px 12px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <span style="font-size:12px;font-weight:700;color:#9ca3af">Legacy / PC Chips</span>
-              <span class="pill pr">Rank #6</span>
-            </div>
-            <div style="font-size:11px;color:#6b7280">INTC — 12% avg RS · Capital outflow confirmed</div>
-          </div>
-          <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px">
-            <div style="font-size:11px;color:#22c55e;line-height:1.7" id="semi-rotation-signal">
-              <strong>Rotation signal:</strong> Loading live sector data…
-            </div>
+        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Semiconductor Sub-Industry Breakdown — Live</div>
+        <div id="semi-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
+        </div>
+        <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:8px">
+          <div style="font-size:11px;color:#22c55e;line-height:1.7" id="semi-rotation-signal">
+            <strong>Rotation signal:</strong> Loading live sector data…
           </div>
         </div>
       </div>
@@ -2603,21 +2560,104 @@ function initSectorRotation() {
     buildSpySectors(currentSpyTF);
     buildDashSpySectors(currentSpyTF);
 
-    // Update sub-industry breakdown based on live RS
-    updateSemiBreakdown(rows);
+    // Build live sector rank list
+    buildSectorRankList(sorted1d);
+
+    // Fetch live semi sub-industry data
+    loadSemiBreakdown(rows, key);
   }).catch(function(e){ console.warn('Sector fetch failed',e); });
 }
 
-function updateSemiBreakdown(rows) {
-  // Find XLK RS as proxy for tech strength
-  var xlk = rows.find(function(r){return r.etf==='XLK';});
-  var rotationEl = document.getElementById('semi-rotation-signal');
-  if(rotationEl && xlk) {
-    var techStrong = xlk.rs1d >= 0;
-    rotationEl.innerHTML = '<strong>Rotation signal (live):</strong> Technology (XLK) is '
-      +(techStrong?'<span style="color:#22c55e">outperforming SPY today (+'+xlk.rs1d.toFixed(2)+'%)</span>':'<span style="color:#ef4444">underperforming SPY today ('+xlk.rs1d.toFixed(2)+'%)</span>')
-      +'. AI/Data Center names (NVDA, AVGO) remain the highest-RS sub-group within the sector.';
-  }
+function buildSectorRankList(sorted1d) {
+  var el = document.getElementById('sector-rank-list');
+  if (!el) return;
+  // sorted1d is already ranked by live RS vs SPY
+  var maxAbs = Math.max.apply(null, sorted1d.map(function(r){return Math.abs(r.rs);})) || 1;
+  el.innerHTML = sorted1d.map(function(r, i) {
+    var isPos = r.rs >= 0;
+    var isYours = r.yours;
+    var barW = Math.round(Math.abs(r.rs) / maxAbs * 100);
+    var rankCol = isYours ? '#60a5fa' : isPos ? '#22c55e' : '#ef4444';
+    var barCol  = isYours ? '#3b82f6' : isPos ? '#22c55e' : '#ef4444';
+    var nameCol = isYours ? '#60a5fa' : isPos ? '#d1d5db' : '#9ca3af';
+    var rsStr   = (isPos ? '+' : '') + r.rs.toFixed(2) + '% vs SPY';
+    return '<div style="display:grid;grid-template-columns:22px 1fr 70px 70px;gap:8px;align-items:center;font-size:12px'+(isYours?';background:#0c1a2e;padding:4px 6px;border-radius:5px;border-left:3px solid #3b82f6':'')+'">'
+      + '<span style="font-weight:800;color:'+rankCol+'">'+(i+1)+'</span>'
+      + '<span style="font-weight:'+(isYours?'700':'400')+';color:'+nameCol+'">'+r.sector+(isYours?' ★':'')+'</span>'
+      + '<div style="height:6px;background:'+barCol+';border-radius:3px;width:'+barW+'%;opacity:0.85"></div>'
+      + '<span style="font-weight:700;color:'+rankCol+';text-align:right">'+rsStr+'</span>'
+      + '</div>';
+  }).join('');
+}
+
+// Semi sub-industry groups with live tickers
+var SEMI_SUBGROUPS = [
+  {name:'AI Chips / Data Center', tickers:['NVDA','AVGO'], color:'#60a5fa', rank:null},
+  {name:'Semi Equipment',         tickers:['AMAT','LRCX','KLAC'], color:'#a78bfa', rank:null},
+  {name:'Mobile / Wireless',      tickers:['QCOM','MRVL'], color:'#9ca3af', rank:null},
+  {name:'Memory',                 tickers:['MU'], color:'#fbbf24', rank:null},
+  {name:'Analog / Embedded',      tickers:['TXN','ADI'], color:'#9ca3af', rank:null},
+  {name:'Legacy / PC Chips',      tickers:['INTC','AMD'], color:'#6b7280', rank:null}
+];
+
+function loadSemiBreakdown(sectorRows, key) {
+  // Collect all unique semi tickers
+  var allTickers = [];
+  SEMI_SUBGROUPS.forEach(function(g){ g.tickers.forEach(function(t){ if(!allTickers.includes(t)) allTickers.push(t); }); });
+
+  Promise.all(allTickers.map(function(sym){
+    return fgetQ(FH_BASE+'/quote?symbol='+sym+'&token='+key)
+      .then(function(q){ return {sym:sym, dp:q&&q.dp!=null?q.dp:0, c:q&&q.c?q.c:0}; })
+      .catch(function(){ return {sym:sym, dp:0, c:0}; });
+  })).then(function(quotes){
+    var qMap = {};
+    quotes.forEach(function(q){ qMap[q.sym] = q; });
+
+    // Compute avg % change per sub-group
+    var groups = SEMI_SUBGROUPS.map(function(g){
+      var dps = g.tickers.map(function(t){ return qMap[t] ? qMap[t].dp : 0; });
+      var avg = dps.reduce(function(a,b){return a+b;},0) / dps.length;
+      return {name:g.name, tickers:g.tickers, color:g.color, avgDp:avg, quotes:qMap};
+    });
+
+    // Rank by avg % change today
+    groups.sort(function(a,b){ return b.avgDp - a.avgDp; });
+
+    var el = document.getElementById('semi-breakdown-list');
+    if (el) {
+      el.innerHTML = groups.map(function(g, i){
+        var isPos = g.avgDp >= 0;
+        var pillCls = i===0?'pg':isPos?'py':'pr';
+        var tickerDetails = g.tickers.map(function(t){
+          var q = qMap[t];
+          if(!q||!q.c) return t;
+          var dp = q.dp!=null?(q.dp>=0?'<span style="color:#22c55e">+'+q.dp.toFixed(2)+'%</span>':'<span style="color:#ef4444">'+q.dp.toFixed(2)+'%</span>'):'';
+          return '<b>'+t+'</b> $'+q.c.toFixed(2)+' '+dp;
+        }).join(' &nbsp;·&nbsp; ');
+        return '<div style="background:#111;border:1px solid #1f2937;border-radius:7px;padding:10px 12px">'
+          + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+          + '<span style="font-size:12px;font-weight:700;color:'+g.color+'">'+g.name+'</span>'
+          + '<div style="display:flex;gap:6px;align-items:center">'
+          + '<span style="font-size:11px;font-weight:700;color:'+(isPos?'#22c55e':'#ef4444')+'">'+(isPos?'+':'')+g.avgDp.toFixed(2)+'% avg</span>'
+          + '<span class="pill '+pillCls+'">#'+(i+1)+'</span>'
+          + '</div></div>'
+          + '<div style="font-size:11px;color:#6b7280">'+tickerDetails+'</div>'
+          + '</div>';
+      }).join('');
+    }
+
+    // Rotation signal
+    var rotEl = document.getElementById('semi-rotation-signal');
+    var xlk = sectorRows.find(function(r){return r.etf==='XLK';});
+    var top = groups[0];
+    if (rotEl) {
+      var techLine = xlk ? 'Technology (XLK) '+(xlk.rs1d>=0?'<span style="color:#22c55e">outperforming SPY (+'+xlk.rs1d.toFixed(2)+'%)</span>':'<span style="color:#ef4444">underperforming SPY ('+xlk.rs1d.toFixed(2)+'%)</span>')+' today. ' : '';
+      rotEl.innerHTML = '<strong>Rotation signal (live):</strong> '+techLine
+        +'Leading semi sub-group: <span style="color:'+top.color+'"><b>'+top.name+'</b></span> '
+        +'(<span style="color:#22c55e">+'+(top.avgDp>=0?'+':'')+top.avgDp.toFixed(2)+'% avg today</span>). '
+        +'<span style="color:#9ca3af">Last updated: '+new Date().toLocaleTimeString()+'</span>';
+    }
+  }).catch(function(e){ console.warn('Semi breakdown error',e); });
 }
 
 let spyChart=null;
