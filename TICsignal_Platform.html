@@ -1813,6 +1813,7 @@ function goAnalyze(ticker) {
     var coName=prof.name||ticker, industry=prof.finnhubIndustry||'';
     markTickerSector(industry); // highlight correct sector in rankings
     var met=metricsResp.metric||{};
+    console.log('FINNHUB MET FIELDS:', JSON.stringify(met, null, 2));
 
     var score=calcTicScore(met,earns,recs,daily);
     var stageInfo=calcTicStage(newTF.daily.allCloses,newTF.daily.allMAs);
