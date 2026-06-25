@@ -1817,7 +1817,6 @@ function goAnalyze(ticker) {
     var coName=prof.name||ticker, industry=prof.finnhubIndustry||'';
     markTickerSector(industry); // highlight correct sector in rankings
     var met=metricsResp.metric||{};
-    console.log('FINNHUB MET FIELDS:', JSON.stringify(met, null, 2));
 
     var score=calcTicScore(met,earns,recs,daily);
     var stageInfo=calcTicStage(newTF.daily.allCloses,newTF.daily.allMAs);
@@ -3469,9 +3468,11 @@ function populateFundamentals(yhProfile, met, price) {
   var de    = de_raw!=null ? de_raw : null;
   // Equity from P/B: equity = MC / pbAnnual
   var bookEq = (mc&&met.pbAnnual) ? mc/met.pbAnnual : null;
+  // longTermDebt/equityAnnual is also a decimal ratio like totalDebt/totalEquityAnnual
+  var ltde = met['longTermDebt/equityAnnual'] || met['longTermDebt/equityQuarterly'];
   var debt = yv(bs[0],'longTermDebt')
           || (de&&bookEq ? de*bookEq : null)
-          || (met['longTermDebt/totalEquityAnnual']&&bookEq ? (met['longTermDebt/totalEquityAnnual']/100)*bookEq : null);
+          || (ltde&&bookEq ? ltde*bookEq : null);
   var cr    = met.currentRatioAnnual || yv(fd,'currentRatio');
   s('f-cash', cash ? fmtB(cash) : '—');
   s('f-debt', debt ? fmtB(debt) : '—');
@@ -3485,11 +3486,11 @@ function populateFundamentals(yhProfile, met, price) {
   var valEl = document.getElementById('f-val-rows');
   if(valEl){
     var pe   = met.peTTM || met.peAnnual || yv(ks,'trailingPE');
-    var fpe  = yv(ks,'forwardPE');
+    var fpe  = met.forwardPE || yv(ks,'forwardPE');
     var psV  = met.psTTM || met.psAnnual || yv(ks,'priceToSalesTrailing12Months');
     var pb   = met.pbAnnual || yv(ks,'priceToBook');
-    var peg  = yv(ks,'pegRatio');
-    var evEb = yv(ks,'enterpriseToEbitda');
+    var peg  = met.pegTTM || yv(ks,'pegRatio');
+    var evEb = met.evEbitdaTTM || yv(ks,'enterpriseToEbitda');
     function vRow(lbl,val,col){
       return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1f2937;font-size:12px">'
         +'<span style="color:#6b7280">'+lbl+'</span><span style="font-weight:700;color:'+(col||'#d1d5db')+'">'+val+'</span></div>';
