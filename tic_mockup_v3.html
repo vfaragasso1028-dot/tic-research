@@ -384,8 +384,29 @@ input:focus,select:focus{border-color:#3b82f6}
     </div>
 
     <!-- KEY LEVELS -->
-    <div class="section">Key Levels &amp; Market Data</div>
-    <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
+    <!-- TECHNICAL POWERSTACK — above key levels -->
+    <div class="section">Technical Analysis — PowerStack</div>
+    <div class="g2">
+      <div class="card" style="padding:0 18px">
+        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">9 EMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-ema9">—</span><span id="r-ema9-chg" style="font-weight:600">—</span></div>
+        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">21 EMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-ema21">—</span><span id="r-ema21-chg" style="font-weight:600">—</span></div>
+        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">50 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-sma50">—</span><span id="r-sma50-chg" style="font-weight:600">—</span></div>
+        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">150 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-sma150">—</span><span id="r-sma150-chg" style="font-weight:600">—</span></div>
+        <div class="ma-row" style="border-bottom:none"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">200 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-sma200">—</span><span id="r-sma200-chg" style="font-weight:600">—</span></div>
+        <div style="padding:12px 0;display:flex;gap:8px;flex-wrap:wrap" id="r-stack-pills"><span class="pill py">Run analysis</span></div>
+      </div>
+      <div class="card" style="padding:0 18px">
+        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">RSI (14)</span><span style="font-size:18px;font-weight:700;color:#f59e0b" id="r-rsi">—</span><span class="muted" style="font-size:12px" id="r-rsi-lbl">—</span></div>
+        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">MACD</span><span style="font-size:18px;font-weight:700;color:#22c55e" id="r-macd">—</span><span class="muted" style="font-size:12px" id="r-macd-lbl">—</span></div>
+        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">ADX</span><span style="font-size:18px;font-weight:700;color:#f9fafb" id="r-adx2">—</span><span class="muted" style="font-size:12px" id="r-adx2-lbl">—</span></div>
+        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">ATR</span><span style="font-size:18px;font-weight:700;color:#f9fafb" id="r-atr">—</span><span class="muted" style="font-size:12px" id="r-atr-lbl">—</span></div>
+        <div class="ind-row" style="border-bottom:none"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">Volume</span><span style="font-size:18px;font-weight:700;color:#f9fafb" id="r-vol">—</span><span class="muted" style="font-size:12px" id="r-vol-lbl">—</span></div>
+      </div>
+    </div>
+
+    <!-- KEY LEVELS — S/R zones only, max 3-4 rows -->
+    <div class="section">Key Levels — Support &amp; Resistance Zones</div>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px">
       <table class="t" style="border-collapse:collapse">
         <thead><tr><th>Type</th><th>Zone</th><th>Mid</th><th>Strength</th><th>Touches</th></tr></thead>
         <tbody id="r-sr-tbody">
@@ -393,11 +414,9 @@ input:focus,select:focus{border-color:#3b82f6}
         </tbody>
       </table>
     </div>
-    <div class="g4">
-      <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">Support</div><div class="mc-val" id="r-sup-val">—</div><div class="mc-sub" id="r-sup-sub">Swing low floor</div></div>
-      <div class="card" style="border-left:3px solid #ef4444"><div class="mc-label">Resistance</div><div class="mc-val" id="r-res-val">—</div><div class="mc-sub" id="r-res-sub">Swing high ceiling</div></div>
-      <div class="card"><div class="mc-label">52W High</div><div class="mc-val" id="r-52h">—</div><div class="mc-sub" id="r-52h-sub">from price</div></div>
-      <div class="card"><div class="mc-label">52W Low</div><div class="mc-val" id="r-52l">—</div><div class="mc-sub" id="r-52l-sub">from price</div></div>
+    <div class="g2" style="margin-bottom:6px">
+      <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">Nearest Support</div><div class="mc-val" id="r-sup-val">—</div><div class="mc-sub" id="r-sup-sub">Swing low floor</div></div>
+      <div class="card" style="border-left:3px solid #ef4444"><div class="mc-label">Nearest Resistance</div><div class="mc-val" id="r-res-val">—</div><div class="mc-sub" id="r-res-sub">Swing high ceiling</div></div>
     </div>
 
     <!-- BULL BEAR -->
@@ -413,27 +432,48 @@ input:focus,select:focus{border-color:#3b82f6}
       </div>
     </div>
 
-    <!-- TECHNICAL -->
-    <div class="section">Technical Analysis — PowerStack</div>
-    <div class="g2">
-      <div class="card" style="padding:0 18px">
-        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">9 EMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-ema9">—</span><span id="r-ema9-chg" style="font-weight:600">—</span></div>
-        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">21 EMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-ema21">—</span><span id="r-ema21-chg" style="font-weight:600">—</span></div>
-        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">50 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-sma50">—</span><span id="r-sma50-chg" style="font-weight:600">—</span></div>
-        <div class="ma-row"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">150 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-sma150">—</span><span id="r-sma150-chg" style="font-weight:600">—</span></div>
-        <div class="ma-row" style="border-bottom:none"><span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:600">200 SMA</span><span style="font-size:15px;font-weight:700;color:#f9fafb" id="r-sma200">—</span><span id="r-sma200-chg" style="font-weight:600">—</span></div>
-        <div style="padding:12px 0;display:flex;gap:8px;flex-wrap:wrap" id="r-stack-pills">
-          <span class="pill py">Run analysis</span>
+    <!-- 52W HIGH / LOW — moved under Bull/Bear -->
+    <div class="g2" style="margin-top:10px;margin-bottom:6px">
+      <div class="card"><div class="mc-label">52-Week High</div><div class="mc-val" id="r-52h">—</div><div class="mc-sub" id="r-52h-sub">from price</div></div>
+      <div class="card"><div class="mc-label">52-Week Low</div><div class="mc-val" id="r-52l">—</div><div class="mc-sub" id="r-52l-sub">from price</div></div>
+    </div>
+
+    <!-- FUNDAMENTALS DASHBOARD -->
+    <div class="section">Fundamentals</div>
+    <div id="fund-wrap" style="display:none">
+      <div class="g4" style="margin-bottom:10px">
+        <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">Revenue (TTM)</div><div class="mc-val green" id="f-rev">—</div><div class="mc-sub green" id="f-rev-g">—</div></div>
+        <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">Gross Profit</div><div class="mc-val" id="f-gp">—</div><div class="mc-sub" id="f-gp-m">—</div></div>
+        <div class="card" style="border-left:3px solid #3b82f6"><div class="mc-label">Operating Income</div><div class="mc-val" id="f-oi">—</div><div class="mc-sub" id="f-oi-m">—</div></div>
+        <div class="card" style="border-left:3px solid #a78bfa"><div class="mc-label">Net Income (TTM)</div><div class="mc-val" id="f-ni">—</div><div class="mc-sub green" id="f-ni-g">—</div></div>
+      </div>
+      <div class="g3" style="margin-bottom:10px">
+        <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">Operating Cash Flow</div><div class="mc-val" id="f-ocf">—</div><div class="mc-sub" id="f-ocf-g">—</div></div>
+        <div class="card" style="border-left:3px solid #22c55e"><div class="mc-label">Free Cash Flow</div><div class="mc-val" id="f-fcf">—</div><div class="mc-sub" id="f-fcf-m">—</div></div>
+        <div class="card"><div class="mc-label">Capex</div><div class="mc-val" id="f-capex">—</div><div class="mc-sub" id="f-capex-s">—</div></div>
+      </div>
+      <div class="g4" style="margin-bottom:10px">
+        <div class="card"><div class="mc-label">Total Cash</div><div class="mc-val" id="f-cash">—</div><div class="mc-sub muted">on hand</div></div>
+        <div class="card"><div class="mc-label">Total Debt</div><div class="mc-val" id="f-debt">—</div><div class="mc-sub" id="f-debt-s">—</div></div>
+        <div class="card"><div class="mc-label">Debt / Equity</div><div class="mc-val" id="f-de">—</div><div class="mc-sub" id="f-de-s">—</div></div>
+        <div class="card"><div class="mc-label">Current Ratio</div><div class="mc-val" id="f-cr">—</div><div class="mc-sub" id="f-cr-s">—</div></div>
+      </div>
+      <div class="g2" style="margin-bottom:10px">
+        <div class="card" style="padding:14px 16px">
+          <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Valuation</div>
+          <div id="f-val-rows"></div>
+        </div>
+        <div class="card" style="padding:14px 16px">
+          <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Profitability Margins</div>
+          <div id="f-margin-rows"></div>
         </div>
       </div>
-      <div class="card" style="padding:0 18px">
-        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">RSI (14)</span><span style="font-size:18px;font-weight:700;color:#f59e0b" id="r-rsi">—</span><span class="muted" style="font-size:12px" id="r-rsi-lbl">—</span></div>
-        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">MACD</span><span style="font-size:18px;font-weight:700;color:#22c55e" id="r-macd">—</span><span class="muted" style="font-size:12px" id="r-macd-lbl">—</span></div>
-        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">ADX</span><span style="font-size:18px;font-weight:700;color:#f9fafb" id="r-adx2">—</span><span class="muted" style="font-size:12px" id="r-adx2-lbl">—</span></div>
-        <div class="ind-row"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">ATR</span><span style="font-size:18px;font-weight:700;color:#f9fafb" id="r-atr">—</span><span class="muted" style="font-size:12px" id="r-atr-lbl">—</span></div>
-        <div class="ind-row" style="border-bottom:none"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700">Volume</span><span style="font-size:18px;font-weight:700;color:#f9fafb" id="r-vol">—</span><span class="muted" style="font-size:12px" id="r-vol-lbl">—</span></div>
+      <div class="card" style="padding:14px 16px;margin-bottom:6px">
+        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Quarterly Revenue Trend</div>
+        <div style="position:relative;height:140px"><canvas id="f-rev-chart" role="img" aria-label="Quarterly revenue trend"></canvas></div>
       </div>
     </div>
+    <div id="fund-placeholder" style="background:#0d1117;border:1px solid #1f2937;border-radius:10px;padding:18px;color:#4b5563;font-size:13px;text-align:center;margin-bottom:6px">Run analysis to load fundamentals</div>
 
     <!-- EARNINGS HISTORY -->
     <div class="section">Earnings History — EPS &amp; Revenue Growth</div>
@@ -464,27 +504,8 @@ input:focus,select:focus{border-color:#3b82f6}
       <div class="card" style="border-left:3px solid #a78bfa"><div class="mc-label">Beat Rate</div><div class="mc-val" style="color:#a78bfa" id="r-beat-rate">—</div><div class="mc-sub" id="r-beat-sub">Beat record</div></div>
     </div>
 
-    <!-- PEER COMPARISON -->
-    <div class="section">Peer Comparison — Semiconductor Group</div>
-    <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
-      <table class="t">
-        <thead><tr><th>Ticker</th><th>Company</th><th>Price</th><th>TicScore</th><th>Stage</th><th>RS</th><th>EPS Growth</th><th>Rev Growth</th><th>Mkt Cap</th><th>vs Group</th></tr></thead>
-        <tbody id="peer-tbody">
-          <tr style="background:#0c1a2e"><td style="font-weight:800;color:#60a5fa;font-size:14px" id="peer-t1">—</td><td style="color:#9ca3af" id="peer-c1">—</td><td style="font-weight:700" id="peer-p1">—</td><td class="green" style="font-weight:800" id="peer-s1">—</td><td id="peer-st1">—</td><td class="green" style="font-weight:800" id="peer-rs1">—</td><td class="green" id="peer-eps1">—</td><td class="green" id="peer-rev1">—</td><td class="muted" id="peer-mc1">—</td><td><span class="pill pg">Leader</span></td></tr>
-          <tr><td style="font-weight:800;color:#f9fafb" id="peer-t2">—</td><td class="muted" id="peer-c2">—</td><td style="font-weight:600" id="peer-p2">—</td><td class="green" style="font-weight:700" id="peer-s2">—</td><td id="peer-st2">—</td><td class="green" style="font-weight:700" id="peer-rs2">—</td><td class="green" id="peer-eps2">—</td><td class="green" id="peer-rev2">—</td><td class="muted" id="peer-mc2">—</td><td><span class="pill pg">Strong</span></td></tr>
-          <tr><td style="font-weight:800;color:#f9fafb" id="peer-t3">—</td><td class="muted" id="peer-c3">—</td><td style="font-weight:600" id="peer-p3">—</td><td class="yellow" style="font-weight:700" id="peer-s3">—</td><td id="peer-st3">—</td><td class="yellow" style="font-weight:700" id="peer-rs3">—</td><td class="yellow" id="peer-eps3">—</td><td class="yellow" id="peer-rev3">—</td><td class="muted" id="peer-mc3">—</td><td><span class="pill py">Neutral</span></td></tr>
-          <tr><td style="font-weight:800;color:#f9fafb">QCOM</td><td class="muted">Qualcomm</td><td style="font-weight:600">$178.20</td><td class="yellow" style="font-weight:700">55</td><td><span class="pill py">S3A</span></td><td class="yellow" style="font-weight:700">58</td><td class="yellow">+12%</td><td class="yellow">+17%</td><td class="muted">$198B</td><td><span class="pill py">Weak</span></td></tr>
-          <tr><td style="font-weight:800;color:#f9fafb">INTC</td><td class="muted">Intel</td><td style="font-weight:600">$22.10</td><td class="red" style="font-weight:700">18</td><td><span class="pill pr">S4A</span></td><td class="red" style="font-weight:700">12</td><td class="red">-42%</td><td class="red">-8%</td><td class="muted">$93B</td><td><span class="pill pr">Avoid</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="card" style="padding:14px 16px;margin-bottom:6px">
-      <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Peer TicScore Comparison</div>
-      <div style="position:relative;height:120px"><canvas id="peerChart" role="img" aria-label="Peer TicScore comparison bar chart"></canvas></div>
-    </div>
-
     <!-- INDUSTRY GROUP RANKING -->
-    <div class="section">Industry Group Ranking — Sector Rotation</div>
+    <div class="section">Industry Group — Intraday % Change</div>
     <div class="g2" style="margin-bottom:12px">
       <div class="card" style="padding:14px 16px">
         <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">S&amp;P 500 Sector Rankings — Live RS vs SPY</div>
@@ -1749,7 +1770,7 @@ function goAnalyze(ticker) {
   var nFrom=new Date(Date.now()-7*864e5).toISOString().slice(0,10);
   var nTo=new Date().toISOString().slice(0,10);
   var yhUrl='https://corsproxy.io/?'+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?range=2y&interval=1d');
-  var yhSumUrl='https://corsproxy.io/?'+encodeURIComponent('https://query1.finance.yahoo.com/v11/finance/quoteSummary/'+ticker+'?modules=assetProfile,summaryProfile');
+  var yhSumUrl='https://corsproxy.io/?'+encodeURIComponent('https://query1.finance.yahoo.com/v11/finance/quoteSummary/'+ticker+'?modules=assetProfile,summaryProfile,financialData,defaultKeyStatistics,incomeStatementHistory,cashflowStatementHistory,balanceSheetHistory');
 
   function fget(url){ return fetch(url).then(function(r){return r.json();}).catch(function(){return null;}); }
 
@@ -1858,6 +1879,8 @@ function goAnalyze(ticker) {
         }).catch(fallbackDesc);
       }
     }
+    // Populate fundamentals dashboard from Yahoo quoteSummary
+    populateFundamentals(yhProfile);
     if(el('r-price')) el('r-price').textContent='$'+price.toFixed(2);
     if(el('r-chg')){el('r-chg').textContent=(isUp?'▲ +$':'▼ -$')+Math.abs(chg).toFixed(2)+' ('+(isUp?'+':'-')+Math.abs(chgPct).toFixed(2)+'%)';el('r-chg').className=isUp?'green':'red';}
     var scoreColor=score.total>=70?'#22c55e':score.total>=50?'#f59e0b':'#ef4444';
@@ -2651,21 +2674,21 @@ function initSectorRotation() {
 function buildSectorRankList(sorted1d) {
   var el = document.getElementById('sector-rank-list');
   if (!el) return;
-  // sorted1d is already ranked by live RS vs SPY
-  var maxAbs = Math.max.apply(null, sorted1d.map(function(r){return Math.abs(r.rs);})) || 1;
-  el.innerHTML = sorted1d.map(function(r, i) {
-    var isPos = r.rs >= 0;
+  // Show intraday % change (dp) ranked highest to lowest
+  var byDay = sorted1d.slice().sort(function(a,b){return b.dp-a.dp;});
+  var maxAbs = Math.max.apply(null, byDay.map(function(r){return Math.abs(r.dp);})) || 1;
+  el.innerHTML = byDay.map(function(r, i) {
+    var isPos = r.dp >= 0;
     var isYours = r.yours;
-    var barW = Math.round(Math.abs(r.rs) / maxAbs * 100);
-    var rankCol = isYours ? '#60a5fa' : isPos ? '#22c55e' : '#ef4444';
-    var barCol  = isYours ? '#3b82f6' : isPos ? '#22c55e' : '#ef4444';
-    var nameCol = isYours ? '#60a5fa' : isPos ? '#d1d5db' : '#9ca3af';
-    var rsStr   = (isPos ? '+' : '') + r.rs.toFixed(2) + '% vs SPY';
-    return '<div style="display:grid;grid-template-columns:22px 1fr 70px 70px;gap:8px;align-items:center;font-size:12px'+(isYours?';background:#0c1a2e;padding:4px 6px;border-radius:5px;border-left:3px solid #3b82f6':'')+'">'
-      + '<span style="font-weight:800;color:'+rankCol+'">'+(i+1)+'</span>'
-      + '<span style="font-weight:'+(isYours?'700':'400')+';color:'+nameCol+'">'+r.sector+(isYours?' ★':'')+'</span>'
-      + '<div style="height:6px;background:'+barCol+';border-radius:3px;width:'+barW+'%;opacity:0.85"></div>'
-      + '<span style="font-weight:700;color:'+rankCol+';text-align:right">'+rsStr+'</span>'
+    var barW = Math.round(Math.abs(r.dp) / maxAbs * 100);
+    var col = isYours ? '#60a5fa' : isPos ? '#22c55e' : '#ef4444';
+    var nameCol = isYours ? '#60a5fa' : '#d1d5db';
+    var pctStr = (isPos?'+':'') + r.dp.toFixed(2) + '%';
+    return '<div style="display:grid;grid-template-columns:22px 1fr 70px 58px;gap:8px;align-items:center;font-size:12px'+(isYours?';background:#0c1a2e;padding:4px 6px;border-radius:5px;border-left:3px solid #3b82f6':'')+'">'
+      + '<span style="font-weight:800;color:'+col+'">'+(i+1)+'</span>'
+      + '<span style="color:'+nameCol+';font-weight:'+(isYours?'700':'400')+'">'+r.sector+(isYours?' ★':'')+'</span>'
+      + '<div style="height:5px;background:'+col+';border-radius:3px;width:'+barW+'%;opacity:0.8"></div>'
+      + '<span style="font-weight:700;color:'+col+';text-align:right">'+pctStr+'</span>'
       + '</div>';
   }).join('');
 }
@@ -3326,6 +3349,143 @@ function updatePeerTable(ticker, peers) {
     var stg=String(p.stage);
     if(stEl){var cls=stg.startsWith('2')?'pg':stg==='1'?'pb':'pr';stEl.innerHTML='<span class="pill '+cls+'">S'+stg+'</span>';}
   });
+}
+
+// ── FUNDAMENTALS DASHBOARD ──
+function populateFundamentals(yhProfile) {
+  var wrap = document.getElementById('fund-wrap');
+  var ph   = document.getElementById('fund-placeholder');
+  if (!yhProfile) return; // no data — keep placeholder
+  var fd  = yhProfile.financialData  || {};
+  var ks  = yhProfile.defaultKeyStatistics || {};
+  var inc = (yhProfile.incomeStatementHistory  && yhProfile.incomeStatementHistory.incomeStatementHistory)  || [];
+  var cf  = (yhProfile.cashflowStatementHistory && yhProfile.cashflowStatementHistory.cashflowStatements) || [];
+  var bs  = (yhProfile.balanceSheetHistory && yhProfile.balanceSheetHistory.balanceSheetStatements) || [];
+
+  if(!fd.totalRevenue && !inc.length) return; // nothing useful
+  if(wrap) wrap.style.display='block';
+  if(ph)   ph.style.display='none';
+
+  function v(obj,key){ return obj&&obj[key]&&obj[key].raw!=null ? obj[key].raw : null; }
+  function fmtB(n){ if(n==null) return '—'; var b=n/1e9; return b>=1?'$'+b.toFixed(1)+'B':'$'+(n/1e6).toFixed(0)+'M'; }
+  function fmtPct(n){ if(n==null) return '—'; return (n>=0?'+':'')+( n*100).toFixed(1)+'%'; }
+  function fmtX(n){ if(n==null) return '—'; return n.toFixed(1)+'×'; }
+  function s(id,txt){ var e=document.getElementById(id); if(e) e.textContent=txt; }
+  function sc(id,n,good){ var e=document.getElementById(id); if(!e||n==null) return; e.style.color=n>=0?(good?'#22c55e':'#ef4444'):(good?'#ef4444':'#22c55e'); }
+
+  // Income
+  var rev   = v(fd,'totalRevenue');
+  var revG  = v(fd,'revenueGrowth');
+  var gp    = v(fd,'grossProfits');
+  var gpM   = v(fd,'grossMargins');
+  var oi    = v(fd,'operatingCashflow'); // fallback
+  var oiAlt = inc[0] ? v(inc[0],'totalRevenue') : null;
+  var opInc = v(fd,'operatingCashflow');
+  var opM   = v(fd,'operatingMargins');
+  var ni    = v(fd,'netIncomeToCommon') || (inc[0]?v(inc[0],'netIncome'):null);
+  var niM   = v(fd,'profitMargins');
+
+  s('f-rev',  fmtB(rev));
+  s('f-rev-g', revG!=null ? (revG>=0?'▲ +':'▼ ')+(revG*100).toFixed(1)+'% YoY' : '—');
+  sc('f-rev-g', revG, true);
+  s('f-gp',   fmtB(gp));
+  s('f-gp-m', gpM!=null ? (gpM*100).toFixed(1)+'% margin' : '—');
+  s('f-oi',   fmtB(v(fd,'ebitda')||opInc));
+  s('f-oi-m', opM!=null ? (opM*100).toFixed(1)+'% margin' : '—');
+  s('f-ni',   fmtB(ni));
+  s('f-ni-g', niM!=null ? (niM*100).toFixed(1)+'% net margin' : '—');
+  sc('f-ni-g', niM, true);
+
+  // Cash flow
+  var ocf   = cf[0] ? v(cf[0],'totalCashFromOperatingActivities') : null;
+  var capex = cf[0] ? v(cf[0],'capitalExpenditures') : null;
+  var fcf   = v(fd,'freeCashflow') || (ocf&&capex ? ocf+capex : null);
+  var fcfM  = (fcf&&rev) ? fcf/rev : null;
+  s('f-ocf',   fmtB(ocf));
+  s('f-ocf-g', ocf&&rev ? (ocf/rev*100).toFixed(1)+'% of revenue' : '—');
+  s('f-fcf',   fmtB(fcf));
+  s('f-fcf-m', fcfM!=null ? (fcfM*100).toFixed(1)+'% FCF margin' : '—');
+  s('f-capex', fmtB(capex ? Math.abs(capex) : null));
+  s('f-capex-s', rev&&capex ? (Math.abs(capex)/rev*100).toFixed(1)+'% of revenue' : '—');
+
+  // Balance sheet
+  var cash = bs[0] ? v(bs[0],'cash') : null;
+  var debt = bs[0] ? (v(bs[0],'longTermDebt')||0)+(v(bs[0],'shortLongTermDebt')||0) : null;
+  var eq   = bs[0] ? v(bs[0],'totalStockholderEquity') : null;
+  var de   = (debt&&eq&&eq!==0) ? debt/Math.abs(eq) : null;
+  var cr   = v(fd,'currentRatio');
+  s('f-cash', fmtB(cash));
+  s('f-debt', fmtB(debt||null));
+  s('f-debt-s', de!=null ? (de<0.5?'low leverage':de<1.5?'moderate':'high') : '—');
+  s('f-de',   de!=null ? de.toFixed(2)+'×' : '—');
+  s('f-de-s',  de!=null ? (de<0.5?'very low':de<1?'low':de<2?'moderate':'high leverage') : '—');
+  s('f-cr',   cr!=null ? cr.toFixed(1)+'×' : '—');
+  s('f-cr-s',  cr!=null ? (cr>=2?'strong liquidity':cr>=1?'adequate':'watch') : '—');
+
+  // Valuation rows
+  var valEl = document.getElementById('f-val-rows');
+  if(valEl){
+    var pe   = v(ks,'trailingPE');
+    var fpe  = v(ks,'forwardPE');
+    var ps   = v(ks,'priceToSalesTrailing12Months');
+    var pb   = v(ks,'priceToBook');
+    var peg  = v(ks,'pegRatio');
+    var evEb = v(ks,'enterpriseToEbitda');
+    function vRow(lbl,val,col){
+      var c=col||'#d1d5db';
+      return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1f2937;font-size:12px">'
+        +'<span style="color:#6b7280">'+lbl+'</span><span style="font-weight:700;color:'+c+'">'+val+'</span></div>';
+    }
+    valEl.innerHTML=
+      vRow('P/E (TTM)',  pe!=null?pe.toFixed(1)+'×':'—')+
+      vRow('Forward P/E', fpe!=null?fpe.toFixed(1)+'×':'—')+
+      vRow('P/S',        ps!=null?ps.toFixed(1)+'×':'—')+
+      vRow('P/B',        pb!=null?pb.toFixed(1)+'×':'—')+
+      vRow('PEG',        peg!=null?peg.toFixed(2)+'×':'—', peg&&peg<1?'#22c55e':peg&&peg>2?'#ef4444':'#d1d5db')+
+      vRow('EV/EBITDA',  evEb!=null?evEb.toFixed(1)+'×':'—');
+  }
+
+  // Profitability margin bars
+  var marEl = document.getElementById('f-margin-rows');
+  if(marEl){
+    var roe  = v(fd,'returnOnEquity');
+    var roa  = v(fd,'returnOnAssets');
+    function mRow(lbl, pct){
+      if(pct==null) return '';
+      var p=Math.min(Math.abs(pct*100),100);
+      var col=pct>=0.15?'#22c55e':pct>=0?'#f59e0b':'#ef4444';
+      return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1f2937;font-size:12px">'
+        +'<span style="color:#6b7280;width:100px">'+lbl+'</span>'
+        +'<div style="flex:1;background:#1f2937;border-radius:2px;height:5px"><div style="width:'+p+'%;height:100%;background:'+col+';border-radius:2px"></div></div>'
+        +'<span style="font-weight:700;color:'+col+';width:46px;text-align:right">'+(pct*100).toFixed(1)+'%</span></div>';
+    }
+    marEl.innerHTML=mRow('Gross',gpM)+mRow('Operating',opM)+mRow('Net',niM)+mRow('ROE',roe)+mRow('ROA',roa);
+  }
+
+  // Quarterly revenue trend chart
+  var qRevs = inc.slice(0,6).reverse().map(function(q){
+    return {date:(q.endDate&&q.endDate.fmt)||'', rev:v(q,'totalRevenue')};
+  }).filter(function(q){return q.rev!=null;});
+  if(qRevs.length>1){
+    var fc=document.getElementById('f-rev-chart');
+    if(fc){
+      if(window._fRevChart){window._fRevChart.destroy();window._fRevChart=null;}
+      var maxR=Math.max.apply(null,qRevs.map(function(q){return q.rev;}));
+      window._fRevChart=new Chart(fc.getContext('2d'),{
+        type:'bar',
+        data:{
+          labels:qRevs.map(function(q){return q.date.slice(0,7);}),
+          datasets:[{data:qRevs.map(function(q){return+(q.rev/1e9).toFixed(2);}),
+            backgroundColor:qRevs.map(function(q,i){return i===qRevs.length-1?'rgba(59,130,246,0.8)':'rgba(34,197,94,0.7)';}),
+            borderRadius:3}]
+        },
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.parsed.y+'B';}} }},
+          scales:{x:{ticks:{font:{size:10},color:'#6b7280'},grid:{display:false}},
+                  y:{ticks:{font:{size:10},color:'#6b7280',callback:function(v){return '$'+v+'B';}},grid:{color:'#1f2937'}}}}
+      });
+    }
+  }
 }
 
 // ── PDF POPULATE (called from goAnalyze after analysis) ──
