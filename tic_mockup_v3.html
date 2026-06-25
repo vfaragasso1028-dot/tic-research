@@ -1816,24 +1816,46 @@ function goAnalyze(ticker) {
         if(brief&&!brief.match(/[.!?]$/)) brief+='.';
         if(descEl) descEl.textContent=brief||yhDesc.slice(0,280);
       } else {
-        // Wikipedia REST API — native CORS, no proxy needed
-        var wikiName=encodeURIComponent((coName||ticker).replace(/,?\s*(Inc\.?|Corp\.?|Ltd\.?|LLC\.?|Co\.?|Group|Holdings?|Platforms?|Technologies?)\.?\s*$/i,'').trim());
         var wikiEl=el('r-desc');
         if(wikiEl) wikiEl.textContent='Loading…';
-        fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+wikiName)
-          .then(function(r){return r.json();})
-          .then(function(w){
-            if(w&&w.extract){
-              var sentences=w.extract.split(/[.!?]\s+/);
-              var brief=sentences.slice(0,2).join('. ').trim();
-              if(brief&&!brief.match(/[.!?]$/)) brief+='.';
-              if(wikiEl) wikiEl.textContent=brief;
-            } else if(wikiEl) {
-              wikiEl.textContent=(prof.finnhubIndustry||'')+(prof.country?' · '+prof.country:'');
-            }
-          }).catch(function(){
-            if(wikiEl) wikiEl.textContent=(prof.finnhubIndustry||ticker)+' — '+( prof.exchange||'');
-          });
+        // Clean company name for Wikipedia lookup
+        var cleanName=(coName||'').replace(/,?\s*(Inc\.?|Corp\.?|Ltd\.?|LLC\.?|Co\.?|Group|Holdings?|Platforms?|Technologies?|Corporation|International|Solutions?)\.?\s*$/i,'').replace(/\.com$/i,'').trim();
+        // If name is just the ticker or empty, use known overrides
+        var wikiOverrides={GOOGL:'Alphabet Inc',GOOG:'Alphabet Inc',AMZN:'Amazon (company)',META:'Meta Platforms',BRK:'Berkshire Hathaway',BRKB:'Berkshire Hathaway',JPM:'JPMorgan Chase',GS:'Goldman Sachs',MS:'Morgan Stanley',WMT:'Walmart',COST:'Costco',UNH:'UnitedHealth Group',CVS:'CVS Health',XOM:'ExxonMobil',CVX:'Chevron Corporation'};
+        var wikiName=wikiOverrides[ticker]||cleanName||ticker;
+
+        function setDesc(txt){if(wikiEl)wikiEl.textContent=txt;}
+        function fallbackDesc(){setDesc((prof.finnhubIndustry?prof.finnhubIndustry+' company':ticker)+(prof.country?' based in '+prof.country:'')+(prof.exchange?' listed on '+prof.exchange:'')+'.');}
+
+        function tryWiki(name){
+          return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(name))
+            .then(function(r){return r.json();});
+        }
+
+        tryWiki(wikiName).then(function(w){
+          if(w&&w.extract&&w.type!=='disambiguation'){
+            var sentences=w.extract.split(/[.!?]\s+/);
+            var brief=sentences.slice(0,2).join('. ').trim();
+            if(brief&&!brief.match(/[.!?]$/)) brief+='.';
+            setDesc(brief);
+          } else {
+            // Try Wikipedia search API as fallback
+            return fetch('https://en.wikipedia.org/w/api.php?action=opensearch&search='+encodeURIComponent(wikiName+' company')+'&limit=1&format=json&origin=*')
+              .then(function(r){return r.json();})
+              .then(function(s){
+                var title=s&&s[1]&&s[1][0];
+                if(title) return tryWiki(title).then(function(w2){
+                  if(w2&&w2.extract){
+                    var sentences=w2.extract.split(/[.!?]\s+/);
+                    var brief=sentences.slice(0,2).join('. ').trim();
+                    if(brief&&!brief.match(/[.!?]$/)) brief+='.';
+                    setDesc(brief);
+                  } else fallbackDesc();
+                });
+                else fallbackDesc();
+              });
+          }
+        }).catch(fallbackDesc);
       }
     }
     if(el('r-price')) el('r-price').textContent='$'+price.toFixed(2);
