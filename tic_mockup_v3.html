@@ -1800,23 +1800,41 @@ function goAnalyze(ticker) {
     var el=function(id){return document.getElementById(id);};
     if(el('r-company')) el('r-company').textContent=coName;
     if(el('r-meta')) el('r-meta').innerHTML=ticker+' · '+industry+' <span class="pill pb" style="font-size:9px">Live Data</span>';
-    // Company description panel
+    // Company description panel — show immediately, load Wikipedia desc async
     var descWrap=el('r-desc-wrap');
     if(descWrap){
       descWrap.style.display='block';
-      // yhDesc from Yahoo Finance quoteSummary (free), prof.description from Finnhub (paid only)
-      var rawDesc=yhDesc||prof.description||'';
-      var sentences=rawDesc.split(/[.!?]\s+/);
-      var brief=sentences.slice(0,2).join('. ').trim();
-      if(brief&&!brief.match(/[.!?]$/)) brief+='.';
-      if(!brief&&rawDesc) brief=rawDesc.slice(0,280)+'…';
-      var descEl=el('r-desc');
-      if(descEl) descEl.textContent=brief||'No description available.';
       var setText=function(id,v){var e=el(id);if(e)e.textContent=v||'—';};
       setText('r-desc-industry', prof.finnhubIndustry);
       setText('r-desc-exchange',  prof.exchange);
       setText('r-desc-country',   prof.country);
       setText('r-desc-ipo',       prof.ipo);
+      // Use Yahoo quoteSummary desc if already fetched, else load Wikipedia
+      if(yhDesc){
+        var descEl=el('r-desc');
+        var brief=yhDesc.split(/[.!?]\s+/).slice(0,2).join('. ').trim();
+        if(brief&&!brief.match(/[.!?]$/)) brief+='.';
+        if(descEl) descEl.textContent=brief||yhDesc.slice(0,280);
+      } else {
+        // Wikipedia REST API — native CORS, no proxy needed
+        var wikiName=encodeURIComponent((coName||ticker).replace(/,?\s*(Inc\.?|Corp\.?|Ltd\.?|LLC\.?|Co\.?|Group|Holdings?|Platforms?|Technologies?)\.?\s*$/i,'').trim());
+        var wikiEl=el('r-desc');
+        if(wikiEl) wikiEl.textContent='Loading…';
+        fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+wikiName)
+          .then(function(r){return r.json();})
+          .then(function(w){
+            if(w&&w.extract){
+              var sentences=w.extract.split(/[.!?]\s+/);
+              var brief=sentences.slice(0,2).join('. ').trim();
+              if(brief&&!brief.match(/[.!?]$/)) brief+='.';
+              if(wikiEl) wikiEl.textContent=brief;
+            } else if(wikiEl) {
+              wikiEl.textContent=(prof.finnhubIndustry||'')+(prof.country?' · '+prof.country:'');
+            }
+          }).catch(function(){
+            if(wikiEl) wikiEl.textContent=(prof.finnhubIndustry||ticker)+' — '+( prof.exchange||'');
+          });
+      }
     }
     if(el('r-price')) el('r-price').textContent='$'+price.toFixed(2);
     if(el('r-chg')){el('r-chg').textContent=(isUp?'▲ +$':'▼ -$')+Math.abs(chg).toFixed(2)+' ('+(isUp?'+':'-')+Math.abs(chgPct).toFixed(2)+'%)';el('r-chg').className=isUp?'green':'red';}
