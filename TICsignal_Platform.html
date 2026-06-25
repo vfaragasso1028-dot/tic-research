@@ -500,8 +500,8 @@ input:focus,select:focus{border-color:#3b82f6}
       <div class="card" style="border-left:3px solid #a78bfa"><div class="mc-label">Beat Rate</div><div class="mc-val" style="color:#a78bfa" id="r-beat-rate">—</div><div class="mc-sub" id="r-beat-sub">Beat record</div></div>
     </div>
 
-    <!-- SEMI SUB-INDUSTRY BREAKDOWN -->
-    <div class="section">Semiconductor Sub-Industry Breakdown — Live</div>
+    <!-- #1 SEMICONDUCTOR SUB-INDUSTRY -->
+    <div class="section">#1 — Semiconductor Sub-Industry Breakdown — Live</div>
     <div class="card" style="padding:14px 16px;margin-bottom:12px">
       <div id="semi-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
         <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
@@ -513,28 +513,29 @@ input:focus,select:focus{border-color:#3b82f6}
       </div>
     </div>
 
-    <!-- LEADING / LAGGING SPY SECTORS -->
-    <div class="section">SPY Sector Rotation — Leading vs Lagging</div>
+    <!-- #2 AI INFRASTRUCTURE -->
+    <div class="section">#2 — AI Infrastructure Breakdown — Live</div>
     <div class="card" style="padding:14px 16px;margin-bottom:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-        <div style="font-size:11px;color:#6b7280">RS performance vs SPY over the last <strong style="color:#d1d5db">4 weeks · 13 weeks · 26 weeks</strong>. Green = outperforming · Red = underperforming.</div>
-        <div style="display:flex;gap:5px" id="spy-tf-tabs">
-          <button class="ctab" onclick="switchSpyTF(this,'1d')">1D</button>
-          <button class="ctab active" onclick="switchSpyTF(this,'4w')">4W</button>
-          <button class="ctab" onclick="switchSpyTF(this,'13w')">13W</button>
-          <button class="ctab" onclick="switchSpyTF(this,'26w')">26W</button>
+      <div id="ai-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
+        <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
+      </div>
+      <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:8px">
+        <div style="font-size:11px;color:#22c55e;line-height:1.7" id="ai-rotation-signal">
+          <strong>Rotation signal:</strong> Loading live sector data…
         </div>
       </div>
+    </div>
 
-      <!-- HEATMAP GRID -->
-      <div id="spy-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:14px"></div>
-
-      <!-- BAR CHART -->
-      <div style="position:relative;height:140px;margin-top:4px">
-        <canvas id="spyChart" role="img" aria-label="SPY sector relative strength bar chart"></canvas>
+    <!-- #3 CYBERSECURITY -->
+    <div class="section">#3 — Cybersecurity Breakdown — Live</div>
+    <div class="card" style="padding:14px 16px;margin-bottom:12px">
+      <div id="cyber-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
+        <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
       </div>
-      <div style="font-size:11px;color:#374151;margin-top:8px;text-align:center">
-        Numbers = % outperformance vs SPY · Zero line = SPY benchmark · Your ticker's sector highlighted in blue
+      <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:8px">
+        <div style="font-size:11px;color:#22c55e;line-height:1.7" id="cyber-rotation-signal">
+          <strong>Rotation signal:</strong> Loading live sector data…
+        </div>
       </div>
     </div>
 
@@ -2686,8 +2687,10 @@ function initSectorRotation() {
     // Build live sector rank list
     buildSectorRankList(sorted1d);
 
-    // Fetch live semi sub-industry data
+    // Fetch live sub-industry breakdowns — staggered to avoid 429s
     loadSemiBreakdown(rows, key);
+    setTimeout(function(){ loadSubBreakdown(AI_INFRA_SUBGROUPS, 'ai-breakdown-list', 'ai-rotation-signal', key); }, 2000);
+    setTimeout(function(){ loadSubBreakdown(CYBER_SUBGROUPS, 'cyber-breakdown-list', 'cyber-rotation-signal', key); }, 4000);
   }).catch(function(e){ console.warn('Sector fetch failed',e); });
 }
 
@@ -2714,6 +2717,20 @@ function buildSectorRankList(sorted1d) {
 }
 
 // Semi sub-industry groups with live tickers
+var AI_INFRA_SUBGROUPS = [
+  {name:'GPU / Compute',       tickers:['NVDA','AMD'],        color:'#60a5fa'},
+  {name:'Networking',          tickers:['AVGO','ANET'],       color:'#a78bfa'},
+  {name:'Servers / Hardware',  tickers:['DELL','SMCI'],       color:'#fbbf24'},
+  {name:'AI Software / Cloud', tickers:['PLTR','MSFT','ORCL'],color:'#34d399'}
+];
+
+var CYBER_SUBGROUPS = [
+  {name:'Endpoint Security',   tickers:['CRWD','S'],          color:'#60a5fa'},
+  {name:'Network Security',    tickers:['PANW','FTNT','ZS'],  color:'#a78bfa'},
+  {name:'Identity & Access',   tickers:['OKTA','CYBR'],       color:'#fbbf24'},
+  {name:'Threat Intelligence', tickers:['MSFT','GOOGL'],      color:'#9ca3af'}
+];
+
 var SEMI_SUBGROUPS = [
   {name:'AI Chips / Data Center', tickers:['NVDA','AVGO'], color:'#60a5fa', rank:null},
   {name:'Semi Equipment',         tickers:['AMAT','LRCX','KLAC'], color:'#a78bfa', rank:null},
@@ -2781,6 +2798,56 @@ function loadSemiBreakdown(sectorRows, key) {
         +'<span style="color:#9ca3af">Last updated: '+new Date().toLocaleTimeString()+'</span>';
     }
   }).catch(function(e){ console.warn('Semi breakdown error',e); });
+}
+
+function loadSubBreakdown(subgroups, listId, signalId, key) {
+  var allTickers = [];
+  subgroups.forEach(function(g){ g.tickers.forEach(function(t){ if(!allTickers.includes(t)) allTickers.push(t); }); });
+  Promise.all(allTickers.map(function(sym){
+    return fgetQ(FH_BASE+'/quote?symbol='+sym+'&token='+key)
+      .then(function(q){ return {sym:sym, dp:q&&q.dp!=null?q.dp:0, c:q&&q.c?q.c:0}; })
+      .catch(function(){ return {sym:sym, dp:0, c:0}; });
+  })).then(function(quotes){
+    var qMap = {};
+    quotes.forEach(function(q){ qMap[q.sym]=q; });
+    var groups = subgroups.map(function(g){
+      var dps = g.tickers.map(function(t){ return qMap[t]?qMap[t].dp:0; });
+      var avg = dps.reduce(function(a,b){return a+b;},0)/dps.length;
+      return {name:g.name, tickers:g.tickers, color:g.color, avgDp:avg, quotes:qMap};
+    });
+    groups.sort(function(a,b){ return b.avgDp-a.avgDp; });
+    var el = document.getElementById(listId);
+    if(el){
+      el.innerHTML = groups.map(function(g,i){
+        var isPos = g.avgDp>=0;
+        var pillCls = i===0?'pg':isPos?'py':'pr';
+        var tickerDetails = g.tickers.map(function(t){
+          var q=qMap[t];
+          if(!q||!q.c) return t;
+          var dp=q.dp!=null?(q.dp>=0?'<span style="color:#22c55e">+'+q.dp.toFixed(2)+'%</span>':'<span style="color:#ef4444">'+q.dp.toFixed(2)+'%</span>'):'';
+          return '<b>'+t+'</b> $'+q.c.toFixed(2)+' '+dp;
+        }).join(' &nbsp;·&nbsp; ');
+        return '<div style="background:#111;border:1px solid #1f2937;border-radius:7px;padding:10px 12px">'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+          +'<span style="font-size:12px;font-weight:700;color:'+g.color+'">'+g.name+'</span>'
+          +'<div style="display:flex;gap:6px;align-items:center">'
+          +'<span style="font-size:11px;font-weight:700;color:'+(isPos?'#22c55e':'#ef4444')+'">'+(isPos?'+':'')+g.avgDp.toFixed(2)+'% avg</span>'
+          +'<span class="pill '+pillCls+'">#'+(i+1)+'</span>'
+          +'</div></div>'
+          +'<div style="font-size:11px;color:#6b7280">'+tickerDetails+'</div>'
+          +'</div>';
+      }).join('');
+    }
+    var rotEl = document.getElementById(signalId);
+    if(rotEl){
+      var top=groups[0], bot=groups[groups.length-1];
+      rotEl.innerHTML='<strong>Rotation signal (live):</strong> '
+        +'Leading: <span style="color:'+top.color+'"><b>'+top.name+'</b></span> '
+        +'<span style="color:#22c55e">'+(top.avgDp>=0?'+':'')+top.avgDp.toFixed(2)+'% avg</span> · '
+        +'Lagging: <span style="color:#ef4444"><b>'+bot.name+'</b> '+(bot.avgDp>=0?'+':'')+bot.avgDp.toFixed(2)+'%</span>'
+        +' <span style="color:#9ca3af">· '+new Date().toLocaleTimeString()+'</span>';
+    }
+  }).catch(function(e){ console.warn(listId+' breakdown error',e); });
 }
 
 let spyChart=null;
