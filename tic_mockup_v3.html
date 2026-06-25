@@ -3403,16 +3403,21 @@ function populateFundamentals(yhProfile, met, price) {
   function sc(id,n,good){ var e=document.getElementById(id); if(!e||n==null) return; e.style.color=n>0?(good?'#22c55e':'#ef4444'):(good?'#ef4444':'#22c55e'); }
 
   // ── INCOME ── Finnhub met fields (TTM)
-  // Revenue: derive from market cap / PS ratio or Yahoo
   var ps     = met.psTTM || met.psAnnual;
   var mc     = met.marketCapitalization ? met.marketCapitalization*1e6 : null;
+  var shares = (mc && price) ? mc / price : null;  // shares outstanding
   var rev    = yv(fd,'totalRevenue') || (mc&&ps ? mc/ps : null);
   var revG   = met.revenueGrowthTTMYoy!=null ? met.revenueGrowthTTMYoy/100 : yv(fd,'revenueGrowth');
   var gpM    = met.grossMarginTTM!=null ? met.grossMarginTTM/100 : yv(fd,'grossMargins');
   var opM    = met.operatingMarginTTM!=null ? met.operatingMarginTTM/100 : yv(fd,'operatingMargins');
-  var niM    = met.netMarginTTM!=null ? met.netMarginTTM/100 : yv(fd,'profitMargins');
+  // Finnhub uses netProfitMarginTTM or netMarginTTM depending on ticker
+  var niM    = met.netProfitMarginTTM!=null ? met.netProfitMarginTTM/100
+             : met.netMarginTTM!=null ? met.netMarginTTM/100
+             : yv(fd,'profitMargins');
   var gp     = (rev&&gpM) ? rev*gpM : yv(fd,'grossProfits');
   var ni     = (rev&&niM) ? rev*niM : yv(fd,'netIncomeToCommon');
+  // If niM still null, fallback: net income ≈ operating income minus ~25% taxes estimate
+  if(!ni && rev && opM) ni = rev * opM * 0.75;
   var ebitda = yv(fd,'ebitda') || (rev&&opM ? rev*opM : null);
 
   s('f-rev', rev ? fmtB(rev) : '—');
@@ -3423,15 +3428,21 @@ function populateFundamentals(yhProfile, met, price) {
   s('f-oi',  ebitda ? fmtB(ebitda) : '—');
   s('f-oi-m', opM!=null ? (opM*100).toFixed(1)+'% op. margin' : '—');
   s('f-ni',  ni ? fmtB(ni) : '—');
-  s('f-ni-g', niM!=null ? (niM*100).toFixed(1)+'% net margin' : '—');
-  sc('f-ni-g', niM, true);
+  s('f-ni-g', niM!=null ? (niM*100).toFixed(1)+'% net margin' : (ni&&rev ? (ni/rev*100).toFixed(1)+'% net margin' : '—'));
+  sc('f-ni-g', niM || (ni&&rev?ni/rev:null), true);
 
   // ── CASH FLOW ──
-  var fcf   = met.fcfTTM!=null ? met.fcfTTM*1e6 : yv(fd,'freeCashflow');
+  // Finnhub: pfcfShareAnnual = Price / FCF per share → FCF = MC / pfcfShareAnnual
+  var fcf = yv(fd,'freeCashflow')
+         || (met.freeCashFlowTTM!=null ? met.freeCashFlowTTM*1e6 : null)
+         || (met.pfcfShareTTM&&mc ? mc/met.pfcfShareTTM : null)
+         || (met.pfcfShareAnnual&&mc ? mc/met.pfcfShareAnnual : null);
   var ocf   = yv(cf[0],'totalCashFromOperatingActivities');
   var capex = yv(cf[0],'capitalExpenditures');
+  // Estimate OCF from FCF if Yahoo not available (FCF = OCF - Capex; without capex just show ~FCF)
+  if(!ocf && fcf) ocf = null; // don't estimate OCF — too noisy without capex
   var fcfM  = (fcf&&rev) ? fcf/rev : null;
-  s('f-ocf',   ocf ? fmtB(ocf) : (fcf ? '~'+fmtB(fcf) : '—'));
+  s('f-ocf',   ocf ? fmtB(ocf) : '—');
   s('f-ocf-g', ocf&&rev ? (ocf/rev*100).toFixed(1)+'% of revenue' : '—');
   s('f-fcf',   fcf ? fmtB(fcf) : '—');
   s('f-fcf-m', fcfM!=null ? (fcfM*100).toFixed(1)+'% FCF margin' : '—');
@@ -3439,9 +3450,18 @@ function populateFundamentals(yhProfile, met, price) {
   s('f-capex-s', rev&&capex ? (Math.abs(capex)/rev*100).toFixed(1)+'% of revenue' : '—');
 
   // ── BALANCE SHEET ──
-  var cash  = yv(bs[0],'cash') || (met.cashPerShareAnnual&&met.sharesOutstanding ? met.cashPerShareAnnual*met.sharesOutstanding*1e6 : null);
-  var debt  = met.totalDebt!=null ? met.totalDebt*1e6 : (yv(bs[0],'longTermDebt')||null);
-  var de    = met.totalDebtToEquityAnnual!=null ? met.totalDebtToEquityAnnual/100 : null;
+  // Cash: cashPerShareTTM × shares; or cashPerShareAnnual × shares
+  var cash = yv(bs[0],'cash')
+          || (met.cashPerShareTTM&&shares ? met.cashPerShareTTM*shares : null)
+          || (met.cashPerShareAnnual&&shares ? met.cashPerShareAnnual*shares : null);
+  // D/E: Finnhub uses 'totalDebt/totalEquityAnnual' with slashes as key name
+  var de_raw = met['totalDebt/totalEquityAnnual'] || met['totalDebt/totalEquityQuarterly'] || met.totalDebtToEquityAnnual;
+  var de    = de_raw!=null ? de_raw/100 : null;
+  // Equity from P/B: equity = MC / pbAnnual
+  var bookEq = (mc&&met.pbAnnual) ? mc/met.pbAnnual : null;
+  var debt = yv(bs[0],'longTermDebt')
+          || (de&&bookEq ? de*bookEq : null)
+          || (met['longTermDebt/totalEquityAnnual']&&bookEq ? (met['longTermDebt/totalEquityAnnual']/100)*bookEq : null);
   var cr    = met.currentRatioAnnual || yv(fd,'currentRatio');
   s('f-cash', cash ? fmtB(cash) : '—');
   s('f-debt', debt ? fmtB(debt) : '—');
