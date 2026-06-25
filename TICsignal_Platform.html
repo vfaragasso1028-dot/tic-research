@@ -468,10 +468,6 @@ input:focus,select:focus{border-color:#3b82f6}
           <div id="f-margin-rows"></div>
         </div>
       </div>
-      <div class="card" style="padding:14px 16px;margin-bottom:6px">
-        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Quarterly Revenue Trend</div>
-        <div style="position:relative;height:140px"><canvas id="f-rev-chart" role="img" aria-label="Quarterly revenue trend"></canvas></div>
-      </div>
     </div>
     <div id="fund-placeholder" style="background:#0d1117;border:1px solid #1f2937;border-radius:10px;padding:18px;color:#4b5563;font-size:13px;text-align:center;margin-bottom:6px">Run analysis to load fundamentals</div>
 
@@ -3516,25 +3512,6 @@ function populateFundamentals(yhProfile, met, price) {
   }
 
   // ── QUARTERLY REVENUE CHART from Yahoo (if available) ──
-  var qRevs = inc.slice(0,6).reverse().map(function(q){
-    return {date:(q.endDate&&q.endDate.fmt)||'', rev:yv(q,'totalRevenue')};
-  }).filter(function(q){return q.rev!=null;});
-  var fc = document.getElementById('f-rev-chart');
-  if(fc && qRevs.length>1){
-    if(window._fRevChart){window._fRevChart.destroy();window._fRevChart=null;}
-    window._fRevChart=new Chart(fc.getContext('2d'),{
-      type:'bar',
-      data:{labels:qRevs.map(function(q){return q.date.slice(0,7);}),
-        datasets:[{data:qRevs.map(function(q){return+(q.rev/1e9).toFixed(2);}),
-          backgroundColor:qRevs.map(function(q,i){return i===qRevs.length-1?'rgba(59,130,246,0.8)':'rgba(34,197,94,0.7)';}),borderRadius:3}]},
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.parsed.y+'B';}}}},
-        scales:{x:{ticks:{font:{size:10},color:'#6b7280'},grid:{display:false}},
-                y:{ticks:{font:{size:10},color:'#6b7280',callback:function(v){return '$'+v+'B';}},grid:{color:'#1f2937'}}}}
-    });
-  } else if(fc) {
-    fc.closest('.card').querySelector('div').textContent='Quarterly chart available with Yahoo data';
-  }
 }
 
 // ── PDF POPULATE (called from goAnalyze after analysis) ──
