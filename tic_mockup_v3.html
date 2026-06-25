@@ -3433,15 +3433,17 @@ function populateFundamentals(yhProfile, met, price) {
   sc('f-ni-g', niM || (ni&&rev?ni/rev:null), true);
 
   // ── CASH FLOW ──
-  // Finnhub: pfcfShareAnnual = Price / FCF per share → FCF = MC / pfcfShareAnnual
+  // pfcfShareTTM = Price/FCF per share → FCF total = MC / pfcfShareTTM
+  // pcfShareTTM  = Price/OCF per share → OCF total = MC / pcfShareTTM
   var fcf = yv(fd,'freeCashflow')
          || (met.freeCashFlowTTM!=null ? met.freeCashFlowTTM*1e6 : null)
-         || (met.pfcfShareTTM&&mc ? mc/met.pfcfShareTTM : null)
-         || (met.pfcfShareAnnual&&mc ? mc/met.pfcfShareAnnual : null);
-  var ocf   = yv(cf[0],'totalCashFromOperatingActivities');
-  var capex = yv(cf[0],'capitalExpenditures');
-  // Estimate OCF from FCF if Yahoo not available (FCF = OCF - Capex; without capex just show ~FCF)
-  if(!ocf && fcf) ocf = null; // don't estimate OCF — too noisy without capex
+         || (met.pfcfShareTTM&&mc&&met.pfcfShareTTM>0 ? mc/met.pfcfShareTTM : null)
+         || (met.pfcfShareAnnual&&mc&&met.pfcfShareAnnual>0 ? mc/met.pfcfShareAnnual : null);
+  var ocf = yv(cf[0],'totalCashFromOperatingActivities')
+         || (met.pcfShareTTM&&mc&&met.pcfShareTTM>0 ? mc/met.pcfShareTTM : null)
+         || (met.pcfShareAnnual&&mc&&met.pcfShareAnnual>0 ? mc/met.pcfShareAnnual : null);
+  var capex = yv(cf[0],'capitalExpenditures')
+           || (ocf&&fcf&&ocf>fcf ? -(ocf-fcf) : null); // estimate: capex ≈ OCF - FCF
   var fcfM  = (fcf&&rev) ? fcf/rev : null;
   s('f-ocf',   ocf ? fmtB(ocf) : '—');
   s('f-ocf-g', ocf&&rev ? (ocf/rev*100).toFixed(1)+'% of revenue' : '—');
@@ -3451,10 +3453,12 @@ function populateFundamentals(yhProfile, met, price) {
   s('f-capex-s', rev&&capex ? (Math.abs(capex)/rev*100).toFixed(1)+'% of revenue' : '—');
 
   // ── BALANCE SHEET ──
-  // Cash: cashPerShareTTM × shares; or cashPerShareAnnual × shares
+  // Finnhub field names for cash per share vary — try all known variants
   var cash = yv(bs[0],'cash')
+          || (met['cashPerSharePerShareAnnual']&&shares ? met['cashPerSharePerShareAnnual']*shares : null)
+          || (met.cashPerShareAnnual&&shares ? met.cashPerShareAnnual*shares : null)
           || (met.cashPerShareTTM&&shares ? met.cashPerShareTTM*shares : null)
-          || (met.cashPerShareAnnual&&shares ? met.cashPerShareAnnual*shares : null);
+          || (met['cashPerSharePerShareQuarterly']&&shares ? met['cashPerSharePerShareQuarterly']*shares : null);
   // D/E: Finnhub uses 'totalDebt/totalEquityAnnual' with slashes as key name
   var de_raw = met['totalDebt/totalEquityAnnual'] || met['totalDebt/totalEquityQuarterly'] || met.totalDebtToEquityAnnual;
   var de    = de_raw!=null ? de_raw/100 : null;
