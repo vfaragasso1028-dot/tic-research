@@ -1770,19 +1770,27 @@ function goAnalyze(ticker) {
 
   function fget(url){ return fetch(url).then(function(r){return r.json();}).catch(function(){return null;}); }
 
+  // Batch 1: critical data (quote, profile, metrics, chart) — fires immediately
   Promise.all([
     fget(FH_BASE+'/quote?symbol='+T+'&token='+key),
     fget(FH_BASE+'/stock/profile2?symbol='+T+'&token='+key),
     fget(FH_BASE+'/stock/metric?symbol='+T+'&metric=all&token='+key),
-    fget(FH_BASE+'/stock/earnings?symbol='+T+'&token='+key),
-    fget(yhUrl),
-    fget(FH_BASE+'/stock/recommendation?symbol='+T+'&token='+key),
-    fget(FH_BASE+'/company-news?symbol='+T+'&from='+nFrom+'&to='+nTo+'&token='+key),
-    fget(yhSumUrl)
-  ]).then(function(results){
+    fget(yhUrl)
+  ]).then(function(b1){
+  // Batch 2: secondary data (earnings, recs, news, yahoo summary) — staggered 1s later
+  return new Promise(function(res){setTimeout(function(){
+    Promise.all([
+      fget(FH_BASE+'/stock/earnings?symbol='+T+'&token='+key),
+      fget(FH_BASE+'/stock/recommendation?symbol='+T+'&token='+key),
+      fget(FH_BASE+'/company-news?symbol='+T+'&from='+nFrom+'&to='+nTo+'&token='+key),
+      fget(yhSumUrl)
+    ]).then(function(b2){ res(b1.concat(b2)); });
+  },1000);});
+  }).then(function(results){
     var quote=results[0]||{}, prof=results[1]||{}, metricsResp=results[2]||{};
-    var earns=Array.isArray(results[3])?results[3]:[];
-    var yhData=results[4], recs=Array.isArray(results[5])?results[5]:[];
+    var yhData=results[3];
+    var earns=Array.isArray(results[4])?results[4]:[];
+    var recs=Array.isArray(results[5])?results[5]:[];
     var news=Array.isArray(results[6])?results[6]:[];
     var yhSum=results[7];
     // Extract business description from Yahoo Finance quoteSummary
@@ -3456,8 +3464,9 @@ function populateFundamentals(yhProfile, met, price) {
           || (met.cashPerShareTTM&&shares ? met.cashPerShareTTM*shares : null)
           || (met['cashPerSharePerShareQuarterly']&&shares ? met['cashPerSharePerShareQuarterly']*shares : null);
   // D/E: Finnhub uses 'totalDebt/totalEquityAnnual' with slashes as key name
+  // Finnhub returns this already as a decimal ratio (0.0538 = 5.38% D/E), NOT a percentage
   var de_raw = met['totalDebt/totalEquityAnnual'] || met['totalDebt/totalEquityQuarterly'] || met.totalDebtToEquityAnnual;
-  var de    = de_raw!=null ? de_raw/100 : null;
+  var de    = de_raw!=null ? de_raw : null;
   // Equity from P/B: equity = MC / pbAnnual
   var bookEq = (mc&&met.pbAnnual) ? mc/met.pbAnnual : null;
   var debt = yv(bs[0],'longTermDebt')
