@@ -1811,6 +1811,7 @@ function goAnalyze(ticker) {
 
     var price=quote.c||daily[0].close, chg=quote.d||0, chgPct=quote.dp||0, isUp=chg>=0;
     var coName=prof.name||ticker, industry=prof.finnhubIndustry||'';
+    markTickerSector(industry); // highlight correct sector in rankings
     var met=metricsResp.metric||{};
 
     var score=calcTicScore(met,earns,recs,daily);
@@ -1879,8 +1880,8 @@ function goAnalyze(ticker) {
         }).catch(fallbackDesc);
       }
     }
-    // Populate fundamentals dashboard from Yahoo quoteSummary
-    populateFundamentals(yhProfile);
+    // Populate fundamentals dashboard — Finnhub met as primary, Yahoo as supplement
+    populateFundamentals(yhProfile, met, price);
     if(el('r-price')) el('r-price').textContent='$'+price.toFixed(2);
     if(el('r-chg')){el('r-chg').textContent=(isUp?'▲ +$':'▼ -$')+Math.abs(chg).toFixed(2)+' ('+(isUp?'+':'-')+Math.abs(chgPct).toFixed(2)+'%)';el('r-chg').className=isUp?'green':'red';}
     var scoreColor=score.total>=70?'#22c55e':score.total>=50?'#f59e0b':'#ef4444';
@@ -2312,9 +2313,9 @@ function buildPeerChartLive(rows) {
 }
 
 // ── SPY SECTOR ROTATION ──
-// Sector ETF metadata — RS computed live from Finnhub
+// Sector ETF metadata — yours flag set dynamically based on analyzed ticker's industry
 var SECTOR_ETFS = [
-  {sector:'Technology',    etf:'XLK',  yours:true},
+  {sector:'Technology',    etf:'XLK',  yours:false},
   {sector:'Healthcare',    etf:'XLV',  yours:false},
   {sector:'Financials',    etf:'XLF',  yours:false},
   {sector:'Consumer Disc.',etf:'XLY',  yours:false},
@@ -2326,6 +2327,30 @@ var SECTOR_ETFS = [
   {sector:'Real Estate',   etf:'XLRE', yours:false},
   {sector:'Materials',     etf:'XLB',  yours:false},
 ];
+// Map Finnhub industry string → sector ETF keyword
+var INDUSTRY_TO_SECTOR = {
+  'Technology':'Technology','Software':'Technology','Semiconductors':'Technology','Hardware':'Technology','Electronic':'Technology',
+  'Health':'Healthcare','Biotech':'Healthcare','Pharma':'Healthcare','Medical':'Healthcare',
+  'Financial':'Financials','Bank':'Financials','Insurance':'Financials','Asset':'Financials',
+  'Consumer Cyclical':'Consumer Disc.','Retail':'Consumer Disc.','Automotive':'Consumer Disc.',
+  'Communication':'Comm. Services','Media':'Comm. Services','Telecom':'Comm. Services',
+  'Industrial':'Industrials','Aerospace':'Industrials','Defense':'Industrials','Machinery':'Industrials',
+  'Consumer Defensive':'Consumer Stap.','Food':'Consumer Stap.','Beverage':'Consumer Stap.',
+  'Energy':'Energy','Oil':'Energy','Gas':'Energy',
+  'Utilities':'Utilities',
+  'Real Estate':'Real Estate','REIT':'Real Estate',
+  'Materials':'Materials','Chemicals':'Materials','Mining':'Materials'
+};
+function markTickerSector(industry){
+  // Reset all
+  SECTOR_ETFS.forEach(function(s){s.yours=false;});
+  if(!industry) return;
+  var matched=null;
+  Object.keys(INDUSTRY_TO_SECTOR).forEach(function(k){
+    if(!matched && industry.toLowerCase().indexOf(k.toLowerCase())>=0) matched=INDUSTRY_TO_SECTOR[k];
+  });
+  if(matched) SECTOR_ETFS.forEach(function(s){if(s.sector===matched)s.yours=true;});
+}
 
 // spyData populated live — falls back to empty arrays until fetch completes
 var spyData = {'1d':[],'4w':[],'13w':[],'26w':[]};
@@ -3352,105 +3377,108 @@ function updatePeerTable(ticker, peers) {
 }
 
 // ── FUNDAMENTALS DASHBOARD ──
-function populateFundamentals(yhProfile) {
+// Primary source: Finnhub met object (already fetched, always works on free tier)
+// yhProfile from Yahoo quoteSummary used as supplement where available
+function populateFundamentals(yhProfile, met, price) {
   var wrap = document.getElementById('fund-wrap');
   var ph   = document.getElementById('fund-placeholder');
-  if (!yhProfile) return; // no data — keep placeholder
-  var fd  = yhProfile.financialData  || {};
-  var ks  = yhProfile.defaultKeyStatistics || {};
-  var inc = (yhProfile.incomeStatementHistory  && yhProfile.incomeStatementHistory.incomeStatementHistory)  || [];
-  var cf  = (yhProfile.cashflowStatementHistory && yhProfile.cashflowStatementHistory.cashflowStatements) || [];
-  var bs  = (yhProfile.balanceSheetHistory && yhProfile.balanceSheetHistory.balanceSheetStatements) || [];
+  met = met || {};
 
-  if(!fd.totalRevenue && !inc.length) return; // nothing useful
+  // Yahoo supplement (may be null if corsproxy fails)
+  var fd  = (yhProfile && yhProfile.financialData)  || {};
+  var ks  = (yhProfile && yhProfile.defaultKeyStatistics) || {};
+  var inc = (yhProfile && yhProfile.incomeStatementHistory && yhProfile.incomeStatementHistory.incomeStatementHistory) || [];
+  var cf  = (yhProfile && yhProfile.cashflowStatementHistory && yhProfile.cashflowStatementHistory.cashflowStatements) || [];
+  var bs  = (yhProfile && yhProfile.balanceSheetHistory && yhProfile.balanceSheetHistory.balanceSheetStatements) || [];
+
+  // Need at least Finnhub met data to show anything
+  if(!met.marketCapitalization && !met.peAnnual && !met.grossMarginTTM) return;
   if(wrap) wrap.style.display='block';
   if(ph)   ph.style.display='none';
 
-  function v(obj,key){ return obj&&obj[key]&&obj[key].raw!=null ? obj[key].raw : null; }
-  function fmtB(n){ if(n==null) return '—'; var b=n/1e9; return b>=1?'$'+b.toFixed(1)+'B':'$'+(n/1e6).toFixed(0)+'M'; }
-  function fmtPct(n){ if(n==null) return '—'; return (n>=0?'+':'')+( n*100).toFixed(1)+'%'; }
-  function fmtX(n){ if(n==null) return '—'; return n.toFixed(1)+'×'; }
-  function s(id,txt){ var e=document.getElementById(id); if(e) e.textContent=txt; }
-  function sc(id,n,good){ var e=document.getElementById(id); if(!e||n==null) return; e.style.color=n>=0?(good?'#22c55e':'#ef4444'):(good?'#ef4444':'#22c55e'); }
+  function yv(obj,key){ return obj&&obj[key]&&obj[key].raw!=null ? obj[key].raw : null; }
+  function fmtB(n){ if(n==null||n===0) return '—'; var b=n/1e9; return b>=1?'$'+b.toFixed(1)+'B':'$'+(n/1e6).toFixed(0)+'M'; }
+  function fmtK(n){ if(n==null||n===0) return '—'; return '$'+(n/1e6).toFixed(0)+'M'; }
+  function s(id,txt){ var e=document.getElementById(id); if(e) e.textContent=txt||'—'; }
+  function sc(id,n,good){ var e=document.getElementById(id); if(!e||n==null) return; e.style.color=n>0?(good?'#22c55e':'#ef4444'):(good?'#ef4444':'#22c55e'); }
 
-  // Income
-  var rev   = v(fd,'totalRevenue');
-  var revG  = v(fd,'revenueGrowth');
-  var gp    = v(fd,'grossProfits');
-  var gpM   = v(fd,'grossMargins');
-  var oi    = v(fd,'operatingCashflow'); // fallback
-  var oiAlt = inc[0] ? v(inc[0],'totalRevenue') : null;
-  var opInc = v(fd,'operatingCashflow');
-  var opM   = v(fd,'operatingMargins');
-  var ni    = v(fd,'netIncomeToCommon') || (inc[0]?v(inc[0],'netIncome'):null);
-  var niM   = v(fd,'profitMargins');
+  // ── INCOME ── Finnhub met fields (TTM)
+  // Revenue: derive from market cap / PS ratio or Yahoo
+  var ps     = met.psTTM || met.psAnnual;
+  var mc     = met.marketCapitalization ? met.marketCapitalization*1e6 : null;
+  var rev    = yv(fd,'totalRevenue') || (mc&&ps ? mc/ps : null);
+  var revG   = met.revenueGrowthTTMYoy!=null ? met.revenueGrowthTTMYoy/100 : yv(fd,'revenueGrowth');
+  var gpM    = met.grossMarginTTM!=null ? met.grossMarginTTM/100 : yv(fd,'grossMargins');
+  var opM    = met.operatingMarginTTM!=null ? met.operatingMarginTTM/100 : yv(fd,'operatingMargins');
+  var niM    = met.netMarginTTM!=null ? met.netMarginTTM/100 : yv(fd,'profitMargins');
+  var gp     = (rev&&gpM) ? rev*gpM : yv(fd,'grossProfits');
+  var ni     = (rev&&niM) ? rev*niM : yv(fd,'netIncomeToCommon');
+  var ebitda = yv(fd,'ebitda') || (rev&&opM ? rev*opM : null);
 
-  s('f-rev',  fmtB(rev));
+  s('f-rev', rev ? fmtB(rev) : '—');
   s('f-rev-g', revG!=null ? (revG>=0?'▲ +':'▼ ')+(revG*100).toFixed(1)+'% YoY' : '—');
   sc('f-rev-g', revG, true);
-  s('f-gp',   fmtB(gp));
-  s('f-gp-m', gpM!=null ? (gpM*100).toFixed(1)+'% margin' : '—');
-  s('f-oi',   fmtB(v(fd,'ebitda')||opInc));
-  s('f-oi-m', opM!=null ? (opM*100).toFixed(1)+'% margin' : '—');
-  s('f-ni',   fmtB(ni));
+  s('f-gp',  gp ? fmtB(gp) : '—');
+  s('f-gp-m', gpM!=null ? (gpM*100).toFixed(1)+'% gross margin' : '—');
+  s('f-oi',  ebitda ? fmtB(ebitda) : '—');
+  s('f-oi-m', opM!=null ? (opM*100).toFixed(1)+'% op. margin' : '—');
+  s('f-ni',  ni ? fmtB(ni) : '—');
   s('f-ni-g', niM!=null ? (niM*100).toFixed(1)+'% net margin' : '—');
   sc('f-ni-g', niM, true);
 
-  // Cash flow
-  var ocf   = cf[0] ? v(cf[0],'totalCashFromOperatingActivities') : null;
-  var capex = cf[0] ? v(cf[0],'capitalExpenditures') : null;
-  var fcf   = v(fd,'freeCashflow') || (ocf&&capex ? ocf+capex : null);
+  // ── CASH FLOW ──
+  var fcf   = met.fcfTTM!=null ? met.fcfTTM*1e6 : yv(fd,'freeCashflow');
+  var ocf   = yv(cf[0],'totalCashFromOperatingActivities');
+  var capex = yv(cf[0],'capitalExpenditures');
   var fcfM  = (fcf&&rev) ? fcf/rev : null;
-  s('f-ocf',   fmtB(ocf));
+  s('f-ocf',   ocf ? fmtB(ocf) : (fcf ? '~'+fmtB(fcf) : '—'));
   s('f-ocf-g', ocf&&rev ? (ocf/rev*100).toFixed(1)+'% of revenue' : '—');
-  s('f-fcf',   fmtB(fcf));
+  s('f-fcf',   fcf ? fmtB(fcf) : '—');
   s('f-fcf-m', fcfM!=null ? (fcfM*100).toFixed(1)+'% FCF margin' : '—');
-  s('f-capex', fmtB(capex ? Math.abs(capex) : null));
+  s('f-capex', capex ? fmtB(Math.abs(capex)) : '—');
   s('f-capex-s', rev&&capex ? (Math.abs(capex)/rev*100).toFixed(1)+'% of revenue' : '—');
 
-  // Balance sheet
-  var cash = bs[0] ? v(bs[0],'cash') : null;
-  var debt = bs[0] ? (v(bs[0],'longTermDebt')||0)+(v(bs[0],'shortLongTermDebt')||0) : null;
-  var eq   = bs[0] ? v(bs[0],'totalStockholderEquity') : null;
-  var de   = (debt&&eq&&eq!==0) ? debt/Math.abs(eq) : null;
-  var cr   = v(fd,'currentRatio');
-  s('f-cash', fmtB(cash));
-  s('f-debt', fmtB(debt||null));
-  s('f-debt-s', de!=null ? (de<0.5?'low leverage':de<1.5?'moderate':'high') : '—');
+  // ── BALANCE SHEET ──
+  var cash  = yv(bs[0],'cash') || (met.cashPerShareAnnual&&met.sharesOutstanding ? met.cashPerShareAnnual*met.sharesOutstanding*1e6 : null);
+  var debt  = met.totalDebt!=null ? met.totalDebt*1e6 : (yv(bs[0],'longTermDebt')||null);
+  var de    = met.totalDebtToEquityAnnual!=null ? met.totalDebtToEquityAnnual/100 : null;
+  var cr    = met.currentRatioAnnual || yv(fd,'currentRatio');
+  s('f-cash', cash ? fmtB(cash) : '—');
+  s('f-debt', debt ? fmtB(debt) : '—');
+  s('f-debt-s', de!=null?(de<0.3?'low leverage':de<1?'moderate':'high'):'—');
   s('f-de',   de!=null ? de.toFixed(2)+'×' : '—');
-  s('f-de-s',  de!=null ? (de<0.5?'very low':de<1?'low':de<2?'moderate':'high leverage') : '—');
+  s('f-de-s', de!=null?(de<0.3?'very low':de<1?'low':de<2?'moderate':'high leverage'):'—');
   s('f-cr',   cr!=null ? cr.toFixed(1)+'×' : '—');
-  s('f-cr-s',  cr!=null ? (cr>=2?'strong liquidity':cr>=1?'adequate':'watch') : '—');
+  s('f-cr-s', cr!=null?(cr>=2?'strong liquidity':cr>=1?'adequate':'watch'):'—');
 
-  // Valuation rows
+  // ── VALUATION ──
   var valEl = document.getElementById('f-val-rows');
   if(valEl){
-    var pe   = v(ks,'trailingPE');
-    var fpe  = v(ks,'forwardPE');
-    var ps   = v(ks,'priceToSalesTrailing12Months');
-    var pb   = v(ks,'priceToBook');
-    var peg  = v(ks,'pegRatio');
-    var evEb = v(ks,'enterpriseToEbitda');
+    var pe   = met.peTTM || met.peAnnual || yv(ks,'trailingPE');
+    var fpe  = yv(ks,'forwardPE');
+    var psV  = met.psTTM || met.psAnnual || yv(ks,'priceToSalesTrailing12Months');
+    var pb   = met.pbAnnual || yv(ks,'priceToBook');
+    var peg  = yv(ks,'pegRatio');
+    var evEb = yv(ks,'enterpriseToEbitda');
     function vRow(lbl,val,col){
-      var c=col||'#d1d5db';
       return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1f2937;font-size:12px">'
-        +'<span style="color:#6b7280">'+lbl+'</span><span style="font-weight:700;color:'+c+'">'+val+'</span></div>';
+        +'<span style="color:#6b7280">'+lbl+'</span><span style="font-weight:700;color:'+(col||'#d1d5db')+'">'+val+'</span></div>';
     }
     valEl.innerHTML=
-      vRow('P/E (TTM)',  pe!=null?pe.toFixed(1)+'×':'—')+
+      vRow('P/E (TTM)',   pe!=null?pe.toFixed(1)+'×':'—')+
       vRow('Forward P/E', fpe!=null?fpe.toFixed(1)+'×':'—')+
-      vRow('P/S',        ps!=null?ps.toFixed(1)+'×':'—')+
-      vRow('P/B',        pb!=null?pb.toFixed(1)+'×':'—')+
-      vRow('PEG',        peg!=null?peg.toFixed(2)+'×':'—', peg&&peg<1?'#22c55e':peg&&peg>2?'#ef4444':'#d1d5db')+
-      vRow('EV/EBITDA',  evEb!=null?evEb.toFixed(1)+'×':'—');
+      vRow('P/S',         psV!=null?psV.toFixed(1)+'×':'—')+
+      vRow('P/B',         pb!=null?pb.toFixed(1)+'×':'—')+
+      vRow('PEG',         peg!=null?peg.toFixed(2)+'×':'—', peg&&peg<1?'#22c55e':peg&&peg>2?'#ef4444':null)+
+      vRow('EV/EBITDA',   evEb!=null?evEb.toFixed(1)+'×':'—');
   }
 
-  // Profitability margin bars
+  // ── PROFITABILITY MARGIN BARS ──
   var marEl = document.getElementById('f-margin-rows');
   if(marEl){
-    var roe  = v(fd,'returnOnEquity');
-    var roa  = v(fd,'returnOnAssets');
-    function mRow(lbl, pct){
+    var roe = met.roeTTM!=null ? met.roeTTM/100 : yv(fd,'returnOnEquity');
+    var roa = met.roaTTM!=null ? met.roaTTM/100 : yv(fd,'returnOnAssets');
+    function mRow(lbl,pct){
       if(pct==null) return '';
       var p=Math.min(Math.abs(pct*100),100);
       var col=pct>=0.15?'#22c55e':pct>=0?'#f59e0b':'#ef4444';
@@ -3462,29 +3490,25 @@ function populateFundamentals(yhProfile) {
     marEl.innerHTML=mRow('Gross',gpM)+mRow('Operating',opM)+mRow('Net',niM)+mRow('ROE',roe)+mRow('ROA',roa);
   }
 
-  // Quarterly revenue trend chart
+  // ── QUARTERLY REVENUE CHART from Yahoo (if available) ──
   var qRevs = inc.slice(0,6).reverse().map(function(q){
-    return {date:(q.endDate&&q.endDate.fmt)||'', rev:v(q,'totalRevenue')};
+    return {date:(q.endDate&&q.endDate.fmt)||'', rev:yv(q,'totalRevenue')};
   }).filter(function(q){return q.rev!=null;});
-  if(qRevs.length>1){
-    var fc=document.getElementById('f-rev-chart');
-    if(fc){
-      if(window._fRevChart){window._fRevChart.destroy();window._fRevChart=null;}
-      var maxR=Math.max.apply(null,qRevs.map(function(q){return q.rev;}));
-      window._fRevChart=new Chart(fc.getContext('2d'),{
-        type:'bar',
-        data:{
-          labels:qRevs.map(function(q){return q.date.slice(0,7);}),
-          datasets:[{data:qRevs.map(function(q){return+(q.rev/1e9).toFixed(2);}),
-            backgroundColor:qRevs.map(function(q,i){return i===qRevs.length-1?'rgba(59,130,246,0.8)':'rgba(34,197,94,0.7)';}),
-            borderRadius:3}]
-        },
-        options:{responsive:true,maintainAspectRatio:false,
-          plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.parsed.y+'B';}} }},
-          scales:{x:{ticks:{font:{size:10},color:'#6b7280'},grid:{display:false}},
-                  y:{ticks:{font:{size:10},color:'#6b7280',callback:function(v){return '$'+v+'B';}},grid:{color:'#1f2937'}}}}
-      });
-    }
+  var fc = document.getElementById('f-rev-chart');
+  if(fc && qRevs.length>1){
+    if(window._fRevChart){window._fRevChart.destroy();window._fRevChart=null;}
+    window._fRevChart=new Chart(fc.getContext('2d'),{
+      type:'bar',
+      data:{labels:qRevs.map(function(q){return q.date.slice(0,7);}),
+        datasets:[{data:qRevs.map(function(q){return+(q.rev/1e9).toFixed(2);}),
+          backgroundColor:qRevs.map(function(q,i){return i===qRevs.length-1?'rgba(59,130,246,0.8)':'rgba(34,197,94,0.7)';}),borderRadius:3}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.parsed.y+'B';}}}},
+        scales:{x:{ticks:{font:{size:10},color:'#6b7280'},grid:{display:false}},
+                y:{ticks:{font:{size:10},color:'#6b7280',callback:function(v){return '$'+v+'B';}},grid:{color:'#1f2937'}}}}
+    });
+  } else if(fc) {
+    fc.closest('.card').querySelector('div').textContent='Quarterly chart available with Yahoo data';
   }
 }
 
