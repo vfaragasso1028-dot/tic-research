@@ -2466,19 +2466,36 @@ function initThemeGroups() {
     }
   }
 
-  // Fire batches sequentially, render all cards after each batch completes
-  (function fetchBatch(i) {
-    if(i>=batches.length) return;
-    Promise.all(batches[i].map(function(t){
-      if(_themeQuotes[t]) return Promise.resolve(_themeQuotes[t]);
-      return fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key).then(function(q){
-        if(q&&q.c!=null) _themeQuotes[t]=q;
-        return q;
-      }).catch(function(){ return null; });
-    })).then(function(){
-      // Re-render all cards after each batch so UI updates progressively
+  // Use Yahoo Finance multi-ticker endpoint — 20 tickers per request, no Finnhub rate limits
+  var YBATCH = 20;
+  var yBatches = [];
+  for(var b=0; b<allUnique.length; b+=YBATCH) yBatches.push(allUnique.slice(b,b+YBATCH));
+
+  (function fetchYBatch(i) {
+    if(i>=yBatches.length) return;
+    var symbols = yBatches[i].join(',');
+    var yUrl = 'https://corsproxy.io/?'+encodeURIComponent(
+      'https://query1.finance.yahoo.com/v7/finance/quote?symbols='+symbols+'&fields=regularMarketPrice,regularMarketChangePercent'
+    );
+    fetch(yUrl).then(function(r){ return r.json(); }).then(function(data){
+      var results=(data&&data.quoteResponse&&data.quoteResponse.result)||[];
+      results.forEach(function(q){
+        if(q&&q.symbol) _themeQuotes[q.symbol]={c:q.regularMarketPrice||0, dp:q.regularMarketChangePercent||0};
+      });
       THEME_GROUPS.forEach(function(_,idx){ renderThemeCard(idx); });
-      setTimeout(function(){ fetchBatch(i+1); }, 1200);
+      setTimeout(function(){ fetchYBatch(i+1); }, 400);
+    }).catch(function(){
+      // Yahoo failed — fall back to sequential Finnhub (1 ticker per 1.5s)
+      var remaining = yBatches[i].filter(function(t){ return !_themeQuotes[t]; });
+      (function fhOne(j){
+        if(j>=remaining.length){ setTimeout(function(){ fetchYBatch(i+1); },400); return; }
+        var t=remaining[j];
+        fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key).then(function(q){
+          if(q&&q.c!=null) _themeQuotes[t]=q;
+          THEME_GROUPS.forEach(function(_,idx){ renderThemeCard(idx); });
+          setTimeout(function(){ fhOne(j+1); }, 1100);
+        });
+      })(0);
     });
   })(0);
 }
