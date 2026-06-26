@@ -1202,7 +1202,7 @@ setTimeout(function(){
   if(k) initDashboard();
 }, 350);
 
-function fgetQ(url){ return fetch(url).then(function(r){return r.json();}).catch(function(){return null;}); }
+function fgetQ(url){ return fetch(url).then(function(r){ if(!r.ok) return null; return r.json(); }).catch(function(){return null;}); }
 
 function initDashboard() {
   var key = getFHKey();
