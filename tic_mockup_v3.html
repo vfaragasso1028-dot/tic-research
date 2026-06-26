@@ -500,41 +500,62 @@ input:focus,select:focus{border-color:#3b82f6}
       <div class="card" style="border-left:3px solid #a78bfa"><div class="mc-label">Beat Rate</div><div class="mc-val" style="color:#a78bfa" id="r-beat-rate">—</div><div class="mc-sub" id="r-beat-sub">Beat record</div></div>
     </div>
 
-    <!-- #1 SEMICONDUCTOR SUB-INDUSTRY -->
-    <div class="section">#1 — Semiconductor Sub-Industry Breakdown — Live</div>
-    <div class="card" style="padding:14px 16px;margin-bottom:12px">
-      <div id="semi-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
-        <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
+    <!-- ROW 1: #1 Semiconductors + #2 AI Infrastructure -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div>
+        <div class="section" style="margin-bottom:8px">#1 — Semiconductors — Live</div>
+        <div class="card" style="padding:14px 16px;height:100%;box-sizing:border-box">
+          <div id="semi-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
+            <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
+          </div>
+          <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:8px">
+            <div style="font-size:11px;color:#22c55e;line-height:1.7" id="semi-rotation-signal">
+              <strong>Rotation signal:</strong> Loading…
+            </div>
+          </div>
+        </div>
       </div>
-      <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:8px">
-        <div style="font-size:11px;color:#22c55e;line-height:1.7" id="semi-rotation-signal">
-          <strong>Rotation signal:</strong> Loading live sector data…
+      <div>
+        <div class="section" style="margin-bottom:8px">#2 — AI Infrastructure — Live</div>
+        <div class="card" style="padding:14px 16px;height:100%;box-sizing:border-box">
+          <div id="ai-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
+            <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
+          </div>
+          <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:8px">
+            <div style="font-size:11px;color:#22c55e;line-height:1.7" id="ai-rotation-signal">
+              <strong>Rotation signal:</strong> Loading…
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- #2 AI INFRASTRUCTURE -->
-    <div class="section">#2 — AI Infrastructure Breakdown — Live</div>
-    <div class="card" style="padding:14px 16px;margin-bottom:12px">
-      <div id="ai-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
-        <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
-      </div>
-      <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:8px">
-        <div style="font-size:11px;color:#22c55e;line-height:1.7" id="ai-rotation-signal">
-          <strong>Rotation signal:</strong> Loading live sector data…
+    <!-- ROW 2: #3 Cybersecurity + #4 Cloud & Hyperscalers -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div>
+        <div class="section" style="margin-bottom:8px">#3 — Cybersecurity — Live</div>
+        <div class="card" style="padding:14px 16px;height:100%;box-sizing:border-box">
+          <div id="cyber-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
+            <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
+          </div>
+          <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:8px">
+            <div style="font-size:11px;color:#22c55e;line-height:1.7" id="cyber-rotation-signal">
+              <strong>Rotation signal:</strong> Loading…
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- #3 CYBERSECURITY -->
-    <div class="section">#3 — Cybersecurity Breakdown — Live</div>
-    <div class="card" style="padding:14px 16px;margin-bottom:12px">
-      <div id="cyber-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
-        <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
-      </div>
-      <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:8px">
-        <div style="font-size:11px;color:#22c55e;line-height:1.7" id="cyber-rotation-signal">
-          <strong>Rotation signal:</strong> Loading live sector data…
+      <div>
+        <div class="section" style="margin-bottom:8px">#4 — Cloud & Hyperscalers — Live</div>
+        <div class="card" style="padding:14px 16px;height:100%;box-sizing:border-box">
+          <div id="cloud-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
+            <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
+          </div>
+          <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:8px">
+            <div style="font-size:11px;color:#22c55e;line-height:1.7" id="cloud-rotation-signal">
+              <strong>Rotation signal:</strong> Loading…
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2691,6 +2712,7 @@ function initSectorRotation() {
     loadSemiBreakdown(rows, key);
     setTimeout(function(){ loadSubBreakdown(AI_INFRA_SUBGROUPS, 'ai-breakdown-list', 'ai-rotation-signal', key); }, 2000);
     setTimeout(function(){ loadSubBreakdown(CYBER_SUBGROUPS, 'cyber-breakdown-list', 'cyber-rotation-signal', key); }, 4000);
+    setTimeout(function(){ loadSubBreakdown(CLOUD_SUBGROUPS, 'cloud-breakdown-list', 'cloud-rotation-signal', key); }, 6000);
   }).catch(function(e){ console.warn('Sector fetch failed',e); });
 }
 
@@ -2717,6 +2739,13 @@ function buildSectorRankList(sorted1d) {
 }
 
 // Semi sub-industry groups with live tickers
+var CLOUD_SUBGROUPS = [
+  {name:'Hyperscalers',        tickers:['AMZN','MSFT','GOOGL'], color:'#60a5fa'},
+  {name:'Enterprise Cloud',    tickers:['CRM','NOW','WDAY'],    color:'#a78bfa'},
+  {name:'Cloud Infrastructure',tickers:['SNOW','MDB','NET'],    color:'#fbbf24'},
+  {name:'Cloud Security',      tickers:['ZSCALER','OKTA'],      color:'#34d399'}
+];
+
 var AI_INFRA_SUBGROUPS = [
   {name:'GPU / Compute',       tickers:['NVDA','AMD'],        color:'#60a5fa'},
   {name:'Networking',          tickers:['AVGO','ANET'],       color:'#a78bfa'},
