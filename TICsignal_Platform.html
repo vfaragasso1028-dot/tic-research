@@ -2735,9 +2735,10 @@ function initSectorRotation() {
 
     // Fetch live sub-industry breakdowns — staggered to avoid 429s
     loadSemiBreakdown(rows, key);
-    setTimeout(function(){ loadSubBreakdown(AI_INFRA_SUBGROUPS, 'ai-breakdown-list', 'ai-rotation-signal', key); }, 2000);
-    setTimeout(function(){ loadSubBreakdown(CYBER_SUBGROUPS, 'cyber-breakdown-list', 'cyber-rotation-signal', key); }, 4000);
-    setTimeout(function(){ loadSubBreakdown(CLOUD_SUBGROUPS, 'cloud-breakdown-list', 'cloud-rotation-signal', key); }, 6000);
+    // Fire after themes have done their initial + retry pass (~10s)
+    setTimeout(function(){ loadSubBreakdown(AI_INFRA_SUBGROUPS, 'ai-breakdown-list', 'ai-rotation-signal', key); }, 12000);
+    setTimeout(function(){ loadSubBreakdown(CYBER_SUBGROUPS, 'cyber-breakdown-list', 'cyber-rotation-signal', key); }, 14000);
+    setTimeout(function(){ loadSubBreakdown(CLOUD_SUBGROUPS, 'cloud-breakdown-list', 'cloud-rotation-signal', key); }, 16000);
   }).catch(function(e){ console.warn('Sector fetch failed',e); });
 }
 
@@ -2857,13 +2858,26 @@ function loadSemiBreakdown(sectorRows, key) {
 function loadSubBreakdown(subgroups, listId, signalId, key) {
   var allTickers = [];
   subgroups.forEach(function(g){ g.tickers.forEach(function(t){ if(!allTickers.includes(t)) allTickers.push(t); }); });
-  Promise.all(allTickers.map(function(sym){
-    return fgetQ(FH_BASE+'/quote?symbol='+sym+'&token='+key)
-      .then(function(q){ return {sym:sym, dp:q&&q.dp!=null?q.dp:0, c:q&&q.c?q.c:0}; })
-      .catch(function(){ return {sym:sym, dp:0, c:0}; });
-  })).then(function(quotes){
-    var qMap = {};
-    quotes.forEach(function(q){ qMap[q.sym]=q; });
+
+  // Seed qMap from _themeQuotes cache (already fetched by initThemeGroups)
+  var qMap = {};
+  allTickers.forEach(function(t){
+    if(_themeQuotes[t]) qMap[t] = {sym:t, dp:_themeQuotes[t].dp||0, c:_themeQuotes[t].c||0};
+  });
+
+  // Only fetch tickers not already in cache — sequential to avoid 429s
+  var missing = allTickers.filter(function(t){ return !qMap[t]; });
+
+  (function fetchMissing(i, done){
+    if(i >= missing.length){ done(); return; }
+    var sym = missing[i];
+    fgetQ(FH_BASE+'/quote?symbol='+sym+'&token='+key)
+      .then(function(q){
+        qMap[sym] = {sym:sym, dp:q&&q.dp!=null?q.dp:0, c:q&&q.c?q.c:0};
+        if(q&&q.c!=null) _themeQuotes[sym] = q; // store back in shared cache
+        setTimeout(function(){ fetchMissing(i+1, done); }, 600);
+      }).catch(function(){ setTimeout(function(){ fetchMissing(i+1, done); }, 600); });
+  })(0, function(){
     var groups = subgroups.map(function(g){
       var dps = g.tickers.map(function(t){ return qMap[t]?qMap[t].dp:0; });
       var avg = dps.reduce(function(a,b){return a+b;},0)/dps.length;
@@ -2901,7 +2915,7 @@ function loadSubBreakdown(subgroups, listId, signalId, key) {
         +'Lagging: <span style="color:#ef4444"><b>'+bot.name+'</b> '+(bot.avgDp>=0?'+':'')+bot.avgDp.toFixed(2)+'%</span>'
         +' <span style="color:#9ca3af">· '+new Date().toLocaleTimeString()+'</span>';
     }
-  }).catch(function(e){ console.warn(listId+' breakdown error',e); });
+  });
 }
 
 let spyChart=null;
