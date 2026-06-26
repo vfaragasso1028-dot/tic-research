@@ -3054,10 +3054,10 @@ setTimeout(function(){
   initEarningsCalendar();
   initEconCalendar();
 },5000);
-// Wave 3 (10s): themes (80 ticker quotes — largest batch, runs last)
+// Wave 2b (2s): themes fire early — they have built-in retry for any 429s
 setTimeout(function(){
   initThemeGroups();
-},10000);
+},2000);
 
 var SCANNER_DB = [
   // ── MEGA CAP TECH ──
