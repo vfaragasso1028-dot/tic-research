@@ -2466,38 +2466,29 @@ function initThemeGroups() {
     }
   }
 
-  // Use Yahoo Finance multi-ticker endpoint — 20 tickers per request, no Finnhub rate limits
-  var YBATCH = 20;
-  var yBatches = [];
-  for(var b=0; b<allUnique.length; b+=YBATCH) yBatches.push(allUnique.slice(b,b+YBATCH));
-
-  (function fetchYBatch(i) {
-    if(i>=yBatches.length) return;
-    var symbols = yBatches[i].join(',');
-    var yUrl = 'https://corsproxy.io/?'+encodeURIComponent(
-      'https://query1.finance.yahoo.com/v7/finance/quote?symbols='+symbols+'&fields=regularMarketPrice,regularMarketChangePercent'
-    );
-    fetch(yUrl).then(function(r){ return r.json(); }).then(function(data){
-      var results=(data&&data.quoteResponse&&data.quoteResponse.result)||[];
-      results.forEach(function(q){
-        if(q&&q.symbol) _themeQuotes[q.symbol]={c:q.regularMarketPrice||0, dp:q.regularMarketChangePercent||0};
-      });
+  // Pass 1: fire all unique tickers simultaneously — most will succeed
+  var failed = {};
+  allUnique.forEach(function(t){
+    failed[t] = true; // assume failed until proven otherwise
+    fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key).then(function(q){
+      if(q&&q.c!=null){ _themeQuotes[t]=q; delete failed[t]; }
       THEME_GROUPS.forEach(function(_,idx){ renderThemeCard(idx); });
-      setTimeout(function(){ fetchYBatch(i+1); }, 400);
-    }).catch(function(){
-      // Yahoo failed — fall back to sequential Finnhub (1 ticker per 1.5s)
-      var remaining = yBatches[i].filter(function(t){ return !_themeQuotes[t]; });
-      (function fhOne(j){
-        if(j>=remaining.length){ setTimeout(function(){ fetchYBatch(i+1); },400); return; }
-        var t=remaining[j];
-        fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key).then(function(q){
-          if(q&&q.c!=null) _themeQuotes[t]=q;
-          THEME_GROUPS.forEach(function(_,idx){ renderThemeCard(idx); });
-          setTimeout(function(){ fhOne(j+1); }, 1100);
-        });
-      })(0);
     });
-  })(0);
+  });
+
+  // Pass 2: 6 seconds later retry only the tickers that got 429'd, one at a time
+  setTimeout(function(){
+    var retryList = Object.keys(failed).filter(function(t){ return !_themeQuotes[t]; });
+    (function retryOne(i){
+      if(i>=retryList.length) return;
+      var t = retryList[i];
+      fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key).then(function(q){
+        if(q&&q.c!=null) _themeQuotes[t]=q;
+        THEME_GROUPS.forEach(function(_,idx){ renderThemeCard(idx); });
+        setTimeout(function(){ retryOne(i+1); }, 700);
+      });
+    })(0);
+  }, 6000);
 }
 
 function toggleTheme(idx, theme, key) {
