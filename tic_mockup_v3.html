@@ -2421,52 +2421,66 @@ function initThemeGroups() {
     grid.appendChild(card);
   });
 
-  // Fetch ALL tickers for ALL themes in parallel, then rank live
-  THEME_GROUPS.forEach(function(theme, idx) {
-    Promise.all(theme.tickers.map(function(t){
+  // Collect all unique tickers across all themes
+  var allUnique = [];
+  THEME_GROUPS.forEach(function(theme){
+    theme.tickers.forEach(function(t){ if(allUnique.indexOf(t)<0) allUnique.push(t); });
+  });
+
+  // Batch fetch: 10 tickers per batch, 1.2s between batches to stay under 60/min
+  var BATCH = 10;
+  var batches = [];
+  for(var b=0; b<allUnique.length; b+=BATCH) batches.push(allUnique.slice(b,b+BATCH));
+
+  function renderThemeCard(idx) {
+    var theme = THEME_GROUPS[idx];
+    var ranked = theme.tickers.map(function(t){
+      var q = _themeQuotes[t];
+      return {t:t, q:q, dp:q&&q.dp!=null?q.dp:null, c:q&&q.c!=null?q.c:null};
+    }).filter(function(r){ return r.dp!=null; })
+      .sort(function(a,b){ return b.dp-a.dp; });
+
+    _themeRanked[idx] = ranked;
+    var avg = ranked.length ? ranked.reduce(function(s,r){return s+r.dp;},0)/ranked.length : 0;
+    var bias = avg>=0.5?'BULL':'BEAR';
+    var cls  = avg>=0.5?'pg':'pr';
+    var flowColor = avg>=0?'#22c55e':'#ef4444';
+    var flow = avg>=0?'▲ inflow':'▼ outflow';
+
+    var biasEl = document.getElementById('theme-bias-'+idx);
+    var rsEl   = document.getElementById('theme-rs-'+idx);
+    var tickEl = document.getElementById('theme-tickers-'+idx);
+
+    if(biasEl){ biasEl.textContent=bias; biasEl.className='pill '+cls; }
+    if(rsEl) rsEl.innerHTML='<span style="color:'+flowColor+'">'+flow+'</span>'
+      +'&nbsp;&nbsp;<span style="color:'+flowColor+';font-weight:700">'+(avg>=0?'+':'')+avg.toFixed(2)+'% avg today</span>';
+    if(tickEl&&ranked.length){
+      var top3=ranked.slice(0,3).map(function(r){
+        return '<span style="color:'+(r.dp>=0?'#22c55e':'#ef4444')+';font-weight:700">'+r.t+'</span>';
+      }).join(' · ');
+      var bot=ranked.slice(-2).map(function(r){
+        return '<span style="color:#ef4444">'+r.t+'</span>';
+      }).join(' · ');
+      tickEl.innerHTML='<span style="color:#4b5563;font-size:9px">LEADING: </span>'+top3
+        +(bot?' &nbsp;<span style="color:#4b5563;font-size:9px">LAGGING: </span>'+bot:'');
+    }
+  }
+
+  // Fire batches sequentially, render all cards after each batch completes
+  (function fetchBatch(i) {
+    if(i>=batches.length) return;
+    Promise.all(batches[i].map(function(t){
       if(_themeQuotes[t]) return Promise.resolve(_themeQuotes[t]);
       return fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key).then(function(q){
         if(q&&q.c!=null) _themeQuotes[t]=q;
         return q;
-      });
-    })).then(function(quotes){
-      // Build ranked list sorted by live % change descending
-      var ranked = theme.tickers.map(function(t,i){
-        var q = quotes[i];
-        return {t:t, q:q, dp: q&&q.dp!=null ? q.dp : null, c: q&&q.c!=null ? q.c : null};
-      }).filter(function(r){ return r.dp!=null; })
-        .sort(function(a,b){ return b.dp - a.dp; });
-
-      _themeRanked[idx] = ranked;
-
-      // Avg % change for theme bias
-      var avg = ranked.reduce(function(s,r){ return s+r.dp; },0) / (ranked.length||1);
-      var bias = avg>=0.5?'BULL':'BEAR';
-      var cls  = avg>=0.5?'pg':'pr';
-      var flowColor = avg>=0?'#22c55e':'#ef4444';
-      var flow = avg>=0?'▲ inflow':'▼ outflow';
-
-      var biasEl = document.getElementById('theme-bias-'+idx);
-      var rsEl   = document.getElementById('theme-rs-'+idx);
-      var tickEl = document.getElementById('theme-tickers-'+idx);
-
-      if(biasEl){ biasEl.textContent=bias; biasEl.className='pill '+cls; }
-      if(rsEl) rsEl.innerHTML='<span style="color:'+flowColor+'">'+flow+'</span>'
-        +'&nbsp;&nbsp;<span style="color:'+flowColor+';font-weight:700">'+(avg>=0?'+':'')+avg.toFixed(2)+'% avg today</span>';
-      // Show top 3 live leaders in the card subtitle
-      if(tickEl&&ranked.length){
-        var top3 = ranked.slice(0,3).map(function(r){
-          var c=r.dp>=0?'#22c55e':'#ef4444';
-          return '<span style="color:'+c+';font-weight:700">'+r.t+'</span>';
-        }).join(' · ');
-        var bot = ranked.slice(-2).map(function(r){
-          return '<span style="color:#ef4444">'+r.t+'</span>';
-        }).join(' · ');
-        tickEl.innerHTML='<span style="color:#4b5563;font-size:9px">LEADING: </span>'+top3
-          +(bot?' &nbsp;<span style="color:#4b5563;font-size:9px">LAGGING: </span>'+bot:'');
-      }
-    }).catch(function(){});
-  });
+      }).catch(function(){ return null; });
+    })).then(function(){
+      // Re-render all cards after each batch so UI updates progressively
+      THEME_GROUPS.forEach(function(_,idx){ renderThemeCard(idx); });
+      setTimeout(function(){ fetchBatch(i+1); }, 1200);
+    });
+  })(0);
 }
 
 function toggleTheme(idx, theme, key) {
