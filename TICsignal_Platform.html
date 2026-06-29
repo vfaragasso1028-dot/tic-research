@@ -1785,18 +1785,38 @@ function goAnalyze(ticker) {
   var now=Math.floor(Date.now()/1000);
   var nFrom=new Date(Date.now()-7*864e5).toISOString().slice(0,10);
   var nTo=new Date().toISOString().slice(0,10);
-  var _yhBase='https://api.allorigins.win/raw?url=';
-  var yhUrl=_yhBase+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?range=2y&interval=1d');
-  var yhSumUrl=_yhBase+encodeURIComponent('https://query1.finance.yahoo.com/v11/finance/quoteSummary/'+ticker+'?modules=assetProfile,summaryProfile,financialData,defaultKeyStatistics,incomeStatementHistory,cashflowStatementHistory,balanceSheetHistory');
-
   function fget(url){ return fetch(url).then(function(r){return r.json();}).catch(function(){return null;}); }
+
+  // fetchWithTimeout: abort if no response within ms
+  function fgetT(url, ms){
+    return new Promise(function(resolve){
+      var done=false;
+      var tid=setTimeout(function(){ if(!done){done=true;resolve(null);} }, ms||8000);
+      fetch(url).then(function(r){return r.json();})
+        .then(function(d){ if(!done){done=true;clearTimeout(tid);resolve(d);} })
+        .catch(function(){ if(!done){done=true;clearTimeout(tid);resolve(null);} });
+    });
+  }
+
+  // fetchYahoo: race two CORS proxies, take first valid response
+  function fetchYahoo(yhPath){
+    var enc=encodeURIComponent(yhPath);
+    var p1=fgetT('https://corsproxy.io/?'+enc, 8000);
+    var p2=fgetT('https://api.allorigins.win/raw?url='+enc, 8000);
+    return Promise.all([p1,p2]).then(function(rs){
+      return rs.find(function(r){ return r&&(r.chart||r.quoteSummary); })||null;
+    });
+  }
+
+  var yhChartPath='https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?range=2y&interval=1d';
+  var yhSumPath='https://query1.finance.yahoo.com/v11/finance/quoteSummary/'+ticker+'?modules=assetProfile,summaryProfile,financialData,defaultKeyStatistics,incomeStatementHistory,cashflowStatementHistory,balanceSheetHistory';
 
   // Batch 1: critical data — fires immediately
   Promise.all([
     fget(FH_BASE+'/quote?symbol='+T+'&token='+key),
     fget(FH_BASE+'/stock/profile2?symbol='+T+'&token='+key),
     fget(FH_BASE+'/stock/metric?symbol='+T+'&metric=all&token='+key),
-    fget(yhUrl)
+    fetchYahoo(yhChartPath)
   ]).then(function(b1){
   // Batch 2: secondary data — staggered 1s later
   return new Promise(function(res){setTimeout(function(){
@@ -1804,7 +1824,7 @@ function goAnalyze(ticker) {
       fget(FH_BASE+'/stock/earnings?symbol='+T+'&token='+key),
       fget(FH_BASE+'/stock/recommendation?symbol='+T+'&token='+key),
       fget(FH_BASE+'/company-news?symbol='+T+'&from='+nFrom+'&to='+nTo+'&token='+key),
-      fget(yhSumUrl)
+      fetchYahoo(yhSumPath)
     ]).then(function(b2){ res(b1.concat(b2)); });
   },1000);});
   }).then(function(results){
