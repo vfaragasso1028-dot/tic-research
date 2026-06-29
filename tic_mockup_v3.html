@@ -1785,8 +1785,9 @@ function goAnalyze(ticker) {
   var now=Math.floor(Date.now()/1000);
   var nFrom=new Date(Date.now()-7*864e5).toISOString().slice(0,10);
   var nTo=new Date().toISOString().slice(0,10);
-  var yhUrl='https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?range=2y&interval=1d';
-  var yhSumUrl='https://query1.finance.yahoo.com/v11/finance/quoteSummary/'+ticker+'?modules=assetProfile,summaryProfile,financialData,defaultKeyStatistics,incomeStatementHistory,cashflowStatementHistory,balanceSheetHistory';
+  var _yhBase='https://api.allorigins.win/raw?url=';
+  var yhUrl=_yhBase+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?range=2y&interval=1d');
+  var yhSumUrl=_yhBase+encodeURIComponent('https://query1.finance.yahoo.com/v11/finance/quoteSummary/'+ticker+'?modules=assetProfile,summaryProfile,financialData,defaultKeyStatistics,incomeStatementHistory,cashflowStatementHistory,balanceSheetHistory');
 
   function fget(url){ return fetch(url).then(function(r){return r.json();}).catch(function(){return null;}); }
 
