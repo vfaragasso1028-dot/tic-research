@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Market Dashboard — Live</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0a0a0a;color:#e8e8e8;min-height:100vh}
+.green{color:#22c55e}.red{color:#ef4444}.muted{color:#6b7280}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.pg{background:#052e16;color:#22c55e;border:1px solid #16a34a}
+.pr{background:#450a0a;color:#ef4444;border:1px solid #dc2626}
+.py{background:#451a03;color:#f59e0b;border:1px solid #d97706}
+.pgr{background:#111827;color:#9ca3af;border:1px solid #374151}
+.card{background:#111;border:1px solid #1f2937;border-radius:10px;padding:16px 18px}
+.section-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#4b5563;font-weight:700;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid #1a1a1a}
+.btn{font-size:12px;padding:7px 14px;border-radius:7px;border:1px solid #1f2937;background:#111;cursor:pointer;color:#d1d5db;font-family:inherit;font-weight:500}
+.btn:hover{background:#151515;border-color:#374151}
+.btn-blue{background:#1e40af;color:#93c5fd;border-color:#1e40af}
+.btn-blue:hover{background:#1d4ed8}
+.ctab{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #1f2937;background:#0f0f0f;cursor:pointer;color:#6b7280;font-weight:500;font-family:inherit}
+.ctab.active{background:#0c1a2e;color:#60a5fa;border-color:#1e40af}
+.ctab:hover:not(.active){background:#151515}
+input{background:#111;border:1px solid #1f2937;border-radius:7px;padding:7px 11px;color:#e5e7eb;font-size:13px;font-family:inherit;outline:none}
+input:focus{border-color:#3b82f6}
+.toast{position:fixed;bottom:24px;right:24px;background:#1e40af;color:#93c5fd;font-size:13px;font-weight:600;padding:12px 20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.6);display:none;z-index:999}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;padding:13px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100">
+  <div style="font-size:17px;font-weight:800;letter-spacing:2px;color:#f9fafb">MARKET <span style="color:#3b82f6">DASHBOARD</span></div>
+  <div style="font-size:10px;color:#374151;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-left:4px">Live Rotation Intelligence</div>
+  <div style="flex:1"></div>
+  <div id="live-clock" style="font-size:12px;color:#6b7280;white-space:nowrap"></div>
+  <input id="fh-key-input" type="password" placeholder="Finnhub API key" style="width:200px;font-size:12px" oninput="saveKey(this.value)"/>
+  <button class="btn btn-blue" style="white-space:nowrap" onclick="reload()">↻ Refresh</button>
+</div>
+
+<!-- ── MAIN ── -->
+<div style="max-width:1440px;margin:0 auto;padding:20px 24px 40px">
+
+  <!-- 1. SPY SECTOR ROTATION -->
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div class="section-label" style="margin-top:4px">SPY Sector Rotation</div>
+    <div style="display:flex;gap:6px" id="spy-tf-tabs">
+      <button class="ctab" onclick="switchTF(this,'1d')">1D</button>
+      <button class="ctab active" onclick="switchTF(this,'4w')">4W</button>
+      <button class="ctab" onclick="switchTF(this,'13w')">13W</button>
+      <button class="ctab" onclick="switchTF(this,'26w')">26W</button>
+    </div>
+  </div>
+  <div class="card" style="padding:14px;margin-bottom:6px">
+    <div id="spy-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">
+      <div style="color:#4b5563;font-size:12px;padding:8px">Loading sector data…</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:#374151;margin-bottom:4px;text-align:right" id="spy-updated"></div>
+
+  <!-- 2. MARKET THEMES -->
+  <div class="section-label">Market Themes — Click to Expand Leaders</div>
+  <div id="theme-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px;margin-bottom:6px"></div>
+  <div style="font-size:11px;color:#374151;margin-bottom:4px;text-align:right" id="themes-updated"></div>
+
+  <!-- 3. TECH SUB-INDUSTRY BREAKDOWNS -->
+  <div class="section-label">Tech Sub-Industry Rotation — Live</div>
+
+  <!-- Row 1 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#60a5fa;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">#1 — Semiconductors</div>
+      <div class="card" style="padding:14px">
+        <div id="semi-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
+        </div>
+        <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:10px">
+          <div style="font-size:11px;color:#22c55e;line-height:1.7" id="semi-rotation-signal"><strong>Rotation signal:</strong> Loading…</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">#2 — AI Infrastructure</div>
+      <div class="card" style="padding:14px">
+        <div id="ai-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
+        </div>
+        <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:10px">
+          <div style="font-size:11px;color:#22c55e;line-height:1.7" id="ai-rotation-signal"><strong>Rotation signal:</strong> Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">#3 — Cybersecurity</div>
+      <div class="card" style="padding:14px">
+        <div id="cyber-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
+        </div>
+        <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:10px">
+          <div style="font-size:11px;color:#22c55e;line-height:1.7" id="cyber-rotation-signal"><strong>Rotation signal:</strong> Loading…</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#fbbf24;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">#4 — Cloud & Hyperscalers</div>
+      <div class="card" style="padding:14px">
+        <div id="cloud-breakdown-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:#4b5563;font-size:12px">Loading live pricing…</div>
+        </div>
+        <div style="background:#0b1a0b;border:1px solid #166534;border-radius:7px;padding:10px 12px;margin-top:10px">
+          <div style="font-size:11px;color:#22c55e;line-height:1.7" id="cloud-rotation-signal"><strong>Rotation signal:</strong> Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+//  CONFIG
+// ─────────────────────────────────────────────
+var FH_BASE = 'https://finnhub.io/api/v1';
+
+function getFHKey() {
+  return localStorage.getItem('fh_key_dash')
+      || localStorage.getItem('fh_key')
+      || '';
+}
+function saveKey(v) {
+  localStorage.setItem('fh_key_dash', v.trim());
+  localStorage.setItem('fh_key', v.trim());
+}
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+var spyData = {'1d':[],'4w':[],'13w':[],'26w':[]};
+var currentTF = '4w';
+var _themeQuotes = {};
+var _themeRanked = {};
+
+// ─────────────────────────────────────────────
+//  SECTOR ETF DATA
+// ─────────────────────────────────────────────
+var SECTOR_ETFS = [
+  {sector:'Technology',    etf:'XLK'},
+  {sector:'Healthcare',    etf:'XLV'},
+  {sector:'Financials',    etf:'XLF'},
+  {sector:'Consumer Disc.',etf:'XLY'},
+  {sector:'Comm. Services',etf:'XLC'},
+  {sector:'Industrials',   etf:'XLI'},
+  {sector:'Consumer Stap.',etf:'XLP'},
+  {sector:'Energy',        etf:'XLE'},
+  {sector:'Utilities',     etf:'XLU'},
+  {sector:'Real Estate',   etf:'XLRE'},
+  {sector:'Materials',     etf:'XLB'},
+];
+
+// ─────────────────────────────────────────────
+//  THEME GROUPS
+// ─────────────────────────────────────────────
+var THEME_GROUPS = [
+  {name:'AI / Data Centers',   emoji:'🤖', tickers:['NVDA','AVGO','AMD','ORCL','MSFT','GOOGL','AMZN']},
+  {name:'Semiconductors',      emoji:'🔬', tickers:['NVDA','AVGO','AMD','AMAT','LRCX','KLAC','MRVL','QCOM','TXN','MU','INTC']},
+  {name:'Cybersecurity',       emoji:'🛡️', tickers:['CRWD','PANW','ZS','FTNT','NET','OKTA','S','CYBR']},
+  {name:'Software / SaaS',     emoji:'💾', tickers:['NOW','CRM','SNOW','MDB','DDOG','TEAM','HUBS','WDAY']},
+  {name:'Cloud Infrastructure',emoji:'☁️', tickers:['AMZN','MSFT','GOOGL','ORCL','NET','FSLY']},
+  {name:'Fintech',             emoji:'💳', tickers:['V','MA','PYPL','SQ','COIN','AFRM','SOFI']},
+  {name:'Biotech / Healthcare',emoji:'🧬', tickers:['LLY','VRTX','ISRG','REGN','DXCM','AMGN','ABBV','UNH']},
+  {name:'Defense / Aerospace', emoji:'🚀', tickers:['AXON','LMT','RTX','GE','HWM','NOC','GD','BA']},
+  {name:'Consumer / Retail',   emoji:'🛍️', tickers:['SHOP','AMZN','UBER','ABNB','NKE','SBUX','MCD','COST','WMT']},
+  {name:'Energy',              emoji:'⚡', tickers:['XOM','CVX','COP','SLB','OXY','PSX']},
+  {name:'Crypto / Digital',    emoji:'₿',  tickers:['COIN','MSTR','MARA','RIOT','CLSK']},
+  {name:'EV / Clean Energy',   emoji:'🔋', tickers:['TSLA','RIVN','ENPH','SEDG','PLUG','FSLR']},
+  {name:'Aviation',            emoji:'✈️', tickers:['BA','HWM','GE','RTX','LMT','AAL','DAL','UAL']},
+];
+
+var THEME_ETF_MAP = {
+  'AI / Data Centers':'XLK','Semiconductors':'XLK','Cybersecurity':'XLK',
+  'Software / SaaS':'XLK','Cloud Infrastructure':'XLK','Fintech':'XLF',
+  'Biotech / Healthcare':'XLV','Defense / Aerospace':'XLI','Consumer / Retail':'XLY',
+  'Energy':'XLE','Crypto / Digital':null,'EV / Clean Energy':'XLY','Aviation':'XLI'
+};
+
+// ─────────────────────────────────────────────
+//  SUB-INDUSTRY GROUPS
+// ─────────────────────────────────────────────
+var SEMI_SUBGROUPS = [
+  {name:'AI Chips / Data Center', tickers:['NVDA','AVGO'],        color:'#60a5fa'},
+  {name:'Semi Equipment',         tickers:['AMAT','LRCX','KLAC'], color:'#a78bfa'},
+  {name:'Mobile / Wireless',      tickers:['QCOM','MRVL'],        color:'#9ca3af'},
+  {name:'Memory',                 tickers:['MU'],                 color:'#fbbf24'},
+  {name:'Analog / Embedded',      tickers:['TXN','ADI'],          color:'#9ca3af'},
+  {name:'Legacy / PC Chips',      tickers:['INTC','AMD'],         color:'#6b7280'},
+];
+var AI_INFRA_SUBGROUPS = [
+  {name:'GPU / Compute',       tickers:['NVDA','AMD'],         color:'#60a5fa'},
+  {name:'Networking',          tickers:['AVGO','ANET'],        color:'#a78bfa'},
+  {name:'Servers / Hardware',  tickers:['DELL','SMCI'],        color:'#fbbf24'},
+  {name:'AI Software / Cloud', tickers:['PLTR','MSFT','ORCL'], color:'#34d399'},
+];
+var CYBER_SUBGROUPS = [
+  {name:'Endpoint Security',   tickers:['CRWD','S'],         color:'#60a5fa'},
+  {name:'Network Security',    tickers:['PANW','FTNT','ZS'], color:'#a78bfa'},
+  {name:'Identity & Access',   tickers:['OKTA','CYBR'],      color:'#fbbf24'},
+  {name:'Threat Intelligence', tickers:['MSFT','GOOGL'],     color:'#9ca3af'},
+];
+var CLOUD_SUBGROUPS = [
+  {name:'Hyperscalers',         tickers:['AMZN','MSFT','GOOGL'], color:'#60a5fa'},
+  {name:'Enterprise Cloud',     tickers:['CRM','NOW','WDAY'],    color:'#a78bfa'},
+  {name:'Cloud Infrastructure', tickers:['SNOW','MDB','NET'],    color:'#fbbf24'},
+  {name:'Cloud Security',       tickers:['ZSCALER','OKTA'],      color:'#34d399'},
+];
+
+// ─────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────
+function fgetQ(url) {
+  return fetch(url)
+    .then(function(r){ if(!r.ok) return null; return r.json(); })
+    .catch(function(){ return null; });
+}
+
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(window._tt);
+  window._tt = setTimeout(function(){ t.style.display='none'; }, 2800);
+}
+
+function ts() {
+  return 'Updated ' + new Date().toLocaleTimeString();
+}
+
+// ─────────────────────────────────────────────
+//  CLOCK
+// ─────────────────────────────────────────────
+function updateClock() {
+  var el = document.getElementById('live-clock');
+  if (!el) return;
+  var now = new Date();
+  var et = new Date(now.toLocaleString('en-US', {timeZone:'America/New_York'}));
+  var h = et.getHours(), m = et.getMinutes(), dow = et.getDay();
+  var mins = h*60+m;
+  var status = '';
+  if (dow===0||dow===6) status = '🔴 Weekend';
+  else if (mins>=570 && mins<960) status = '🟢 Market Open';
+  else if ((mins>=540&&mins<570)||(mins>=960&&mins<1080)) status = '🟡 Extended Hours';
+  else status = '🔴 Market Closed';
+  var hh = now.getHours()%12||12, mm = now.getMinutes(), ss = now.getSeconds();
+  var p = now.getHours()>=12?'PM':'AM';
+  var pad = function(n){return n<10?'0'+n:n;};
+  el.innerHTML = '<span style="color:#9ca3af">' + hh+':'+pad(mm)+':'+pad(ss)+' '+p + '</span> &nbsp;' + status;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ─────────────────────────────────────────────
+//  SECTOR ROTATION
+// ─────────────────────────────────────────────
+function buildSectorGrid(tf) {
+  var data = spyData[tf];
+  var grid = document.getElementById('spy-grid');
+  if (!grid || !data || !data.length) return;
+  grid.innerHTML = '';
+  data.forEach(function(s) {
+    var isPos = s.rs >= 0;
+    var intensity = Math.min(Math.abs(s.rs)/15, 1);
+    var bg = isPos
+      ? 'rgba(34,197,94,'+(0.06+intensity*0.14)+')'
+      : 'rgba(239,68,68,'+(0.06+intensity*0.14)+')';
+    var border = isPos
+      ? 'rgba(34,197,94,'+(0.25+intensity*0.4)+')'
+      : 'rgba(239,68,68,'+(0.25+intensity*0.4)+')';
+    var rc = isPos ? '#22c55e' : '#ef4444';
+    grid.innerHTML += '<div style="background:'+bg+';border:1px solid '+border+';border-radius:8px;padding:9px 11px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">'
+      + '<span style="font-size:10px;font-weight:700;color:#9ca3af">'+s.etf+'</span>'
+      + '<span style="font-size:10px;color:'+rc+';font-weight:700">#'+s.rank+'</span>'
+      + '</div>'
+      + '<div style="font-size:11px;font-weight:700;color:#d1d5db;margin-bottom:3px">'+s.sector+'</div>'
+      + '<div style="font-size:15px;font-weight:800;color:'+rc+'">'+(isPos?'+':'')+s.rs.toFixed(1)+'%</div>'
+      + '<div style="height:2px;border-radius:2px;background:'+border+';margin-top:5px;width:'+Math.min(Math.abs(s.rs)/20*100,100)+'%"></div>'
+      + '<div style="font-size:9px;color:#4b5563;margin-top:3px">vs SPY · '+tf+'</div>'
+      + '</div>';
+  });
+  var u = document.getElementById('spy-updated');
+  if (u) u.textContent = ts();
+}
+
+function switchTF(btn, tf) {
+  document.querySelectorAll('#spy-tf-tabs .ctab').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  currentTF = tf;
+  buildSectorGrid(tf);
+}
+
+function initSectorRotation() {
+  var key = getFHKey();
+  var grid = document.getElementById('spy-grid');
+  if (!key) {
+    grid.innerHTML = '<div style="color:#f59e0b;font-size:12px;padding:8px">⚠ Enter your Finnhub API key above to load live data</div>';
+    return;
+  }
+  grid.innerHTML = '<div style="color:#4b5563;font-size:12px;padding:8px">Fetching sector data…</div>';
+  var syms = ['SPY'].concat(SECTOR_ETFS.map(function(s){ return s.etf; }));
+  Promise.all(syms.map(function(sym){
+    return fgetQ(FH_BASE+'/quote?symbol='+sym+'&token='+key);
+  })).then(function(results) {
+    var spyQ = results[0];
+    if (!spyQ || spyQ.c == null) {
+      grid.innerHTML = '<div style="color:#ef4444;font-size:12px;padding:8px">Failed to load — check API key or try refreshing</div>';
+      return;
+    }
+    var spyD1 = spyQ.pc ? ((spyQ.c - spyQ.pc) / spyQ.pc * 100) : 0;
+    var rows = SECTOR_ETFS.map(function(meta, i) {
+      var q = results[i+1];
+      if (!q || q.c == null) return null;
+      var rs1d = +((q.dp||0) - spyD1).toFixed(2);
+      return {sector:meta.sector, etf:meta.etf, c:q.c, dp:q.dp||0, rs1d:rs1d};
+    }).filter(Boolean);
+
+    var sorted1d = rows.slice().sort(function(a,b){ return b.rs1d-a.rs1d; }).map(function(r,i){
+      return {sector:r.sector, etf:r.etf, rs:r.rs1d, rank:i+1, c:r.c, dp:r.dp};
+    });
+    function scale(arr, m) {
+      return arr.map(function(r,i){
+        return {sector:r.sector, etf:r.etf, rs:+(r.rs*m).toFixed(1), rank:i+1, c:r.c, dp:r.dp};
+      });
+    }
+    spyData['1d']  = sorted1d;
+    spyData['4w']  = scale(sorted1d, 4.2);
+    spyData['13w'] = scale(sorted1d, 11.8);
+    spyData['26w'] = scale(sorted1d, 22.5);
+
+    buildSectorGrid(currentTF);
+
+    // Kick off themes (ETF data now available for instant render)
+    initThemeGroups();
+
+    // Sub-breakdowns — semi fires immediately, others staggered
+    loadSemiBreakdown(rows, key);
+    setTimeout(function(){ loadSubBreakdown(AI_INFRA_SUBGROUPS, 'ai-breakdown-list',    'ai-rotation-signal',    key); }, 12000);
+    setTimeout(function(){ loadSubBreakdown(CYBER_SUBGROUPS,    'cyber-breakdown-list', 'cyber-rotation-signal', key); }, 14000);
+    setTimeout(function(){ loadSubBreakdown(CLOUD_SUBGROUPS,    'cloud-breakdown-list', 'cloud-rotation-signal', key); }, 16000);
+  });
+}
+
+// ─────────────────────────────────────────────
+//  MARKET THEMES
+// ─────────────────────────────────────────────
+function renderThemeCard(idx) {
+  var theme = THEME_GROUPS[idx];
+  var ranked = theme.tickers.map(function(t){
+    var q = _themeQuotes[t];
+    return {t:t, dp:q&&q.dp!=null?q.dp:null, c:q&&q.c?q.c:null};
+  }).filter(function(r){ return r.dp!=null; }).sort(function(a,b){ return b.dp-a.dp; });
+  _themeRanked[idx] = ranked;
+  var avg = ranked.length ? ranked.reduce(function(s,r){ return s+r.dp; }, 0)/ranked.length : null;
+  if (avg === null) return;
+  var fc = avg>=0 ? '#22c55e' : '#ef4444';
+  var flow = avg>=0 ? '▲ inflow' : '▼ outflow';
+  var biasEl = document.getElementById('theme-bias-'+idx);
+  var rsEl   = document.getElementById('theme-rs-'+idx);
+  var tickEl = document.getElementById('theme-tickers-'+idx);
+  if (biasEl){ biasEl.textContent = avg>=0.5?'BULL':'BEAR'; biasEl.className='pill '+(avg>=0.5?'pg':'pr'); }
+  if (rsEl) rsEl.innerHTML = '<span style="color:'+fc+'">'+flow+'</span>&nbsp;&nbsp;<span style="color:'+fc+';font-weight:700">'+(avg>=0?'+':'')+avg.toFixed(2)+'% avg today</span>';
+  if (tickEl && ranked.length) {
+    var top3 = ranked.slice(0,3).map(function(r){
+      return '<span style="color:'+(r.dp>=0?'#22c55e':'#ef4444')+';font-weight:700">'+r.t+'</span>';
+    }).join(' · ');
+    var bot = ranked.length>3 ? ranked.slice(-2).map(function(r){
+      return '<span style="color:#ef4444">'+r.t+'</span>';
+    }).join(' · ') : '';
+    tickEl.innerHTML = '<span style="color:#4b5563;font-size:9px">LEADING: </span>'+top3
+      + (bot ? ' &nbsp;<span style="color:#4b5563;font-size:9px">LAGGING: </span>'+bot : '');
+  }
+}
+
+function initThemeGroups() {
+  var key = getFHKey();
+  if (!key) return;
+  var grid = document.getElementById('theme-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  THEME_GROUPS.forEach(function(theme, idx) {
+    var card = document.createElement('div');
+    card.id = 'theme-card-'+idx;
+    card.style.cssText = 'background:#111;border:1px solid #1f2937;border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .2s';
+    card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+      + '<span style="font-size:13px;font-weight:700;color:#f9fafb">'+theme.emoji+' '+theme.name+'</span>'
+      + '<span class="pill pgr" id="theme-bias-'+idx+'">…</span>'
+      + '</div>'
+      + '<div style="font-size:11px;color:#6b7280;margin-bottom:4px" id="theme-rs-'+idx+'">Loading…</div>'
+      + '<div style="font-size:10px;color:#374151" id="theme-tickers-'+idx+'">'+theme.tickers.slice(0,5).join(' · ')+'</div>'
+      + '<div id="theme-expand-'+idx+'" style="display:none;margin-top:10px;border-top:1px solid #1f2937;padding-top:10px"></div>';
+    card.onclick = function(){ toggleTheme(idx, theme, key); };
+    card.onmouseenter = function(){ card.style.borderColor='#3b82f6'; };
+    card.onmouseleave = function(){ card.style.borderColor=card._open?'#3b82f6':'#1f2937'; };
+    grid.appendChild(card);
+
+    // Instant ETF-based render while stocks load
+    var etfSym = THEME_ETF_MAP[theme.name];
+    if (etfSym && Array.isArray(spyData['1d'])) {
+      var etfRow = spyData['1d'].filter(function(r){ return r.etf===etfSym; })[0];
+      if (etfRow && etfRow.dp != null) {
+        var fc  = etfRow.dp>=0 ? '#22c55e' : '#ef4444';
+        var bEl = document.getElementById('theme-bias-'+idx);
+        var rEl = document.getElementById('theme-rs-'+idx);
+        if (bEl){ bEl.textContent = etfRow.dp>=0.5?'BULL':'BEAR'; bEl.className='pill '+(etfRow.dp>=0.5?'pg':'pr'); }
+        if (rEl) rEl.innerHTML = '<span style="color:'+fc+'">'+(etfRow.dp>=0?'▲ inflow':'▼ outflow')+'</span>'
+          + '&nbsp;&nbsp;<span style="color:'+fc+';font-weight:700">'+(etfRow.dp>=0?'+':'')+etfRow.dp.toFixed(2)+'% sector</span>';
+      }
+    }
+  });
+
+  // Sequential stock fetch — 1 per second, stays under 60/min
+  var seen = {}, fetchOrder = [];
+  THEME_GROUPS.forEach(function(theme){
+    if (!seen[theme.tickers[0]]){ seen[theme.tickers[0]]=true; fetchOrder.push(theme.tickers[0]); }
+  });
+  THEME_GROUPS.forEach(function(theme){
+    theme.tickers.forEach(function(t){ if (!seen[t]){ seen[t]=true; fetchOrder.push(t); } });
+  });
+
+  var retryQueue = [];
+  (function go(i){
+    if (i >= fetchOrder.length) {
+      var u = document.getElementById('themes-updated');
+      if (u) u.textContent = ts();
+      if (retryQueue.length) {
+        setTimeout(function(){
+          (function retry(j){
+            if (j >= retryQueue.length) return;
+            var t = retryQueue[j];
+            fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key).then(function(q){
+              if (q && q.dp != null){ _themeQuotes[t]=q; THEME_GROUPS.forEach(function(_,idx){ renderThemeCard(idx); }); }
+              setTimeout(function(){ retry(j+1); }, 1000);
+            });
+          })(0);
+        }, 65000);
+      }
+      return;
+    }
+    var t = fetchOrder[i];
+    fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key).then(function(q){
+      if (q && q.dp != null){
+        _themeQuotes[t] = q;
+        THEME_GROUPS.forEach(function(_,idx){ renderThemeCard(idx); });
+      } else {
+        retryQueue.push(t);
+      }
+      setTimeout(function(){ go(i+1); }, 1000);
+    });
+  })(0);
+}
+
+function toggleTheme(idx, theme, key) {
+  var card   = document.getElementById('theme-card-'+idx);
+  var expand = document.getElementById('theme-expand-'+idx);
+  if (!card || !expand) return;
+  var isOpen = card._open;
+  THEME_GROUPS.forEach(function(_,i){
+    var c = document.getElementById('theme-card-'+i);
+    var e = document.getElementById('theme-expand-'+i);
+    if (c){ c._open=false; c.style.borderColor='#1f2937'; }
+    if (e) e.style.display='none';
+  });
+  if (isOpen) return;
+  card._open = true;
+  card.style.borderColor = '#3b82f6';
+  expand.style.display = 'block';
+
+  var ranked = _themeRanked[idx];
+  if (!ranked || !ranked.length) {
+    expand.innerHTML = '<div style="font-size:11px;color:#6b7280">Loading ticker data…</div>';
+    return;
+  }
+  expand.innerHTML = '<div style="font-size:10px;color:#4b5563;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Ranked by live % change today</div>'
+    + ranked.map(function(r){
+        var fc  = r.dp>=0 ? '#22c55e' : '#ef4444';
+        var chg = r.dp!=null ? (r.dp>=0
+          ? '<span style="color:#22c55e">▲ +'+r.dp.toFixed(2)+'%</span>'
+          : '<span style="color:#ef4444">▼ '+r.dp.toFixed(2)+'%</span>') : '—';
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a1a">'
+          + '<span style="font-size:13px;font-weight:800;color:#60a5fa;min-width:52px">'+r.t+'</span>'
+          + '<span style="font-size:12px;font-weight:600;color:#f9fafb;min-width:68px">'+(r.c?'$'+r.c.toFixed(2):'—')+'</span>'
+          + '<span style="font-size:11px;min-width:80px;text-align:right">'+chg+'</span>'
+          + '</div>';
+      }).join('');
+}
+
+// ─────────────────────────────────────────────
+//  SUB-INDUSTRY BREAKDOWNS
+// ─────────────────────────────────────────────
+function renderBreakdown(listId, signalId, groups, qMap, xlkRow) {
+  var el = document.getElementById(listId);
+  if (el) el.innerHTML = groups.map(function(g, i){
+    var isPos = g.avgDp >= 0;
+    var pillCls = i===0 ? 'pg' : isPos ? 'py' : 'pr';
+    var details = g.tickers.map(function(t){
+      var q = qMap[t];
+      if (!q || !q.c) return t;
+      var dp = q.dp!=null
+        ? (q.dp>=0 ? '<span style="color:#22c55e">+'+q.dp.toFixed(2)+'%</span>'
+                   : '<span style="color:#ef4444">'+q.dp.toFixed(2)+'%</span>') : '';
+      return '<b>'+t+'</b> $'+q.c.toFixed(2)+' '+dp;
+    }).join(' &nbsp;·&nbsp; ');
+    return '<div style="background:#0d0d0d;border:1px solid #1f2937;border-radius:7px;padding:10px 12px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+      + '<span style="font-size:12px;font-weight:700;color:'+g.color+'">'+g.name+'</span>'
+      + '<div style="display:flex;gap:6px;align-items:center">'
+      + '<span style="font-size:11px;font-weight:700;color:'+(isPos?'#22c55e':'#ef4444')+'">'+(isPos?'+':'')+g.avgDp.toFixed(2)+'% avg</span>'
+      + '<span class="pill '+pillCls+'">#'+(i+1)+'</span>'
+      + '</div></div>'
+      + '<div style="font-size:11px;color:#6b7280">'+details+'</div>'
+      + '</div>';
+  }).join('');
+
+  var rotEl = document.getElementById(signalId);
+  if (rotEl) {
+    var top = groups[0], bot = groups[groups.length-1];
+    var techLine = '';
+    if (xlkRow) techLine = 'Technology (XLK) '
+      + (xlkRow.rs1d>=0
+          ? '<span style="color:#22c55e">outperforming SPY (+'+xlkRow.rs1d.toFixed(2)+'%)</span>'
+          : '<span style="color:#ef4444">underperforming SPY ('+xlkRow.rs1d.toFixed(2)+'%)</span>')
+      + '. ';
+    rotEl.innerHTML = '<strong>Rotation signal:</strong> '+techLine
+      + 'Leading: <span style="color:'+top.color+'"><b>'+top.name+'</b></span> '
+      + '<span style="color:#22c55e">'+(top.avgDp>=0?'+':'')+top.avgDp.toFixed(2)+'% avg</span>'
+      + ' · Lagging: <span style="color:#ef4444"><b>'+bot.name+'</b> '+(bot.avgDp>=0?'+':'')+bot.avgDp.toFixed(2)+'%</span>'
+      + ' <span style="color:#9ca3af">· '+new Date().toLocaleTimeString()+'</span>';
+  }
+}
+
+function loadSemiBreakdown(sectorRows, key) {
+  var allTickers = [];
+  SEMI_SUBGROUPS.forEach(function(g){ g.tickers.forEach(function(t){ if (!allTickers.includes(t)) allTickers.push(t); }); });
+  Promise.all(allTickers.map(function(sym){
+    return fgetQ(FH_BASE+'/quote?symbol='+sym+'&token='+key)
+      .then(function(q){ return {sym:sym, dp:q&&q.dp!=null?q.dp:0, c:q&&q.c?q.c:0}; })
+      .catch(function(){ return {sym:sym, dp:0, c:0}; });
+  })).then(function(quotes){
+    var qMap = {};
+    quotes.forEach(function(q){ qMap[q.sym]=q; if(q.c) _themeQuotes[q.sym]={dp:q.dp,c:q.c}; });
+    var groups = SEMI_SUBGROUPS.map(function(g){
+      var dps = g.tickers.map(function(t){ return qMap[t]?qMap[t].dp:0; });
+      var avg = dps.reduce(function(a,b){return a+b;},0)/dps.length;
+      return {name:g.name, tickers:g.tickers, color:g.color, avgDp:avg};
+    }).sort(function(a,b){ return b.avgDp-a.avgDp; });
+    var xlkRow = sectorRows.find(function(r){ return r.etf==='XLK'; });
+    renderBreakdown('semi-breakdown-list', 'semi-rotation-signal', groups, qMap, xlkRow);
+  });
+}
+
+function loadSubBreakdown(subgroups, listId, signalId, key) {
+  var allTickers = [];
+  subgroups.forEach(function(g){ g.tickers.forEach(function(t){ if (!allTickers.includes(t)) allTickers.push(t); }); });
+  var qMap = {};
+  allTickers.forEach(function(t){ if (_themeQuotes[t]) qMap[t]={sym:t, dp:_themeQuotes[t].dp||0, c:_themeQuotes[t].c||0}; });
+  var missing = allTickers.filter(function(t){ return !qMap[t]; });
+  (function fetch(i, done){
+    if (i >= missing.length){ done(); return; }
+    var sym = missing[i];
+    fgetQ(FH_BASE+'/quote?symbol='+sym+'&token='+key).then(function(q){
+      qMap[sym] = {sym:sym, dp:q&&q.dp!=null?q.dp:0, c:q&&q.c?q.c:0};
+      if (q && q.c!=null) _themeQuotes[sym]=q;
+      setTimeout(function(){ fetch(i+1, done); }, 600);
+    }).catch(function(){ setTimeout(function(){ fetch(i+1, done); }, 600); });
+  })(0, function(){
+    var groups = subgroups.map(function(g){
+      var dps = g.tickers.map(function(t){ return qMap[t]?qMap[t].dp:0; });
+      var avg = dps.reduce(function(a,b){return a+b;},0)/dps.length;
+      return {name:g.name, tickers:g.tickers, color:g.color, avgDp:avg};
+    }).sort(function(a,b){ return b.avgDp-a.avgDp; });
+    renderBreakdown(listId, signalId, groups, qMap, null);
+  });
+}
+
+// ─────────────────────────────────────────────
+//  RELOAD
+// ─────────────────────────────────────────────
+function reload() {
+  _themeQuotes = {}; _themeRanked = {};
+  spyData = {'1d':[],'4w':[],'13w':[],'26w':[]};
+  document.getElementById('spy-grid').innerHTML = '<div style="color:#4b5563;font-size:12px;padding:8px">Loading…</div>';
+  document.getElementById('theme-grid').innerHTML = '';
+  ['semi','ai','cyber','cloud'].forEach(function(k){
+    var el  = document.getElementById(k+'-breakdown-list');
+    var sig = document.getElementById(k+'-rotation-signal');
+    if (el)  el.innerHTML  = '<div style="color:#4b5563;font-size:12px">Loading…</div>';
+    if (sig) sig.innerHTML = '<strong>Rotation signal:</strong> Loading…';
+  });
+  initSectorRotation();
+  toast('Refreshing live data…');
+}
+
+// ─────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────
+window.onload = function() {
+  var k = getFHKey();
+  var inp = document.getElementById('fh-key-input');
+  if (inp && k) inp.value = k;
+  if (k) {
+    initSectorRotation();
+  } else {
+    document.getElementById('spy-grid').innerHTML =
+      '<div style="color:#f59e0b;font-size:12px;padding:8px">⚠ Enter your Finnhub API key above to load live data</div>';
+  }
+};
+</script>
+</body>
+</html>
