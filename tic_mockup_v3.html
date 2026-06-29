@@ -1212,6 +1212,10 @@ function initDashboard() {
     return fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key);
   })).then(function(res){
     var spy=res[0]||{}, qqq=res[1]||{}, vxx=res[2]||{}, nvda=res[3]||{}, tsla=res[4]||{}, amzn=res[5]||{}, meta=res[6]||{};
+    // Seed theme cache so these tickers aren't re-fetched by initThemeGroups
+    ['NVDA','TSLA','AMZN','META'].forEach(function(t,i){
+      var q=res[i+3]; if(q&&q.dp!=null) _themeQuotes[t]=q;
+    });
     function fmt(v){ return v!=null ? v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—'; }
     function chgStr(d,dp){ if(d==null) return '—'; var up=d>=0; return (up?'▲ +':'▼ ')+Math.abs(dp).toFixed(2)+'% today'; }
     function setEl(id,val){ var e=document.getElementById(id); if(e) e.textContent=val; }
@@ -1781,19 +1785,19 @@ function goAnalyze(ticker) {
   var now=Math.floor(Date.now()/1000);
   var nFrom=new Date(Date.now()-7*864e5).toISOString().slice(0,10);
   var nTo=new Date().toISOString().slice(0,10);
-  var yhUrl='https://corsproxy.io/?'+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?range=2y&interval=1d');
-  var yhSumUrl='https://corsproxy.io/?'+encodeURIComponent('https://query1.finance.yahoo.com/v11/finance/quoteSummary/'+ticker+'?modules=assetProfile,summaryProfile,financialData,defaultKeyStatistics,incomeStatementHistory,cashflowStatementHistory,balanceSheetHistory');
+  var yhUrl='https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?range=2y&interval=1d';
+  var yhSumUrl='https://query1.finance.yahoo.com/v11/finance/quoteSummary/'+ticker+'?modules=assetProfile,summaryProfile,financialData,defaultKeyStatistics,incomeStatementHistory,cashflowStatementHistory,balanceSheetHistory';
 
   function fget(url){ return fetch(url).then(function(r){return r.json();}).catch(function(){return null;}); }
 
-  // Batch 1: critical data (quote, profile, metrics, chart) — fires immediately
+  // Batch 1: critical data — fires immediately
   Promise.all([
     fget(FH_BASE+'/quote?symbol='+T+'&token='+key),
     fget(FH_BASE+'/stock/profile2?symbol='+T+'&token='+key),
     fget(FH_BASE+'/stock/metric?symbol='+T+'&metric=all&token='+key),
     fget(yhUrl)
   ]).then(function(b1){
-  // Batch 2: secondary data (earnings, recs, news, yahoo summary) — staggered 1s later
+  // Batch 2: secondary data — staggered 1s later
   return new Promise(function(res){setTimeout(function(){
     Promise.all([
       fget(FH_BASE+'/stock/earnings?symbol='+T+'&token='+key),
@@ -1809,7 +1813,6 @@ function goAnalyze(ticker) {
     var recs=Array.isArray(results[5])?results[5]:[];
     var news=Array.isArray(results[6])?results[6]:[];
     var yhSum=results[7];
-    // Extract business description from Yahoo Finance quoteSummary
     var yhProfile=yhSum&&yhSum.quoteSummary&&yhSum.quoteSummary.result&&yhSum.quoteSummary.result[0];
     var yhDesc=(yhProfile&&(yhProfile.assetProfile||yhProfile.summaryProfile||{}).longBusinessSummary)||'';
 
@@ -1817,13 +1820,14 @@ function goAnalyze(ticker) {
     if(!yhResult||!yhResult.timestamp||yhResult.timestamp.length===0){
       setStatus('Error: No price data — check ticker symbol'); toast('No price data for '+ticker); return;
     }
-
-    // Build daily array newest-first from Yahoo Finance
     var daily=[];
     var ts=yhResult.timestamp, yq=yhResult.indicators.quote[0];
     for(var i=ts.length-1;i>=0;i--){
       if(yq.close[i]==null) continue;
       daily.push({date:new Date(ts[i]*1000).toISOString().slice(0,10),open:yq.open[i]||yq.close[i],high:yq.high[i]||yq.close[i],low:yq.low[i]||yq.close[i],close:yq.close[i],vol:yq.volume[i]||0});
+    }
+    if(!daily.length){
+      setStatus('Error: No price data — check ticker symbol'); toast('No price data for '+ticker); return;
     }
 
     var newTF=buildTFDataFromCandles(daily);
@@ -2393,8 +2397,61 @@ var THEME_GROUPS = [
   {name:'Aviation',            emoji:'✈️', tickers:['BA','HWM','GE','RTX','LMT','AAL','DAL','UAL']},
 ];
 
-var _themeQuotes = {}; // cache: ticker -> quote
-var _themeRanked = {}; // cache: idx -> sorted live results
+// Map each theme to its closest sector ETF for instant rendering
+var THEME_ETF_MAP = {
+  'AI / Data Centers':   'XLK',
+  'Semiconductors':      'XLK',
+  'Cybersecurity':       'XLK',
+  'Software / SaaS':     'XLK',
+  'Cloud Infrastructure':'XLK',
+  'Fintech':             'XLF',
+  'Biotech / Healthcare':'XLV',
+  'Defense / Aerospace': 'XLI',
+  'Consumer / Retail':   'XLY',
+  'Energy':              'XLE',
+  'Crypto / Digital':    null,
+  'EV / Clean Energy':   'XLY',
+  'Aviation':            'XLI'
+};
+
+var _themeQuotes = {};
+var _themeRanked = {};
+
+function renderThemeCard(idx) {
+  var theme = THEME_GROUPS[idx];
+  var ranked = theme.tickers.map(function(t){
+    var q = _themeQuotes[t];
+    return {t:t, dp:q&&q.dp!=null?q.dp:null};
+  }).filter(function(r){ return r.dp!=null; })
+    .sort(function(a,b){ return b.dp-a.dp; });
+
+  _themeRanked[idx] = ranked;
+  var avg = ranked.length ? ranked.reduce(function(s,r){return s+r.dp;},0)/ranked.length : null;
+  if(avg === null) return; // no data yet
+
+  var bias = avg>=0.5?'BULL':'BEAR';
+  var cls  = avg>=0.5?'pg':'pr';
+  var fc   = avg>=0?'#22c55e':'#ef4444';
+  var flow = avg>=0?'▲ inflow':'▼ outflow';
+
+  var biasEl = document.getElementById('theme-bias-'+idx);
+  var rsEl   = document.getElementById('theme-rs-'+idx);
+  var tickEl = document.getElementById('theme-tickers-'+idx);
+
+  if(biasEl){ biasEl.textContent=bias; biasEl.className='pill '+cls; }
+  if(rsEl) rsEl.innerHTML='<span style="color:'+fc+'">'+flow+'</span>'
+    +'&nbsp;&nbsp;<span style="color:'+fc+';font-weight:700">'+(avg>=0?'+':'')+avg.toFixed(2)+'% avg today</span>';
+  if(tickEl&&ranked.length){
+    var top3=ranked.slice(0,3).map(function(r){
+      return '<span style="color:'+(r.dp>=0?'#22c55e':'#ef4444')+';font-weight:700">'+r.t+'</span>';
+    }).join(' · ');
+    var bot=ranked.length>3?ranked.slice(-2).map(function(r){
+      return '<span style="color:#ef4444">'+r.t+'</span>';
+    }).join(' · '):'';
+    tickEl.innerHTML='<span style="color:#4b5563;font-size:9px">LEADING: </span>'+top3
+      +(bot?' &nbsp;<span style="color:#4b5563;font-size:9px">LAGGING: </span>'+bot:'');
+  }
+}
 
 function initThemeGroups() {
   var key = getFHKey();
@@ -2403,7 +2460,6 @@ function initThemeGroups() {
   if(!grid) return;
   grid.innerHTML = '';
 
-  // Render skeleton cards
   THEME_GROUPS.forEach(function(theme, idx) {
     var card = document.createElement('div');
     card.id = 'theme-card-'+idx;
@@ -2412,7 +2468,7 @@ function initThemeGroups() {
       +'<span style="font-size:13px;font-weight:700;color:#f9fafb">'+theme.emoji+' '+theme.name+'</span>'
       +'<span class="pill pgr" id="theme-bias-'+idx+'">…</span>'
       +'</div>'
-      +'<div style="font-size:11px;color:#6b7280;margin-bottom:4px" id="theme-rs-'+idx+'">Fetching live data…</div>'
+      +'<div style="font-size:11px;color:#6b7280;margin-bottom:4px" id="theme-rs-'+idx+'">Loading…</div>'
       +'<div style="font-size:10px;color:#374151" id="theme-tickers-'+idx+'">'+theme.tickers.slice(0,5).join(' · ')+'</div>'
       +'<div id="theme-expand-'+idx+'" style="display:none;margin-top:10px;border-top:1px solid #1f2937;padding-top:10px"></div>';
     card.onclick = function(){ toggleTheme(idx, theme, key); };
@@ -2421,74 +2477,51 @@ function initThemeGroups() {
     grid.appendChild(card);
   });
 
-  // Collect all unique tickers across all themes
-  var allUnique = [];
+  // Collect unique tickers: first ticker from each theme first so every card
+  // gets at least one data point quickly, then remaining tickers
+  var seen = {}, fetchOrder = [];
   THEME_GROUPS.forEach(function(theme){
-    theme.tickers.forEach(function(t){ if(allUnique.indexOf(t)<0) allUnique.push(t); });
+    if(!seen[theme.tickers[0]]){ seen[theme.tickers[0]]=true; fetchOrder.push(theme.tickers[0]); }
+  });
+  THEME_GROUPS.forEach(function(theme){
+    theme.tickers.forEach(function(t){ if(!seen[t]){ seen[t]=true; fetchOrder.push(t); } });
   });
 
-  // Batch fetch: 10 tickers per batch, 1.2s between batches to stay under 60/min
-  var BATCH = 10;
-  var batches = [];
-  for(var b=0; b<allUnique.length; b+=BATCH) batches.push(allUnique.slice(b,b+BATCH));
-
-  function renderThemeCard(idx) {
-    var theme = THEME_GROUPS[idx];
-    var ranked = theme.tickers.map(function(t){
-      var q = _themeQuotes[t];
-      return {t:t, q:q, dp:q&&q.dp!=null?q.dp:null, c:q&&q.c!=null?q.c:null};
-    }).filter(function(r){ return r.dp!=null; })
-      .sort(function(a,b){ return b.dp-a.dp; });
-
-    _themeRanked[idx] = ranked;
-    var avg = ranked.length ? ranked.reduce(function(s,r){return s+r.dp;},0)/ranked.length : 0;
-    var bias = avg>=0.5?'BULL':'BEAR';
-    var cls  = avg>=0.5?'pg':'pr';
-    var flowColor = avg>=0?'#22c55e':'#ef4444';
-    var flow = avg>=0?'▲ inflow':'▼ outflow';
-
-    var biasEl = document.getElementById('theme-bias-'+idx);
-    var rsEl   = document.getElementById('theme-rs-'+idx);
-    var tickEl = document.getElementById('theme-tickers-'+idx);
-
-    if(biasEl){ biasEl.textContent=bias; biasEl.className='pill '+cls; }
-    if(rsEl) rsEl.innerHTML='<span style="color:'+flowColor+'">'+flow+'</span>'
-      +'&nbsp;&nbsp;<span style="color:'+flowColor+';font-weight:700">'+(avg>=0?'+':'')+avg.toFixed(2)+'% avg today</span>';
-    if(tickEl&&ranked.length){
-      var top3=ranked.slice(0,3).map(function(r){
-        return '<span style="color:'+(r.dp>=0?'#22c55e':'#ef4444')+';font-weight:700">'+r.t+'</span>';
-      }).join(' · ');
-      var bot=ranked.slice(-2).map(function(r){
-        return '<span style="color:#ef4444">'+r.t+'</span>';
-      }).join(' · ');
-      tickEl.innerHTML='<span style="color:#4b5563;font-size:9px">LEADING: </span>'+top3
-        +(bot?' &nbsp;<span style="color:#4b5563;font-size:9px">LAGGING: </span>'+bot:'');
+  // Sequential fetch: 1 ticker per second — stays under Finnhub 60/min.
+  // Any ticker that returns null (429'd) goes into retryQueue.
+  // After 65s the rate-limit window clears, retry queue fires.
+  var retryQueue = [];
+  (function go(i){
+    if(i >= fetchOrder.length){
+      // Initial pass done — retry any 429'd tickers after window clears
+      if(retryQueue.length){
+        setTimeout(function(){
+          (function retry(j){
+            if(j >= retryQueue.length) return;
+            var t = retryQueue[j];
+            fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key).then(function(q){
+              if(q && q.dp != null){
+                _themeQuotes[t] = q;
+                THEME_GROUPS.forEach(function(_,idx){ renderThemeCard(idx); });
+              }
+              setTimeout(function(){ retry(j+1); }, 1000);
+            });
+          })(0);
+        }, 65000);
+      }
+      return;
     }
-  }
-
-  // Pass 1: fire all unique tickers simultaneously — most will succeed
-  var failed = {};
-  allUnique.forEach(function(t){
-    failed[t] = true; // assume failed until proven otherwise
+    var t = fetchOrder[i];
     fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key).then(function(q){
-      if(q&&q.c!=null){ _themeQuotes[t]=q; delete failed[t]; }
-      THEME_GROUPS.forEach(function(_,idx){ renderThemeCard(idx); });
-    });
-  });
-
-  // Pass 2: 6 seconds later retry only the tickers that got 429'd, one at a time
-  setTimeout(function(){
-    var retryList = Object.keys(failed).filter(function(t){ return !_themeQuotes[t]; });
-    (function retryOne(i){
-      if(i>=retryList.length) return;
-      var t = retryList[i];
-      fgetQ(FH_BASE+'/quote?symbol='+t+'&token='+key).then(function(q){
-        if(q&&q.c!=null) _themeQuotes[t]=q;
+      if(q && q.dp != null){
+        _themeQuotes[t] = q;
         THEME_GROUPS.forEach(function(_,idx){ renderThemeCard(idx); });
-        setTimeout(function(){ retryOne(i+1); }, 700);
-      });
-    })(0);
-  }, 6000);
+      } else {
+        retryQueue.push(t); // 429'd — will retry after window resets
+      }
+      setTimeout(function(){ go(i+1); }, 1000);
+    });
+  })(0);
 }
 
 function toggleTheme(idx, theme, key) {
@@ -3056,22 +3089,22 @@ function switchSpyTF(btn,tf){
 }
 
 // Stagger Finnhub calls to stay under 60/min free tier rate limit
-// Wave 1 (400ms): UI-only builds + sector rotation (12 calls — highest priority)
+// Wave 1 (400ms): UI builds + sector rotation only (12 Finnhub calls)
 setTimeout(function(){
   buildEpsChart();buildRevChart();buildPeerChart();
   buildDashScanPreview();initDashboardGreeting();
-  runScan();initWatchlist();
+  runScan();
   initSectorRotation(); // 12 calls: SPY + 11 ETFs
 },400);
-// Wave 2 (5s): earnings + econ calendars (2-3 calls)
+// Wave 2 (3s): themes start sequential fetch (1/sec) — sector calls are done by now
+setTimeout(function(){ initThemeGroups(); }, 3000);
+// Wave 3 (5s): earnings + econ calendars
 setTimeout(function(){
   initEarningsCalendar();
   initEconCalendar();
 },5000);
-// Wave 2b (2s): themes fire early — they have built-in retry for any 429s
-setTimeout(function(){
-  initThemeGroups();
-},2000);
+// Wave 4 (20s): watchlist — delayed so themes get full rate-limit budget
+setTimeout(function(){ initWatchlist(); }, 20000);
 
 var SCANNER_DB = [
   // ── MEGA CAP TECH ──
