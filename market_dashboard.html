@@ -491,13 +491,14 @@ function initSectorRotation() {
     setTimeout(function(){ loadSubBreakdown(AI_INFRA_SUBGROUPS,      'ai-breakdown-list',     'ai-rotation-signal',     key); }, 12000);
     setTimeout(function(){ loadSubBreakdown(CYBER_SUBGROUPS,         'cyber-breakdown-list',  'cyber-rotation-signal',  key); }, 14000);
     setTimeout(function(){ loadSubBreakdown(CLOUD_SUBGROUPS,         'cloud-breakdown-list',  'cloud-rotation-signal',  key); }, 16000);
-    setTimeout(function(){ loadSubBreakdown(HEALTHCARE_SUBGROUPS,    'health-breakdown-list', 'health-rotation-signal', key); }, 18000);
-    setTimeout(function(){ loadSubBreakdown(FINANCIALS_SUBGROUPS,    'fin-breakdown-list',    'fin-rotation-signal',    key); }, 20000);
-    setTimeout(function(){ loadSubBreakdown(CONSUMER_DISC_SUBGROUPS, 'cdisc-breakdown-list',  'cdisc-rotation-signal',  key); }, 22000);
-    setTimeout(function(){ loadSubBreakdown(COMM_SERVICES_SUBGROUPS, 'comm-breakdown-list',   'comm-rotation-signal',   key); }, 24000);
-    setTimeout(function(){ loadSubBreakdown(INDUSTRIALS_SUBGROUPS,   'ind-breakdown-list',    'ind-rotation-signal',    key); }, 26000);
-    setTimeout(function(){ loadSubBreakdown(ENERGY_SUBGROUPS,        'nrg-breakdown-list',    'nrg-rotation-signal',    key); }, 28000);
-    setTimeout(function(){ loadSubBreakdown(ALTFIN_SUBGROUPS,        'altfin-breakdown-list', 'altfin-rotation-signal', key); }, 30000);
+    // Sectors 5-11 fire after t=70s — themes loop consumes ~50 calls at 1/sec until ~t=55s, retry queue at t=65s
+    setTimeout(function(){ loadSubBreakdown(HEALTHCARE_SUBGROUPS,    'health-breakdown-list', 'health-rotation-signal', key); },  70000);
+    setTimeout(function(){ loadSubBreakdown(FINANCIALS_SUBGROUPS,    'fin-breakdown-list',    'fin-rotation-signal',    key); },  80000);
+    setTimeout(function(){ loadSubBreakdown(CONSUMER_DISC_SUBGROUPS, 'cdisc-breakdown-list',  'cdisc-rotation-signal',  key); },  90000);
+    setTimeout(function(){ loadSubBreakdown(COMM_SERVICES_SUBGROUPS, 'comm-breakdown-list',   'comm-rotation-signal',   key); }, 100000);
+    setTimeout(function(){ loadSubBreakdown(INDUSTRIALS_SUBGROUPS,   'ind-breakdown-list',    'ind-rotation-signal',    key); }, 110000);
+    setTimeout(function(){ loadSubBreakdown(ENERGY_SUBGROUPS,        'nrg-breakdown-list',    'nrg-rotation-signal',    key); }, 120000);
+    setTimeout(function(){ loadSubBreakdown(ALTFIN_SUBGROUPS,        'altfin-breakdown-list', 'altfin-rotation-signal', key); }, 130000);
   });
 }
 
