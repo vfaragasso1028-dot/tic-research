@@ -677,7 +677,18 @@ input:focus,select:focus{border-color:#3b82f6}
   <div class="card" style="padding:0;overflow:hidden">
     <table class="t">
       <thead id="scan-thead">
-        <tr><th>#</th><th>Ticker</th><th>Company</th><th>Price</th><th>% Today</th><th>Stage</th><th>% Above EMA9</th><th>Volume</th><th>RSI</th><th></th></tr>
+        <tr>
+          <th>#</th>
+          <th onclick="sortScan('ticker')" style="cursor:pointer;user-select:none">Ticker <span id="sort-ticker"></span></th>
+          <th onclick="sortScan('name')" style="cursor:pointer;user-select:none">Company <span id="sort-name"></span></th>
+          <th onclick="sortScan('price')" style="cursor:pointer;user-select:none">Price <span id="sort-price"></span></th>
+          <th onclick="sortScan('chg')" style="cursor:pointer;user-select:none">% Today <span id="sort-chg"></span></th>
+          <th>Stage</th>
+          <th onclick="sortScan('ema')" style="cursor:pointer;user-select:none">% Above EMA9 <span id="sort-ema"></span></th>
+          <th onclick="sortScan('vol')" style="cursor:pointer;user-select:none">Volume <span id="sort-vol"></span></th>
+          <th onclick="sortScan('rsi')" style="cursor:pointer;user-select:none">RSI <span id="sort-rsi"></span></th>
+          <th></th>
+        </tr>
       </thead>
       <tbody id="scan-tbody">
         <tr><td colspan="10" style="text-align:center;color:#6b7280;padding:20px">Click 🍸 Tic's Martini Special then Run Scanner → to load live results</td></tr>
@@ -3225,6 +3236,8 @@ var SCANNER_DB = [
 ];
 
 var _martiniActive = false;
+var _martiniResults = [];
+var _martiniSort = {col: 'ema', dir: -1};
 
 function toggleMartini(btn) {
   _martiniActive = !_martiniActive;
@@ -3280,10 +3293,8 @@ function runMartiniScan() {
       return close >= ema9 * 1.04 && close > sma50;
     });
 
-    // Sort by % above EMA9 descending
-    filtered.sort(function(a,b){
-      return ((b[2]-b[6])/b[6]) - ((a[2]-a[6])/a[6]);
-    });
+    _martiniResults = filtered;
+    _martiniSort = {col:'ema', dir:-1};
 
     if (rc) rc.innerHTML = 'Showing <strong>' + Math.min(filtered.length,100) + ' of ' + filtered.length + ' results</strong> · 🍸 Martini Special · Live · ' + new Date().toLocaleTimeString();
 
@@ -3292,36 +3303,7 @@ function runMartiniScan() {
       return;
     }
 
-    function stageOf(c,s50,s150,s200) {
-      if (!c||!s50||!s150||!s200) return '?';
-      if (c>s150 && s150>s200 && c>s50)  return '2';
-      if (c<s150 && s150>s200)            return '3';
-      if (c<s200)                          return '4';
-      return '1';
-    }
-
-    tbody.innerHTML = filtered.slice(0,100).map(function(d,i){
-      var ticker=d[0], name=(d[1]||'').substring(0,22);
-      var close=d[2], chg=d[3], vol=d[4];
-      var ema9=d[6], sma50=d[7], sma150=d[8], sma200=d[9], rsi=d[10];
-      var aboveEma = ema9 ? ((close-ema9)/ema9*100).toFixed(1) : '—';
-      var stage = stageOf(close,sma50,sma150,sma200);
-      var sCls = stage==='2'?'pg':stage==='1'?'py':'pr';
-      var chgColor = chg>=0?'#22c55e':'#ef4444';
-      var volFmt = vol ? (vol>=1e6?(vol/1e6).toFixed(1)+'M':(vol/1e3).toFixed(0)+'K') : '—';
-      return '<tr onclick="goAnalyze(\''+ticker+'\')" style="cursor:pointer">'
-        +'<td style="color:#4b5563">'+(i+1)+'</td>'
-        +'<td style="font-weight:800;color:#60a5fa;font-size:14px">'+ticker+'</td>'
-        +'<td style="color:#6b7280;font-size:12px">'+name+'</td>'
-        +'<td style="font-weight:600">$'+(close||0).toFixed(2)+'</td>'
-        +'<td style="color:'+chgColor+';font-weight:700">'+(chg>=0?'+':'')+(chg||0).toFixed(2)+'%</td>'
-        +'<td><span class="pill '+sCls+'">S'+stage+'</span></td>'
-        +'<td style="color:#22c55e;font-weight:700">+'+aboveEma+'%</td>'
-        +'<td style="color:#9ca3af">'+volFmt+'</td>'
-        +'<td style="color:#9ca3af">'+(rsi?rsi.toFixed(0):'—')+'</td>'
-        +'<td><button class="btn btn-blue" style="font-size:11px;padding:4px 9px" onclick="event.stopPropagation();goAnalyze(\''+ticker+'\')">Analyze</button></td>'
-        +'</tr>';
-    }).join('');
+    renderMartiniTable();
     toast(filtered.length + ' stocks matched Martini Special');
   })
   .catch(function(e) {
@@ -3329,6 +3311,73 @@ function runMartiniScan() {
     if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#ef4444;padding:24px">Scan failed — check connection and try again</td></tr>';
     toast('Martini scan failed — try again');
   });
+}
+
+function stageOf(c,s50,s150,s200) {
+  if (!c||!s50||!s150||!s200) return '?';
+  if (c>s150 && s150>s200 && c>s50) return '2';
+  if (c<s150 && s150>s200)           return '3';
+  if (c<s200)                        return '4';
+  return '1';
+}
+
+function renderMartiniTable() {
+  var tbody = document.getElementById('scan-tbody');
+  if (!tbody) return;
+
+  var cols = ['ticker','name','price','chg','ema','vol','rsi'];
+  cols.forEach(function(c) {
+    var el = document.getElementById('sort-'+c);
+    if (el) el.textContent = _martiniSort.col===c ? (_martiniSort.dir===1?' ▲':' ▼') : '';
+  });
+
+  var sorted = _martiniResults.slice().sort(function(a,b){
+    var av, bv;
+    switch(_martiniSort.col) {
+      case 'ticker': av=a[0]||''; bv=b[0]||''; return _martiniSort.dir*(av<bv?-1:av>bv?1:0);
+      case 'name':   av=a[1]||''; bv=b[1]||''; return _martiniSort.dir*(av<bv?-1:av>bv?1:0);
+      case 'price':  av=a[2]||0;  bv=b[2]||0;  return _martiniSort.dir*(av-bv);
+      case 'chg':    av=a[3]||0;  bv=b[3]||0;  return _martiniSort.dir*(av-bv);
+      case 'ema':    av=a[6]?((a[2]-a[6])/a[6]):0; bv=b[6]?((b[2]-b[6])/b[6]):0; return _martiniSort.dir*(av-bv);
+      case 'vol':    av=a[4]||0;  bv=b[4]||0;  return _martiniSort.dir*(av-bv);
+      case 'rsi':    av=a[10]||0; bv=b[10]||0; return _martiniSort.dir*(av-bv);
+      default: return 0;
+    }
+  });
+
+  tbody.innerHTML = sorted.slice(0,100).map(function(d,i){
+    var ticker=d[0], name=(d[1]||'').substring(0,22);
+    var close=d[2], chg=d[3], vol=d[4];
+    var ema9=d[6], sma50=d[7], sma150=d[8], sma200=d[9], rsi=d[10];
+    var aboveEma = ema9 ? ((close-ema9)/ema9*100).toFixed(1) : '—';
+    var stage = stageOf(close,sma50,sma150,sma200);
+    var sCls = stage==='2'?'pg':stage==='1'?'py':'pr';
+    var chgColor = chg>=0?'#22c55e':'#ef4444';
+    var volFmt = vol ? (vol>=1e6?(vol/1e6).toFixed(1)+'M':(vol/1e3).toFixed(0)+'K') : '—';
+    return '<tr onclick="goAnalyze(\''+ticker+'\')" style="cursor:pointer">'
+      +'<td style="color:#4b5563">'+(i+1)+'</td>'
+      +'<td style="font-weight:800;color:#60a5fa;font-size:14px">'+ticker+'</td>'
+      +'<td style="color:#6b7280;font-size:12px">'+name+'</td>'
+      +'<td style="font-weight:600">$'+(close||0).toFixed(2)+'</td>'
+      +'<td style="color:'+chgColor+';font-weight:700">'+(chg>=0?'+':'')+(chg||0).toFixed(2)+'%</td>'
+      +'<td><span class="pill '+sCls+'">S'+stage+'</span></td>'
+      +'<td style="color:#22c55e;font-weight:700">+'+aboveEma+'%</td>'
+      +'<td style="color:#9ca3af">'+volFmt+'</td>'
+      +'<td style="color:#9ca3af">'+(rsi?rsi.toFixed(0):'—')+'</td>'
+      +'<td><button class="btn btn-blue" style="font-size:11px;padding:4px 9px" onclick="event.stopPropagation();goAnalyze(\''+ticker+'\')">Analyze</button></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function sortScan(col) {
+  if (!_martiniResults.length) return;
+  if (_martiniSort.col === col) {
+    _martiniSort.dir *= -1;
+  } else {
+    _martiniSort.col = col;
+    _martiniSort.dir = col==='ticker'||col==='name' ? 1 : -1;
+  }
+  renderMartiniTable();
 }
 
 function runScan() {
