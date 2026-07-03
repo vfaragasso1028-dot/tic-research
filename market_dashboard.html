@@ -408,21 +408,6 @@ function buildSectorGrid(tf) {
   if (!grid || !data || !data.length) return;
   grid.innerHTML = '';
 
-  // SPY / QQQ / IWM index blocks
-  var idxQ = window._indexQuotes || {};
-  ['SPY','QQQ','IWM'].forEach(function(sym) {
-    var q = idxQ[sym];
-    var dp = q && q.dp != null ? q.dp : null;
-    var color = dp == null ? '#6b7280' : dp >= 0 ? '#22c55e' : '#ef4444';
-    var bg = dp == null ? 'rgba(59,130,246,0.05)' : dp >= 0 ? 'rgba(34,197,94,0.07)' : 'rgba(239,68,68,0.07)';
-    var border = dp == null ? 'rgba(59,130,246,0.2)' : dp >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)';
-    grid.innerHTML += '<div style="background:'+bg+';border:1px solid '+border+';border-radius:8px;padding:9px 11px">'
-      + '<div style="font-size:12px;font-weight:800;color:#60a5fa;margin-bottom:3px">'+sym+'</div>'
-      + '<div style="font-size:15px;font-weight:800;color:'+color+'">'+(dp!=null?(dp>=0?'+':'')+dp.toFixed(2)+'%':'—')+'</div>'
-      + '<div style="height:2px;border-radius:2px;background:'+border+';margin-top:5px;width:'+(dp!=null?Math.min(Math.abs(dp)/5*100,100):10)+'%"></div>'
-      + '</div>';
-  });
-
   data.forEach(function(s) {
     var isPos = s.rs >= 0;
     var intensity = Math.min(Math.abs(s.rs)/15, 1);
@@ -444,6 +429,24 @@ function buildSectorGrid(tf) {
       + '<div style="font-size:9px;color:#4b5563;margin-top:3px">vs SPY · '+tf+'</div>'
       + '</div>';
   });
+
+  // SPY / QQQ / IWM — last 3 boxes, blue label, price + % change
+  var idxQ = window._indexQuotes || {};
+  ['SPY','QQQ','IWM'].forEach(function(sym) {
+    var q = idxQ[sym];
+    var dp = q && q.dp != null ? q.dp : null;
+    var price = q && q.c ? q.c : null;
+    var color = dp == null ? '#6b7280' : dp >= 0 ? '#22c55e' : '#ef4444';
+    var bg = dp == null ? 'rgba(59,130,246,0.05)' : dp >= 0 ? 'rgba(34,197,94,0.07)' : 'rgba(239,68,68,0.07)';
+    var border = dp == null ? 'rgba(59,130,246,0.25)' : dp >= 0 ? 'rgba(34,197,94,0.35)' : 'rgba(239,68,68,0.35)';
+    grid.innerHTML += '<div style="background:'+bg+';border:1px solid '+border+';border-radius:8px;padding:9px 11px">'
+      + '<div style="font-size:12px;font-weight:800;color:#60a5fa;margin-bottom:3px">'+sym+'</div>'
+      + '<div style="font-size:13px;font-weight:700;color:#f9fafb;margin-bottom:2px">'+(price?'$'+price.toFixed(2):'—')+'</div>'
+      + '<div style="font-size:15px;font-weight:800;color:'+color+'">'+(dp!=null?(dp>=0?'+':'')+dp.toFixed(2)+'%':'—')+'</div>'
+      + '<div style="height:2px;border-radius:2px;background:'+border+';margin-top:5px;width:'+(dp!=null?Math.min(Math.abs(dp)/5*100,100):10)+'%"></div>'
+      + '</div>';
+  });
+
   var u = document.getElementById('spy-updated');
   if (u) u.textContent = ts();
 }
