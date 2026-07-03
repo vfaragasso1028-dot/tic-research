@@ -601,7 +601,12 @@ input:focus,select:focus{border-color:#3b82f6}
   </div>
 
   <div class="card" style="margin-bottom:14px;padding:16px 18px">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:12px">Universe</div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:12px">Presets</div>
+    <div class="filter-bar">
+      <button id="martini-btn" style="font-size:12px;padding:6px 14px;border-radius:7px;border:1px solid #1e40af;background:#0c1a2e;color:#60a5fa;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.3px" onclick="toggleMartini(this)">🍸 Tic's Martini Special</button>
+      <span id="martini-badge" style="display:none;font-size:10px;color:#4b5563;align-self:center;margin-left:4px">Price $24–$2k · Close ≥4% above 9 EMA · AvgVol &gt;1M · ATR Trailing Stop bullish</span>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:12px;margin-top:16px">Universe</div>
     <div class="filter-bar">
       <button class="fc active" onclick="setFilter(this)">S&amp;P 500 (503)</button>
       <button class="fc" onclick="setFilter(this)">Nasdaq 100</button>
@@ -671,12 +676,13 @@ input:focus,select:focus{border-color:#3b82f6}
 
   <div class="card" style="padding:0;overflow:hidden">
     <table class="t">
-      <thead><tr><th>#</th><th>Ticker</th><th>Company</th><th>Price</th><th>TicScore</th><th>Stage</th><th>RS</th><th>Cross</th><th>Pattern</th><th>Support</th><th></th></tr></thead>
+      <thead id="scan-thead">
+        <tr><th>#</th><th>Ticker</th><th>Company</th><th>Price</th><th>% Today</th><th>Stage</th><th>% Above EMA9</th><th>Volume</th><th>RSI</th><th></th></tr>
+      </thead>
       <tbody id="scan-tbody">
-        <tr><td colspan="11" style="text-align:center;color:#6b7280;padding:20px">Click Run Scanner → to load results</td></tr>
+        <tr><td colspan="10" style="text-align:center;color:#6b7280;padding:20px">Click 🍸 Tic's Martini Special then Run Scanner → to load live results</td></tr>
       </tbody>
     </table>
-    <div class="lock"><svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" stroke-width="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-width="2"/></svg> Showing 5 of 47 — upgrade to Pro to unlock all results + CSV export<a onclick="nav('pricing')">Upgrade →</a></div>
   </div>
 </div>
 
@@ -3218,7 +3224,115 @@ var SCANNER_DB = [
   {ticker:'INTC', company:'Intel',             price:22.40,   score:28, stage:'4',  rs:18, pattern:'None',          support:19.50,  eps:false, sales:false, vol:false, golden:false},
 ];
 
+var _martiniActive = false;
+
+function toggleMartini(btn) {
+  _martiniActive = !_martiniActive;
+  var badge = document.getElementById('martini-badge');
+  if (_martiniActive) {
+    btn.style.background = '#1e40af';
+    btn.style.borderColor = '#60a5fa';
+    btn.style.color = '#fff';
+    if (badge) badge.style.display = 'inline';
+  } else {
+    btn.style.background = '#0c1a2e';
+    btn.style.borderColor = '#1e40af';
+    btn.style.color = '#60a5fa';
+    if (badge) badge.style.display = 'none';
+  }
+}
+
+function runMartiniScan() {
+  var tbody = document.getElementById('scan-tbody');
+  var rc = document.querySelector('.result-count');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#6b7280;padding:24px">🍸 Running Martini Special — scanning live market data…</td></tr>';
+
+  var payload = {
+    filter: [
+      {left:'close',                    operation:'greater',   right:24},
+      {left:'close',                    operation:'less',      right:2000},
+      {left:'average_volume_30d_calc',  operation:'greater',   right:1000000},
+      {left:'is_primary',               operation:'equal',     right:true},
+      {left:'type',                     operation:'in_range',  right:['stock']}
+    ],
+    options: {lang:'en'},
+    symbols: {query:{types:['stock']}, tickers:[]},
+    columns: ['name','description','close','change','volume','average_volume_30d_calc','EMA9','SMA50','SMA150','SMA200','RSI'],
+    sort: {sortBy:'change', sortOrder:'desc'},
+    range: [0, 500]
+  };
+
+  var tvUrl = 'https://corsproxy.io/?url=' + encodeURIComponent('https://scanner.tradingview.com/america/scan');
+
+  fetch(tvUrl, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    var stocks = (data.data || []).map(function(s){ return s.d; });
+
+    // Client-side: close >= EMA9 * 1.04 AND close > SMA50 (ATR trailing stop proxy)
+    var filtered = stocks.filter(function(d) {
+      var close=d[2], ema9=d[6], sma50=d[7];
+      if (close==null||ema9==null||sma50==null) return false;
+      return close >= ema9 * 1.04 && close > sma50;
+    });
+
+    // Sort by % above EMA9 descending
+    filtered.sort(function(a,b){
+      return ((b[2]-b[6])/b[6]) - ((a[2]-a[6])/a[6]);
+    });
+
+    if (rc) rc.innerHTML = 'Showing <strong>' + Math.min(filtered.length,100) + ' of ' + filtered.length + ' results</strong> · 🍸 Martini Special · Live · ' + new Date().toLocaleTimeString();
+
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#6b7280;padding:24px">No stocks matched Martini Special criteria right now</td></tr>';
+      return;
+    }
+
+    function stageOf(c,s50,s150,s200) {
+      if (!c||!s50||!s150||!s200) return '?';
+      if (c>s150 && s150>s200 && c>s50)  return '2';
+      if (c<s150 && s150>s200)            return '3';
+      if (c<s200)                          return '4';
+      return '1';
+    }
+
+    tbody.innerHTML = filtered.slice(0,100).map(function(d,i){
+      var ticker=d[0], name=(d[1]||'').substring(0,22);
+      var close=d[2], chg=d[3], vol=d[4];
+      var ema9=d[6], sma50=d[7], sma150=d[8], sma200=d[9], rsi=d[10];
+      var aboveEma = ema9 ? ((close-ema9)/ema9*100).toFixed(1) : '—';
+      var stage = stageOf(close,sma50,sma150,sma200);
+      var sCls = stage==='2'?'pg':stage==='1'?'py':'pr';
+      var chgColor = chg>=0?'#22c55e':'#ef4444';
+      var volFmt = vol ? (vol>=1e6?(vol/1e6).toFixed(1)+'M':(vol/1e3).toFixed(0)+'K') : '—';
+      return '<tr onclick="goAnalyze(\''+ticker+'\')" style="cursor:pointer">'
+        +'<td style="color:#4b5563">'+(i+1)+'</td>'
+        +'<td style="font-weight:800;color:#60a5fa;font-size:14px">'+ticker+'</td>'
+        +'<td style="color:#6b7280;font-size:12px">'+name+'</td>'
+        +'<td style="font-weight:600">$'+(close||0).toFixed(2)+'</td>'
+        +'<td style="color:'+chgColor+';font-weight:700">'+(chg>=0?'+':'')+(chg||0).toFixed(2)+'%</td>'
+        +'<td><span class="pill '+sCls+'">S'+stage+'</span></td>'
+        +'<td style="color:#22c55e;font-weight:700">+'+aboveEma+'%</td>'
+        +'<td style="color:#9ca3af">'+volFmt+'</td>'
+        +'<td style="color:#9ca3af">'+(rsi?rsi.toFixed(0):'—')+'</td>'
+        +'<td><button class="btn btn-blue" style="font-size:11px;padding:4px 9px" onclick="event.stopPropagation();goAnalyze(\''+ticker+'\')">Analyze</button></td>'
+        +'</tr>';
+    }).join('');
+    toast(filtered.length + ' stocks matched Martini Special');
+  })
+  .catch(function(e) {
+    console.error(e);
+    if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#ef4444;padding:24px">Scan failed — check connection and try again</td></tr>';
+    toast('Martini scan failed — try again');
+  });
+}
+
 function runScan() {
+  if (_martiniActive) { runMartiniScan(); return; }
   var page = document.getElementById('page-scanner');
   if(!page) return;
   var active = Array.from(page.querySelectorAll('.fc.active')).map(function(b){return b.textContent.trim();});
@@ -3304,10 +3418,7 @@ function runScan() {
 }
 
 function setFilter(btn) {
-  const bar = btn.parentElement;
-  bar.querySelectorAll('.fc').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  runScan();
+  btn.classList.toggle('active');
 }
 
 function runPreset(btn, preset) {
