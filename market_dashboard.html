@@ -634,16 +634,10 @@ function toggleTheme(idx, theme, key) {
   var expand = document.getElementById('theme-expand-'+idx);
   if (!card || !expand) return;
   var isOpen = card._open;
-  THEME_GROUPS.forEach(function(_,i){
-    var c = document.getElementById('theme-card-'+i);
-    var e = document.getElementById('theme-expand-'+i);
-    if (c){ c._open=false; c.style.borderColor='#1f2937'; }
-    if (e) e.style.display='none';
-  });
+  card._open = !isOpen;
+  card.style.borderColor = !isOpen ? '#3b82f6' : '#1f2937';
+  expand.style.display   = !isOpen ? 'block' : 'none';
   if (isOpen) return;
-  card._open = true;
-  card.style.borderColor = '#3b82f6';
-  expand.style.display = 'block';
 
   var ranked = _themeRanked[idx];
   if (!ranked || !ranked.length) {
