@@ -213,6 +213,34 @@ input:focus{border-color:#3b82f6}
     <div></div>
   </div>
 
+  <!-- 4. MARTINI SPECIAL SCANNER -->
+  <div class="section-label" style="margin-top:32px">🍸 Tic's Martini Special — Live Scanner</div>
+  <div style="font-size:11px;color:#4b5563;margin-bottom:12px">Price $24–$2k · Close ≥4% above 9 EMA · Avg Vol &gt;1M · Price above 50 SMA · Sorted by % above EMA</div>
+  <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center">
+    <button class="btn btn-blue" id="martini-scan-btn" onclick="runMartiniDash()" style="font-weight:700">Run Scan →</button>
+    <div id="martini-dash-count" style="font-size:11px;color:#4b5563"></div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="border-bottom:1px solid #1f2937">
+          <th onclick="sortMartiniDash('ticker')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600"># <span id="ds-ticker"></span></th>
+          <th onclick="sortMartiniDash('ticker')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Ticker <span id="ds-t"></span></th>
+          <th onclick="sortMartiniDash('name')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Company <span id="ds-name"></span></th>
+          <th onclick="sortMartiniDash('price')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Price <span id="ds-price"></span></th>
+          <th onclick="sortMartiniDash('chg')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">% Today <span id="ds-chg"></span></th>
+          <th style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Stage</th>
+          <th onclick="sortMartiniDash('ema')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">% Above EMA9 <span id="ds-ema">▼</span></th>
+          <th onclick="sortMartiniDash('vol')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Volume <span id="ds-vol"></span></th>
+          <th onclick="sortMartiniDash('rsi')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">RSI <span id="ds-rsi"></span></th>
+        </tr>
+      </thead>
+      <tbody id="martini-dash-tbody">
+        <tr><td colspan="9" style="text-align:center;color:#4b5563;padding:28px;font-size:12px">Click Run Scan → to load live results</td></tr>
+      </tbody>
+    </table>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -762,6 +790,116 @@ function reload() {
   });
   initSectorRotation();
   toast('Refreshing live data…');
+}
+
+// ─────────────────────────────────────────────
+//  MARTINI SPECIAL SCANNER
+// ─────────────────────────────────────────────
+var _dashResults = [];
+var _dashSort = {col:'ema', dir:-1};
+
+function runMartiniDash() {
+  var tbody = document.getElementById('martini-dash-tbody');
+  var count = document.getElementById('martini-dash-count');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#4b5563;padding:28px;font-size:12px">🍸 Scanning live market data…</td></tr>';
+  if (count) count.textContent = '';
+
+  var payload = {
+    filter: [
+      {left:'close',                   operation:'greater',  right:24},
+      {left:'close',                   operation:'less',     right:2000},
+      {left:'average_volume_30d_calc', operation:'greater',  right:1000000},
+      {left:'is_primary',              operation:'equal',    right:true},
+      {left:'type',                    operation:'in_range', right:['stock']}
+    ],
+    options: {lang:'en'},
+    symbols: {query:{types:['stock']}, tickers:[]},
+    columns: ['name','description','close','change','volume','average_volume_30d_calc','EMA9','SMA50','SMA150','SMA200','RSI'],
+    sort: {sortBy:'change', sortOrder:'desc'},
+    range: [0, 500]
+  };
+
+  var url = 'https://corsproxy.io/?url=' + encodeURIComponent('https://scanner.tradingview.com/america/scan');
+
+  fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    var stocks = (data.data || []).map(function(s){ return s.d; });
+    _dashResults = stocks.filter(function(d) {
+      var close=d[2], ema9=d[6], sma50=d[7];
+      if (close==null||ema9==null||sma50==null) return false;
+      return close >= ema9 * 1.04 && close > sma50;
+    });
+    _dashSort = {col:'ema', dir:-1};
+    if (count) count.textContent = _dashResults.length + ' matches · ' + new Date().toLocaleTimeString();
+    if (!_dashResults.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#4b5563;padding:28px;font-size:12px">No matches right now</td></tr>';
+      return;
+    }
+    renderMartiniDash();
+    toast(_dashResults.length + ' stocks matched');
+  })
+  .catch(function() {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#ef4444;padding:28px;font-size:12px">Scan failed — try again</td></tr>';
+  });
+}
+
+function stageOfDash(c,s50,s150,s200) {
+  if (!c||!s50||!s150||!s200) return '?';
+  if (c>s150 && s150>s200 && c>s50) return '2';
+  if (c<s150 && s150>s200)          return '3';
+  if (c<s200)                       return '4';
+  return '1';
+}
+
+function renderMartiniDash() {
+  var tbody = document.getElementById('martini-dash-tbody');
+  if (!tbody) return;
+  ['t','name','price','chg','ema','vol','rsi'].forEach(function(c) {
+    var el = document.getElementById('ds-'+c);
+    if (el) el.textContent = _dashSort.col===c ? (_dashSort.dir===1?' ▲':' ▼') : '';
+  });
+  var sorted = _dashResults.slice().sort(function(a,b){
+    var av, bv;
+    switch(_dashSort.col) {
+      case 'ticker': av=a[0]||''; bv=b[0]||''; return _dashSort.dir*(av<bv?-1:av>bv?1:0);
+      case 'name':   av=a[1]||''; bv=b[1]||''; return _dashSort.dir*(av<bv?-1:av>bv?1:0);
+      case 'price':  return _dashSort.dir*((a[2]||0)-(b[2]||0));
+      case 'chg':    return _dashSort.dir*((a[3]||0)-(b[3]||0));
+      case 'ema':    av=a[6]?((a[2]-a[6])/a[6]):0; bv=b[6]?((b[2]-b[6])/b[6]):0; return _dashSort.dir*(av-bv);
+      case 'vol':    return _dashSort.dir*((a[4]||0)-(b[4]||0));
+      case 'rsi':    return _dashSort.dir*((a[10]||0)-(b[10]||0));
+      default: return 0;
+    }
+  });
+  tbody.innerHTML = sorted.slice(0,100).map(function(d,i){
+    var ticker=d[0], name=(d[1]||'').substring(0,20);
+    var close=d[2], chg=d[3], vol=d[4];
+    var ema9=d[6], sma50=d[7], sma150=d[8], sma200=d[9], rsi=d[10];
+    var aboveEma = ema9 ? ((close-ema9)/ema9*100).toFixed(1) : '—';
+    var stage = stageOfDash(close,sma50,sma150,sma200);
+    var sCls = stage==='2'?'background:#052e16;color:#22c55e;border:1px solid #16a34a':stage==='1'?'background:#1c1917;color:#f59e0b;border:1px solid #d97706':'background:#450a0a;color:#ef4444;border:1px solid #dc2626';
+    var chgColor = chg>=0?'#22c55e':'#ef4444';
+    var volFmt = vol ? (vol>=1e6?(vol/1e6).toFixed(1)+'M':(vol/1e3).toFixed(0)+'K') : '—';
+    return '<tr style="border-bottom:1px solid #141414;cursor:default">'
+      +'<td style="padding:8px 12px;color:#4b5563;font-size:12px">'+(i+1)+'</td>'
+      +'<td style="padding:8px 12px;font-weight:800;color:#60a5fa;font-size:14px">'+ticker+'</td>'
+      +'<td style="padding:8px 12px;color:#6b7280;font-size:12px">'+name+'</td>'
+      +'<td style="padding:8px 12px;font-weight:600;color:#f9fafb">$'+(close||0).toFixed(2)+'</td>'
+      +'<td style="padding:8px 12px;color:'+chgColor+';font-weight:700">'+(chg>=0?'+':'')+(chg||0).toFixed(2)+'%</td>'
+      +'<td style="padding:8px 12px"><span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;'+sCls+'">S'+stage+'</span></td>'
+      +'<td style="padding:8px 12px;color:#22c55e;font-weight:700">+'+aboveEma+'%</td>'
+      +'<td style="padding:8px 12px;color:#9ca3af">'+volFmt+'</td>'
+      +'<td style="padding:8px 12px;color:#9ca3af">'+(rsi?rsi.toFixed(0):'—')+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function sortMartiniDash(col) {
+  if (!_dashResults.length) return;
+  if (_dashSort.col===col) { _dashSort.dir *= -1; }
+  else { _dashSort.col=col; _dashSort.dir=(col==='ticker'||col==='name')?1:-1; }
+  renderMartiniDash();
 }
 
 // ─────────────────────────────────────────────
