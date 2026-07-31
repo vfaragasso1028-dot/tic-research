@@ -34,6 +34,7 @@ input:focus{border-color:#3b82f6}
   <div style="font-size:17px;font-weight:800;letter-spacing:2px;color:#f9fafb">THE <span style="color:#3b82f6">TIC SHEET</span></div>
   <div style="font-size:10px;color:#374151;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-left:4px">Live Rotation Intelligence</div>
   <div style="flex:1"></div>
+  <div id="ws-status" style="font-size:10px;font-weight:700;color:#374151;white-space:nowrap;letter-spacing:.5px">○ CONNECTING</div>
   <div id="live-clock" style="font-size:12px;color:#6b7280;white-space:nowrap"></div>
   <input id="fh-key-input" type="password" placeholder="Finnhub API key" style="width:200px;font-size:12px" oninput="saveKey(this.value)"/>
   <button class="btn btn-blue" style="white-space:nowrap" onclick="reload()">↻ Refresh</button>
@@ -676,11 +677,11 @@ function toggleTheme(idx, theme, key) {
     + ranked.map(function(r){
         var fc  = r.dp>=0 ? '#22c55e' : '#ef4444';
         var chg = r.dp!=null ? (r.dp>=0
-          ? '<span style="color:#22c55e">▲ +'+r.dp.toFixed(2)+'%</span>'
-          : '<span style="color:#ef4444">▼ '+r.dp.toFixed(2)+'%</span>') : '—';
-        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a1a">'
+          ? '<span class="ws-dp" style="color:#22c55e">▲ +'+r.dp.toFixed(2)+'%</span>'
+          : '<span class="ws-dp" style="color:#ef4444">▼ '+r.dp.toFixed(2)+'%</span>') : '<span class="ws-dp">—</span>';
+        return '<div data-sym="'+r.t+'" style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a1a">'
           + '<span style="font-size:13px;font-weight:800;color:#60a5fa;min-width:52px">'+r.t+'</span>'
-          + '<span style="font-size:12px;font-weight:600;color:#f9fafb;min-width:68px">'+(r.c?'$'+r.c.toFixed(2):'—')+'</span>'
+          + '<span class="ws-price" style="font-size:12px;font-weight:600;color:#f9fafb;min-width:68px">'+(r.c?'$'+r.c.toFixed(2):'—')+'</span>'
           + '<span style="font-size:11px;min-width:80px;text-align:right">'+chg+'</span>'
           + '</div>';
       }).join('');
@@ -700,7 +701,7 @@ function renderBreakdown(listId, signalId, groups, qMap, xlkRow) {
       var dp = q.dp!=null
         ? (q.dp>=0 ? '<span style="color:#22c55e">+'+q.dp.toFixed(2)+'%</span>'
                    : '<span style="color:#ef4444">'+q.dp.toFixed(2)+'%</span>') : '';
-      return '<b>'+t+'</b> $'+q.c.toFixed(2)+' '+dp;
+      return '<span data-sub-sym="'+t+'"><b>'+t+'</b> <span class="ws-price">$'+q.c.toFixed(2)+'</span> <span class="ws-dp">'+dp+'</span></span>';
     }).join(' &nbsp;·&nbsp; ');
     return '<div style="background:#0d0d0d;border:1px solid #1f2937;border-radius:7px;padding:10px 12px">'
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
@@ -920,6 +921,110 @@ function sortMartiniDash(col) {
 }
 
 // ─────────────────────────────────────────────
+//  WEBSOCKET — LIVE PRICE TICKS
+// ─────────────────────────────────────────────
+var _ws = null;
+var _wsSubbed = {};
+var _wsPrices = {};  // sym → {c, dp} from last REST call (base for % calc)
+
+function wsConnect() {
+  var key = getFHKey();
+  if (!key) return;
+  if (_ws && (_ws.readyState === WebSocket.OPEN || _ws.readyState === WebSocket.CONNECTING)) return;
+
+  _ws = new WebSocket('wss://ws.finnhub.io?token=' + key);
+
+  _ws.onopen = function() {
+    var s = document.getElementById('ws-status');
+    if (s) { s.textContent = '● LIVE'; s.style.color = '#22c55e'; }
+    // Build the subscription list: indices + top sector ETFs + all theme tickers (cap 50 total)
+    var subs = ['SPY','QQQ','IWM',
+      'XLK','XLV','XLF','XLY','XLP','XLI','XLE','XLU','XLB','XLRE','XLC'];
+    THEME_GROUPS.forEach(function(g){
+      g.tickers.forEach(function(t){ if (!subs.includes(t)) subs.push(t); });
+    });
+    subs = subs.slice(0, 50); // free tier cap
+    subs.forEach(function(sym){
+      _ws.send(JSON.stringify({type:'subscribe', symbol:sym}));
+      _wsSubbed[sym] = true;
+    });
+    // Seed _wsPrices with current REST data
+    Object.keys(_themeQuotes).forEach(function(sym){
+      if (_themeQuotes[sym] && _themeQuotes[sym].c) _wsPrices[sym] = _themeQuotes[sym];
+    });
+    if (window._indexQuotes) Object.keys(window._indexQuotes).forEach(function(sym){
+      _wsPrices[sym] = window._indexQuotes[sym];
+    });
+  };
+
+  _ws.onmessage = function(e) {
+    try {
+      var msg = JSON.parse(e.data);
+      if (msg.type !== 'trade' || !msg.data || !msg.data.length) return;
+
+      var changed = {};
+      msg.data.forEach(function(tick) {
+        var sym = tick.s, price = tick.p;
+        var base = _wsPrices[sym];
+        if (!base || !base.pc) return; // need prev close to compute %
+        var dp = +((price - base.pc) / base.pc * 100).toFixed(2);
+        var updated = {c: price, dp: dp, pc: base.pc};
+        _wsPrices[sym] = updated;
+
+        // Push into shared caches
+        if (_themeQuotes[sym]) _themeQuotes[sym] = Object.assign({}, _themeQuotes[sym], updated);
+        if (window._indexQuotes && window._indexQuotes[sym])
+          window._indexQuotes[sym] = Object.assign({}, window._indexQuotes[sym], updated);
+        changed[sym] = true;
+      });
+
+      if (!Object.keys(changed).length) return;
+
+      // Patch theme ticker rows that are expanded (avoid full re-render)
+      Object.keys(changed).forEach(function(sym) {
+        var q = _wsPrices[sym];
+        var color = q.dp >= 0 ? '#22c55e' : '#ef4444';
+        var arrow = q.dp >= 0 ? '▲ +' : '▼ ';
+        var dpFmt = arrow + q.dp.toFixed(2) + '%';
+        var priceFmt = '$' + q.c.toFixed(2);
+        // Theme expanded rows: data-sym attribute
+        document.querySelectorAll('[data-sym="'+sym+'"]').forEach(function(el) {
+          var pEl = el.querySelector('.ws-price');
+          var dEl = el.querySelector('.ws-dp');
+          if (pEl) pEl.textContent = priceFmt;
+          if (dEl) { dEl.textContent = dpFmt; dEl.style.color = color; }
+        });
+        // Sub-breakdown rows
+        document.querySelectorAll('[data-sub-sym="'+sym+'"]').forEach(function(el) {
+          var pEl = el.querySelector('.ws-price');
+          var dEl = el.querySelector('.ws-dp');
+          if (pEl) pEl.textContent = priceFmt;
+          if (dEl) { dEl.innerHTML = '<span style="color:'+color+'">'+dpFmt+'</span>'; }
+        });
+      });
+
+      // Re-render index boxes if any index changed
+      var indexChanged = ['SPY','QQQ','IWM'].some(function(s){ return changed[s]; });
+      if (indexChanged) buildSectorGrid(currentTF);
+
+    } catch(err) {}
+  };
+
+  _ws.onerror = function() {
+    var s = document.getElementById('ws-status');
+    if (s) { s.textContent = '○ ERROR'; s.style.color = '#ef4444'; }
+  };
+  _ws.onclose = function() {
+    var s = document.getElementById('ws-status');
+    if (s) { s.textContent = '○ RECONNECTING'; s.style.color = '#f59e0b'; }
+    setTimeout(wsConnect, 15000);
+  };
+}
+
+// Inject data-sym attributes when theme rows are rendered so WS can patch them
+var _origRenderThemeCard = null;
+
+// ─────────────────────────────────────────────
 //  BOOT
 // ─────────────────────────────────────────────
 window.onload = function() {
@@ -928,6 +1033,8 @@ window.onload = function() {
   if (inp && k) inp.value = k;
   if (k) {
     initSectorRotation();
+    // Start WebSocket after initial REST data has had time to load
+    setTimeout(wsConnect, 8000);
   } else {
     document.getElementById('spy-grid').innerHTML =
       '<div style="color:#f59e0b;font-size:12px;padding:8px">⚠ Enter your Finnhub API key above to load live data</div>';
