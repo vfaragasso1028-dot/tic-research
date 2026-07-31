@@ -754,23 +754,40 @@ function loadSubBreakdown(subgroups, listId, signalId, key) {
   var allTickers = [];
   subgroups.forEach(function(g){ g.tickers.forEach(function(t){ if (!allTickers.includes(t)) allTickers.push(t); }); });
   var qMap = {};
-  allTickers.forEach(function(t){ if (_themeQuotes[t]) qMap[t]={sym:t, dp:_themeQuotes[t].dp||0, c:_themeQuotes[t].c||0}; });
+  allTickers.forEach(function(t){ if (_themeQuotes[t] && _themeQuotes[t].c) qMap[t]={sym:t, dp:_themeQuotes[t].dp||0, c:_themeQuotes[t].c||0}; });
   var missing = allTickers.filter(function(t){ return !qMap[t]; });
-  (function fetch(i, done){
-    if (i >= missing.length){ done(); return; }
-    var sym = missing[i];
-    fgetQ(FH_BASE+'/quote?symbol='+sym+'&token='+key).then(function(q){
-      qMap[sym] = {sym:sym, dp:q&&q.dp!=null?q.dp:0, c:q&&q.c?q.c:0};
-      if (q && q.c!=null) _themeQuotes[sym]=q;
-      setTimeout(function(){ fetch(i+1, done); }, 600);
-    }).catch(function(){ setTimeout(function(){ fetch(i+1, done); }, 600); });
-  })(0, function(){
-    var groups = subgroups.map(function(g){
-      var dps = g.tickers.map(function(t){ return qMap[t]?qMap[t].dp:0; });
-      var avg = dps.reduce(function(a,b){return a+b;},0)/dps.length;
-      return {name:g.name, tickers:g.tickers, color:g.color, avgDp:avg};
-    }).sort(function(a,b){ return b.avgDp-a.avgDp; });
-    renderBreakdown(listId, signalId, groups, qMap, null);
+
+  function doFetch(list, cb) {
+    (function go(i){
+      if (i >= list.length){ cb(); return; }
+      var sym = list[i];
+      fgetQ(FH_BASE+'/quote?symbol='+sym+'&token='+key).then(function(q){
+        if (q && q.c != null && q.dp != null) {
+          qMap[sym] = {sym:sym, dp:q.dp, c:q.c};
+          _themeQuotes[sym] = q;
+        }
+        setTimeout(function(){ go(i+1); }, 700);
+      }).catch(function(){ setTimeout(function(){ go(i+1); }, 700); });
+    })(0);
+  }
+
+  doFetch(missing, function(){
+    // Retry any that still have no data (429 fallback)
+    var stillMissing = allTickers.filter(function(t){ return !qMap[t] || !qMap[t].c; });
+    function render() {
+      var groups = subgroups.map(function(g){
+        var valid = g.tickers.filter(function(t){ return qMap[t] && qMap[t].c; });
+        var dps = valid.map(function(t){ return qMap[t].dp; });
+        var avg = dps.length ? dps.reduce(function(a,b){return a+b;},0)/dps.length : 0;
+        return {name:g.name, tickers:g.tickers, color:g.color, avgDp:avg};
+      }).sort(function(a,b){ return b.avgDp-a.avgDp; });
+      renderBreakdown(listId, signalId, groups, qMap, null);
+    }
+    if (stillMissing.length) {
+      setTimeout(function(){ doFetch(stillMissing, render); }, 15000);
+    } else {
+      render();
+    }
   });
 }
 
