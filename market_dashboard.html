@@ -254,25 +254,8 @@ input:focus{border-color:#3b82f6}
     <button class="btn btn-blue" id="martini-scan-btn" onclick="runMartiniDash()" style="font-weight:700">Run Scan →</button>
     <div id="martini-dash-count" style="font-size:11px;color:#4b5563"></div>
   </div>
-  <div class="card" style="padding:0;overflow:hidden">
-    <table style="width:100%;border-collapse:collapse">
-      <thead>
-        <tr style="border-bottom:1px solid #1f2937">
-          <th onclick="sortMartiniDash('ticker')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600"># <span id="ds-ticker"></span></th>
-          <th onclick="sortMartiniDash('ticker')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Ticker <span id="ds-t"></span></th>
-          <th onclick="sortMartiniDash('name')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Company <span id="ds-name"></span></th>
-          <th onclick="sortMartiniDash('price')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Price <span id="ds-price"></span></th>
-          <th onclick="sortMartiniDash('chg')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">% Today <span id="ds-chg"></span></th>
-          <th style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Stage</th>
-          <th onclick="sortMartiniDash('ema')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">% Above EMA9 <span id="ds-ema">▼</span></th>
-          <th onclick="sortMartiniDash('vol')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Volume <span id="ds-vol"></span></th>
-          <th onclick="sortMartiniDash('rsi')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">RSI <span id="ds-rsi"></span></th>
-        </tr>
-      </thead>
-      <tbody id="martini-dash-tbody">
-        <tr><td colspan="9" style="text-align:center;color:#4b5563;padding:28px;font-size:12px">Click Run Scan → to load live results</td></tr>
-      </tbody>
-    </table>
+  <div id="martini-results-container">
+    <div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">Click Run Scan → to load live results</div>
   </div>
 
 </div>
@@ -1034,9 +1017,9 @@ function sortPM(col) {
 var _dashSort = {col:'ema', dir:-1};
 
 function runMartiniDash() {
-  var tbody = document.getElementById('martini-dash-tbody');
+  var container = document.getElementById('martini-results-container');
   var count = document.getElementById('martini-dash-count');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#4b5563;padding:28px;font-size:12px">🍸 Scanning live market data…</td></tr>';
+  if (container) container.innerHTML = '<div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">🍸 Scanning live market data…</div>';
   if (count) count.textContent = '';
 
   var payload = {
@@ -1049,7 +1032,7 @@ function runMartiniDash() {
     ],
     options: {lang:'en'},
     symbols: {query:{types:['stock']}, tickers:[]},
-    columns: ['name','description','close','change','volume','average_volume_30d_calc','EMA9','SMA50','SMA150','SMA200','RSI'],
+    columns: ['name','description','close','change','volume','average_volume_30d_calc','EMA9','SMA50','SMA150','SMA200','RSI','sector'],
     sort: {sortBy:'change', sortOrder:'desc'},
     range: [0, 500]
   };
@@ -1068,14 +1051,14 @@ function runMartiniDash() {
     _dashSort = {col:'ema', dir:-1};
     if (count) count.textContent = _dashResults.length + ' matches · ' + new Date().toLocaleTimeString();
     if (!_dashResults.length) {
-      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#4b5563;padding:28px;font-size:12px">No matches right now</td></tr>';
+      if (container) container.innerHTML = '<div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">No matches right now</div>';
       return;
     }
     renderMartiniDash();
     toast(_dashResults.length + ' stocks matched');
   })
   .catch(function() {
-    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#ef4444;padding:28px;font-size:12px">Scan failed — try again</td></tr>';
+    if (container) container.innerHTML = '<div style="text-align:center;color:#ef4444;padding:28px;font-size:12px">Scan failed — try again</div>';
   });
 }
 
@@ -1088,47 +1071,84 @@ function stageOfDash(c,s50,s150,s200) {
 }
 
 function renderMartiniDash() {
-  var tbody = document.getElementById('martini-dash-tbody');
-  if (!tbody) return;
-  ['t','name','price','chg','ema','vol','rsi'].forEach(function(c) {
-    var el = document.getElementById('ds-'+c);
-    if (el) el.textContent = _dashSort.col===c ? (_dashSort.dir===1?' ▲':' ▼') : '';
-  });
+  var container = document.getElementById('martini-results-container');
+  if (!container) return;
+
   var sorted = _dashResults.slice().sort(function(a,b){
-    var av, bv;
     switch(_dashSort.col) {
-      case 'ticker': av=a[0]||''; bv=b[0]||''; return _dashSort.dir*(av<bv?-1:av>bv?1:0);
-      case 'name':   av=a[1]||''; bv=b[1]||''; return _dashSort.dir*(av<bv?-1:av>bv?1:0);
+      case 'ticker': var av=a[0]||'',bv=b[0]||''; return _dashSort.dir*(av<bv?-1:av>bv?1:0);
+      case 'name':   var an=a[1]||'',bn=b[1]||''; return _dashSort.dir*(an<bn?-1:an>bn?1:0);
       case 'price':  return _dashSort.dir*((a[2]||0)-(b[2]||0));
       case 'chg':    return _dashSort.dir*((a[3]||0)-(b[3]||0));
-      case 'ema':    av=a[6]?((a[2]-a[6])/a[6]):0; bv=b[6]?((b[2]-b[6])/b[6]):0; return _dashSort.dir*(av-bv);
+      case 'ema':    var ae=a[6]?((a[2]-a[6])/a[6]):0,be=b[6]?((b[2]-b[6])/b[6]):0; return _dashSort.dir*(ae-be);
       case 'vol':    return _dashSort.dir*((a[4]||0)-(b[4]||0));
       case 'rsi':    return _dashSort.dir*((a[10]||0)-(b[10]||0));
       default: return 0;
     }
   });
-  tbody.innerHTML = sorted.map(function(d,i){
-    var ticker=d[0], name=(d[1]||'').substring(0,20);
-    var close=d[2], chg=d[3], vol=d[4];
-    var ema9=d[6], sma50=d[7], sma150=d[8], sma200=d[9], rsi=d[10];
-    var aboveEma = ema9 ? ((close-ema9)/ema9*100).toFixed(1) : '—';
-    var stage = stageOfDash(close,sma50,sma150,sma200);
-    var sCls = stage==='2'?'background:#052e16;color:#22c55e;border:1px solid #16a34a':stage==='1'?'background:#1c1917;color:#f59e0b;border:1px solid #d97706':'background:#450a0a;color:#ef4444;border:1px solid #dc2626';
-    var chgColor = chg>=0?'#22c55e':'#ef4444';
-    var volFmt = vol ? (vol>=1e6?(vol/1e6).toFixed(1)+'M':(vol/1e3).toFixed(0)+'K') : '—';
-    var platformUrl = 'https://vfaragasso1028-dot.github.io/tic-research/analyze.html?symbol='+ticker;
-    return '<tr style="border-bottom:1px solid #141414">'
-      +'<td style="padding:8px 12px;color:#4b5563;font-size:12px">'+(i+1)+'</td>'
-      +'<td style="padding:8px 12px;font-weight:800;font-size:14px"><a href="'+platformUrl+'" target="_blank" style="color:#60a5fa;text-decoration:none" title="Analyze '+ticker+' on Platform">'+ticker+' ↗</a></td>'
-      +'<td style="padding:8px 12px;color:#6b7280;font-size:12px">'+name+'</td>'
-      +'<td style="padding:8px 12px;font-weight:600;color:#f9fafb">$'+(close||0).toFixed(2)+'</td>'
-      +'<td style="padding:8px 12px;color:'+chgColor+';font-weight:700">'+(chg>=0?'+':'')+(chg||0).toFixed(2)+'%</td>'
-      +'<td style="padding:8px 12px"><span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;'+sCls+'">S'+stage+'</span></td>'
-      +'<td style="padding:8px 12px;color:#22c55e;font-weight:700">+'+aboveEma+'%</td>'
-      +'<td style="padding:8px 12px;color:#9ca3af">'+volFmt+'</td>'
-      +'<td style="padding:8px 12px;color:#9ca3af">'+(rsi?rsi.toFixed(0):'—')+'</td>'
-      +'</tr>';
+
+  var groups = {}, groupOrder = [];
+  sorted.forEach(function(d) {
+    var sec = d[11] || 'Other';
+    if (!groups[sec]) { groups[sec] = []; groupOrder.push(sec); }
+    groups[sec].push(d);
+  });
+
+  var thS = 'font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:8px 12px;text-align:left;font-weight:600;cursor:pointer;user-select:none;';
+  var thN = 'font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:8px 12px;text-align:left;font-weight:600;';
+
+  function arr(col) { return _dashSort.col===col?(_dashSort.dir===1?' ▲':' ▼'):''; }
+
+  var html = groupOrder.map(function(sec) {
+    var rows = groups[sec];
+    var color = pmSectorColor(sec);
+    var rowsHtml = rows.map(function(d,i) {
+      var ticker=d[0], name=(d[1]||'').substring(0,20);
+      var close=d[2], chg=d[3], vol=d[4];
+      var ema9=d[6], sma50=d[7], sma150=d[8], sma200=d[9], rsi=d[10];
+      var aboveEma = ema9 ? ((close-ema9)/ema9*100).toFixed(1) : '—';
+      var stage = stageOfDash(close,sma50,sma150,sma200);
+      var sCls = stage==='2'?'background:#052e16;color:#22c55e;border:1px solid #16a34a':stage==='1'?'background:#1c1917;color:#f59e0b;border:1px solid #d97706':'background:#450a0a;color:#ef4444;border:1px solid #dc2626';
+      var chgColor = chg>=0?'#22c55e':'#ef4444';
+      var volFmt = vol ? (vol>=1e6?(vol/1e6).toFixed(1)+'M':(vol/1e3).toFixed(0)+'K') : '—';
+      var platformUrl = 'https://vfaragasso1028-dot.github.io/tic-research/analyze.html?symbol='+ticker;
+      return '<tr style="border-bottom:1px solid #141414">'
+        +'<td style="padding:8px 12px;color:#4b5563;font-size:12px">'+(i+1)+'</td>'
+        +'<td style="padding:8px 12px;font-weight:800;font-size:14px"><a href="'+platformUrl+'" target="_blank" style="color:#60a5fa;text-decoration:none">'+ticker+' ↗</a></td>'
+        +'<td style="padding:8px 12px;color:#6b7280;font-size:12px">'+name+'</td>'
+        +'<td style="padding:8px 12px;font-weight:600;color:#f9fafb">$'+(close||0).toFixed(2)+'</td>'
+        +'<td style="padding:8px 12px;color:'+chgColor+';font-weight:700">'+(chg>=0?'+':'')+(chg||0).toFixed(2)+'%</td>'
+        +'<td style="padding:8px 12px"><span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;'+sCls+'">S'+stage+'</span></td>'
+        +'<td style="padding:8px 12px;color:#22c55e;font-weight:700">+'+aboveEma+'%</td>'
+        +'<td style="padding:8px 12px;color:#9ca3af">'+volFmt+'</td>'
+        +'<td style="padding:8px 12px;color:#9ca3af">'+(rsi?rsi.toFixed(0):'—')+'</td>'
+        +'</tr>';
+    }).join('');
+
+    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">'
+      +'<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:#0d1117;border-bottom:1px solid #1f2937">'
+      +'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+color+';flex-shrink:0"></span>'
+      +'<span style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em">'+sec+'</span>'
+      +'<span style="font-size:11px;color:#4b5563;margin-left:auto">'+rows.length+' stock'+(rows.length>1?'s':'')+'</span>'
+      +'</div>'
+      +'<table style="width:100%;border-collapse:collapse">'
+      +'<thead><tr style="border-bottom:1px solid #1f2937">'
+      +'<th style="'+thN+'">#</th>'
+      +'<th onclick="sortMartiniDash(\'ticker\')" style="'+thS+'">Ticker'+arr('ticker')+'</th>'
+      +'<th onclick="sortMartiniDash(\'name\')" style="'+thS+'">Company'+arr('name')+'</th>'
+      +'<th onclick="sortMartiniDash(\'price\')" style="'+thS+'">Price'+arr('price')+'</th>'
+      +'<th onclick="sortMartiniDash(\'chg\')" style="'+thS+'">% Today'+arr('chg')+'</th>'
+      +'<th style="'+thN+'">Stage</th>'
+      +'<th onclick="sortMartiniDash(\'ema\')" style="'+thS+'">% Above EMA9'+arr('ema')+'</th>'
+      +'<th onclick="sortMartiniDash(\'vol\')" style="'+thS+'">Volume'+arr('vol')+'</th>'
+      +'<th onclick="sortMartiniDash(\'rsi\')" style="'+thS+'">RSI'+arr('rsi')+'</th>'
+      +'</tr></thead>'
+      +'<tbody>'+rowsHtml+'</tbody>'
+      +'</table>'
+      +'</div>';
   }).join('');
+
+  container.innerHTML = html || '<div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">No results</div>';
 }
 
 function sortMartiniDash(col) {
