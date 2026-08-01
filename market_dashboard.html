@@ -955,7 +955,7 @@ function renderPMScan() {
     var mcapFmt = mcap  ? (mcap>=1e12?(mcap/1e12).toFixed(1)+'T':mcap>=1e9?(mcap/1e9).toFixed(1)+'B':mcap>=1e6?(mcap/1e6).toFixed(0)+'M':'<1M') : '—';
     var stage   = stageOfDash(close, sma50, sma150, sma200);
     var sCls    = stage==='2'?'background:#052e16;color:#22c55e;border:1px solid #16a34a':stage==='1'?'background:#1c1917;color:#f59e0b;border:1px solid #d97706':'background:#450a0a;color:#ef4444;border:1px solid #dc2626';
-    var platformUrl = 'https://vfaragasso1028-dot.github.io/tic-research/TICsignal_Platform.html?symbol='+ticker;
+    var platformUrl = 'https://vfaragasso1028-dot.github.io/tic-research/analyze.html?symbol='+ticker;
     return '<tr style="border-bottom:1px solid #141414">'
       +'<td style="padding:8px 12px;color:#4b5563;font-size:12px">'+(i+1)+'</td>'
       +'<td style="padding:8px 12px;font-weight:800;font-size:14px"><a href="'+platformUrl+'" target="_blank" style="color:#60a5fa;text-decoration:none" title="Open '+ticker+' analysis on Platform">'+ticker+' ↗</a></td>'
@@ -1063,7 +1063,7 @@ function renderMartiniDash() {
     var sCls = stage==='2'?'background:#052e16;color:#22c55e;border:1px solid #16a34a':stage==='1'?'background:#1c1917;color:#f59e0b;border:1px solid #d97706':'background:#450a0a;color:#ef4444;border:1px solid #dc2626';
     var chgColor = chg>=0?'#22c55e':'#ef4444';
     var volFmt = vol ? (vol>=1e6?(vol/1e6).toFixed(1)+'M':(vol/1e3).toFixed(0)+'K') : '—';
-    var platformUrl = 'https://vfaragasso1028-dot.github.io/tic-research/TICsignal_Platform.html?symbol='+ticker;
+    var platformUrl = 'https://vfaragasso1028-dot.github.io/tic-research/analyze.html?symbol='+ticker;
     return '<tr style="border-bottom:1px solid #141414">'
       +'<td style="padding:8px 12px;color:#4b5563;font-size:12px">'+(i+1)+'</td>'
       +'<td style="padding:8px 12px;font-weight:800;font-size:14px"><a href="'+platformUrl+'" target="_blank" style="color:#60a5fa;text-decoration:none" title="Analyze '+ticker+' on Platform">'+ticker+' ↗</a></td>'
