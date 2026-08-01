@@ -180,7 +180,6 @@ input:focus,select:focus{border-color:#3b82f6}
 .settings-label{color:#d1d5db;font-weight:500}
 .settings-desc{font-size:11px;color:#6b7280;margin-top:3px}
 
-
 /* ── STANDALONE OVERRIDES ── */
 body { height:auto; overflow:auto; display:block; }
 .standalone-header { background:#0d0d0d; border-bottom:1px solid #1a1a1a; padding:12px 24px; display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:100; }
@@ -191,7 +190,15 @@ body { height:auto; overflow:auto; display:block; }
 </head>
 <body>
 
-<!-- ── HEADER ── -->
+<!-- stub elements Platform JS expects -->
+<div id="topbar-title" style="display:none"></div>
+<div id="fh-key-input" style="display:none"></div>
+<div id="theme-grid" style="display:none"></div>
+<div id="spy-grid" style="display:none"></div>
+<div id="dash-date" style="display:none"></div>
+<div id="dash-greeting" style="display:none"></div>
+
+<!-- HEADER -->
 <div class="standalone-header">
   <a href="market_dashboard.html" style="font-size:12px;color:#6b7280;text-decoration:none;white-space:nowrap;padding:6px 12px;border:1px solid #1f2937;border-radius:7px;font-weight:600">← TIC Sheet</a>
   <a href="TICsignal_Platform.html" style="font-size:12px;color:#6b7280;text-decoration:none;white-space:nowrap;padding:6px 12px;border:1px solid #1f2937;border-radius:7px;font-weight:600">Platform →</a>
@@ -201,17 +208,7 @@ body { height:auto; overflow:auto; display:block; }
   <div id="analyze-clock" style="font-size:12px;color:#6b7280"></div>
 </div>
 
-<!-- Stub elements Platform JS expects — hidden, prevent null errors -->
-<div id="topbar-title" style="display:none"></div>
-<div id="fh-key-input" style="display:none"></div>
-<div id="theme-grid" style="display:none"></div>
-<div id="spy-grid" style="display:none"></div>
-<div id="dash-date" style="display:none"></div>
-<div id="dash-greeting" style="display:none"></div>
-
-<!-- ── CONTENT ── -->
 <div class="main-wrap">
-
 <!-- ══ ANALYZE ══ -->
 <div class="page" id="page-analyze">
   <div class="analyze-form">
@@ -477,17 +474,11 @@ body { height:auto; overflow:auto; display:block; }
     </div>
   </div>
 </div>
-
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ── STANDALONE SHIMS ──
-// These replace Platform functions that reference sidebar/nav elements
-const pages = {};
-function nav(p) { /* standalone page — no sidebar */ }
-
 
 const pages = {
   dashboard:'Dashboard', analyze:'Analyze Ticker',
@@ -496,12 +487,19 @@ const pages = {
   pricing:'Pricing', methodology:'Methodology & Guide', settings:'Settings'
 };
 
-function nav(p) { /* standalone — no sidebar */ }
+function nav(p) {
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  const ni = document.getElementById('nav-'+p);
+  if(ni) ni.classList.add('active');
+  document.getElementById('topbar-title').textContent = pages[p]||p;
+}
 
 // ══ FINNHUB DATA LAYER ══
 var FH_BASE = 'https://finnhub.io/api/v1';
 
-function getFHKey() { return localStorage.getItem('fh_key') || localStorage.getItem('fh_key_dash') || 'd8st0mpr01qh5rev6p10d8st0mpr01qh5rev6p1g'; }
+function getFHKey() { return localStorage.getItem('fh_key') || 'd8st0mpr01qh5rev6p10d8st0mpr01qh5rev6p1g'; }
 function saveFHKey(k) {
   if (!k || !k.trim()) { toast('Please paste your Finnhub API key first'); return; }
   localStorage.setItem('fh_key', k.trim());
@@ -515,7 +513,7 @@ setTimeout(function(){
   if (inp) inp.value = k;
   var inp2 = document.getElementById('fh-key-analyze');
   if (inp2) inp2.value = k;
-  // standalone — no dashboard init
+  if(k) initDashboard();
 }, 350);
 
 function fgetQ(url){ return fetch(url).then(function(r){ if(!r.ok) return null; return r.json(); }).catch(function(){return null;}); }
@@ -3316,35 +3314,36 @@ document.getElementById('global-search').addEventListener('keydown', function(e)
   if(e.key==='Enter' && this.value.trim()) { goAnalyze(this.value.trim()); this.value=''; }
 });
 
-
-
-
-// ── OVERRIDE Platform nav() — must run AFTER Platform JS so it wins ──
-nav = function(p) { /* standalone — no sidebar nav */ };
-
-// ── AUTO-LOAD FROM URL ──
+// Auto-load ticker from URL param — e.g. TICsignal_Platform.html?symbol=NVDA
 (function() {
-  // Clock
-  function tick() {
-    var now = new Date();
-    var el = document.getElementById('analyze-clock');
-    if (el) el.textContent = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  }
-  tick(); setInterval(tick, 1000);
-
-  // Load API key
-  var k = getFHKey();
-  var inp = document.getElementById('fh-key-analyze');
-  if (inp && k) inp.value = k;
-
-  // Auto-analyze from URL param
   var sym = new URLSearchParams(window.location.search).get('symbol');
   if (sym) {
     sym = sym.trim().toUpperCase();
-    document.getElementById('analyze-ticker').value = sym;
-    var symEl = document.getElementById('current-sym');
+    setTimeout(function() { goAnalyze(sym); }, 600);
+  }
+})();
+
+
+// Override nav() AFTER Platform JS so it wins
+nav = function(p) {};
+
+// AUTO-LOAD FROM URL
+(function() {
+  function tick() {
+    var el = document.getElementById("analyze-clock");
+    if (el) el.textContent = new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  }
+  tick(); setInterval(tick, 1000);
+  var k = getFHKey();
+  var inp = document.getElementById("fh-key-analyze");
+  if (inp && k) inp.value = k;
+  var sym = new URLSearchParams(window.location.search).get("symbol");
+  if (sym) {
+    sym = sym.trim().toUpperCase();
+    document.getElementById("analyze-ticker").value = sym;
+    var symEl = document.getElementById("current-sym");
     if (symEl) symEl.textContent = sym;
-    setTimeout(function() { goAnalyze(sym); }, 400);
+    setTimeout(function() { goAnalyze(sym); }, 600);
   }
 })();
 </script>
