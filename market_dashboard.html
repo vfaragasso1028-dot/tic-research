@@ -214,8 +214,58 @@ input:focus{border-color:#3b82f6}
     <div></div>
   </div>
 
-  <!-- 4. MARTINI SPECIAL SCANNER -->
-  <div class="section-label" style="margin-top:32px">🍸 Tic's Martini Special — Live Scanner</div>
+  <!-- 4. PRE-MARKET MOVERS SCANNER -->
+  <div class="section-label" style="margin-top:32px">🌅 Pre-Market Movers — Live Scanner</div>
+  <div style="font-size:11px;color:#4b5563;margin-bottom:12px">Price $5–$2k · Pre-market volume &gt;25k · Sorted by biggest % move · Best used 4am–9:30am ET</div>
+  <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-blue" id="pm-scan-btn" onclick="runPMScan()" style="font-weight:700">Run Pre-Market Scan →</button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <label style="font-size:11px;color:#4b5563">Min PM Vol:</label>
+      <select id="pm-vol-filter" style="background:#111;border:1px solid #1f2937;border-radius:6px;padding:4px 8px;color:#e5e7eb;font-size:11px;font-family:inherit">
+        <option value="25000">25K</option>
+        <option value="50000" selected>50K</option>
+        <option value="100000">100K</option>
+        <option value="250000">250K</option>
+      </select>
+      <label style="font-size:11px;color:#4b5563">Min PM Move:</label>
+      <select id="pm-chg-filter" style="background:#111;border:1px solid #1f2937;border-radius:6px;padding:4px 8px;color:#e5e7eb;font-size:11px;font-family:inherit">
+        <option value="1">1%</option>
+        <option value="2" selected>2%</option>
+        <option value="3">3%</option>
+        <option value="5">5%</option>
+      </select>
+      <label style="font-size:11px;color:#4b5563">Direction:</label>
+      <select id="pm-dir-filter" style="background:#111;border:1px solid #1f2937;border-radius:6px;padding:4px 8px;color:#e5e7eb;font-size:11px;font-family:inherit">
+        <option value="both" selected>Both</option>
+        <option value="up">Gainers only</option>
+        <option value="down">Losers only</option>
+      </select>
+    </div>
+    <div id="pm-count" style="font-size:11px;color:#4b5563"></div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px">
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="border-bottom:1px solid #1f2937">
+          <th style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">#</th>
+          <th onclick="sortPM('ticker')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Ticker <span id="pm-t"></span></th>
+          <th onclick="sortPM('name')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Company <span id="pm-name"></span></th>
+          <th onclick="sortPM('close')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Prev Close <span id="pm-close"></span></th>
+          <th onclick="sortPM('pmclose')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">PM Price <span id="pm-pmclose"></span></th>
+          <th onclick="sortPM('pmchg')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">PM Chg% <span id="pm-pmchg">▼</span></th>
+          <th onclick="sortPM('pmvol')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">PM Volume <span id="pm-pmvol"></span></th>
+          <th onclick="sortPM('mcap')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Mkt Cap <span id="pm-mcap"></span></th>
+          <th style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Stage</th>
+        </tr>
+      </thead>
+      <tbody id="pm-tbody">
+        <tr><td colspan="9" style="text-align:center;color:#4b5563;padding:28px;font-size:12px">Click Run Pre-Market Scan → to load results</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 5. MARTINI SPECIAL SCANNER -->
+  <div class="section-label" style="margin-top:4px">🍸 Tic's Martini Special — Live Scanner</div>
   <div style="font-size:11px;color:#4b5563;margin-bottom:12px">Price $24–$2k · Close ≥4% above 9 EMA · Avg Vol &gt;1M · Price above 50 SMA · Sorted by % above EMA</div>
   <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center">
     <button class="btn btn-blue" id="martini-scan-btn" onclick="runMartiniDash()" style="font-weight:700">Run Scan →</button>
@@ -814,6 +864,119 @@ function reload() {
 //  MARTINI SPECIAL SCANNER
 // ─────────────────────────────────────────────
 var _dashResults = [];
+// ─────────────────────────────────────────────
+//  PRE-MARKET MOVERS SCANNER
+// ─────────────────────────────────────────────
+var _pmResults = [];
+var _pmSort = {col:'pmchg', dir:-1};
+
+function runPMScan() {
+  var tbody = document.getElementById('pm-tbody');
+  var count = document.getElementById('pm-count');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#4b5563;padding:28px;font-size:12px">🌅 Scanning pre-market data…</td></tr>';
+  if (count) count.textContent = '';
+
+  var minVol = parseInt(document.getElementById('pm-vol-filter').value) || 50000;
+  var minChg = parseFloat(document.getElementById('pm-chg-filter').value) || 2;
+  var dir    = document.getElementById('pm-dir-filter').value;
+
+  var payload = {
+    filter: [
+      {left:'close',             operation:'greater', right:5},
+      {left:'close',             operation:'less',    right:2000},
+      {left:'premarket_volume',  operation:'greater', right:minVol},
+      {left:'premarket_change',  operation:'nempty'},
+      {left:'is_primary',        operation:'equal',   right:true},
+      {left:'type',              operation:'in_range',right:['stock']}
+    ],
+    options: {lang:'en'},
+    symbols: {query:{types:['stock']}, tickers:[]},
+    columns: ['name','description','close','premarket_close','premarket_change','premarket_volume','market_cap_basic','SMA50','SMA150','SMA200'],
+    sort: {sortBy:'premarket_change', sortOrder:'desc'},
+    range: [0, 500]
+  };
+
+  var url = 'https://corsproxy.io/?url=' + encodeURIComponent('https://scanner.tradingview.com/america/scan');
+
+  fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    var stocks = (data.data || []).map(function(s){ return s.d; });
+    _pmResults = stocks.filter(function(d) {
+      var pmChg = d[4];
+      if (pmChg == null) return false;
+      var absChg = Math.abs(pmChg);
+      if (absChg < minChg) return false;
+      if (dir === 'up'   && pmChg < 0) return false;
+      if (dir === 'down' && pmChg > 0) return false;
+      return true;
+    });
+    _pmSort = {col:'pmchg', dir:-1};
+    if (count) count.textContent = _pmResults.length + ' movers · ' + new Date().toLocaleTimeString();
+    if (!_pmResults.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#4b5563;padding:28px;font-size:12px">No pre-market movers found — try lowering the filters or check again after 4am ET</td></tr>';
+      return;
+    }
+    renderPMScan();
+    toast(_pmResults.length + ' pre-market movers found');
+  })
+  .catch(function() {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#ef4444;padding:28px;font-size:12px">Scan failed — try again</td></tr>';
+  });
+}
+
+function renderPMScan() {
+  var tbody = document.getElementById('pm-tbody');
+  if (!tbody) return;
+  ['ticker','name','close','pmclose','pmchg','pmvol','mcap'].forEach(function(c) {
+    var el = document.getElementById('pm-'+c);
+    if (el) el.textContent = _pmSort.col===c ? (_pmSort.dir===1?' ▲':' ▼') : '';
+  });
+  var sorted = _pmResults.slice().sort(function(a,b) {
+    switch(_pmSort.col) {
+      case 'ticker':  var at=a[0]||'',bt=b[0]||''; return _pmSort.dir*(at<bt?-1:at>bt?1:0);
+      case 'name':    var an=a[1]||'',bn=b[1]||''; return _pmSort.dir*(an<bn?-1:an>bn?1:0);
+      case 'close':   return _pmSort.dir*((a[2]||0)-(b[2]||0));
+      case 'pmclose': return _pmSort.dir*((a[3]||0)-(b[3]||0));
+      case 'pmchg':   return _pmSort.dir*((a[4]||0)-(b[4]||0));
+      case 'pmvol':   return _pmSort.dir*((a[5]||0)-(b[5]||0));
+      case 'mcap':    return _pmSort.dir*((a[6]||0)-(b[6]||0));
+      default: return 0;
+    }
+  });
+  tbody.innerHTML = sorted.slice(0,100).map(function(d,i) {
+    var ticker  = d[0] || '';
+    var name    = (d[1] || '').substring(0,22);
+    var close   = d[2], pmClose = d[3], pmChg = d[4], pmVol = d[5];
+    var mcap    = d[6], sma50 = d[7], sma150 = d[8], sma200 = d[9];
+    var pmColor = pmChg >= 0 ? '#22c55e' : '#ef4444';
+    var pmArrow = pmChg >= 0 ? '▲' : '▼';
+    var volFmt  = pmVol ? (pmVol>=1e6?(pmVol/1e6).toFixed(1)+'M':pmVol>=1e3?(pmVol/1e3).toFixed(0)+'K':pmVol) : '—';
+    var mcapFmt = mcap  ? (mcap>=1e12?(mcap/1e12).toFixed(1)+'T':mcap>=1e9?(mcap/1e9).toFixed(1)+'B':mcap>=1e6?(mcap/1e6).toFixed(0)+'M':'<1M') : '—';
+    var stage   = stageOfDash(close, sma50, sma150, sma200);
+    var sCls    = stage==='2'?'background:#052e16;color:#22c55e;border:1px solid #16a34a':stage==='1'?'background:#1c1917;color:#f59e0b;border:1px solid #d97706':'background:#450a0a;color:#ef4444;border:1px solid #dc2626';
+    return '<tr style="border-bottom:1px solid #141414">'
+      +'<td style="padding:8px 12px;color:#4b5563;font-size:12px">'+(i+1)+'</td>'
+      +'<td style="padding:8px 12px;font-weight:800;color:#60a5fa;font-size:14px">'+ticker+'</td>'
+      +'<td style="padding:8px 12px;color:#6b7280;font-size:12px">'+name+'</td>'
+      +'<td style="padding:8px 12px;color:#9ca3af">$'+(close!=null?close.toFixed(2):'—')+'</td>'
+      +'<td style="padding:8px 12px;font-weight:700;color:#f9fafb">$'+(pmClose!=null?pmClose.toFixed(2):'—')+'</td>'
+      +'<td style="padding:8px 12px;color:'+pmColor+';font-weight:800;font-size:14px">'+pmArrow+' '+(pmChg!=null?(pmChg>=0?'+':'')+pmChg.toFixed(2)+'%':'—')+'</td>'
+      +'<td style="padding:8px 12px;color:#9ca3af">'+volFmt+'</td>'
+      +'<td style="padding:8px 12px;color:#6b7280;font-size:12px">'+mcapFmt+'</td>'
+      +'<td style="padding:8px 12px"><span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;'+sCls+'">S'+stage+'</span></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function sortPM(col) {
+  if (!_pmResults.length) return;
+  if (_pmSort.col === col) { _pmSort.dir *= -1; }
+  else { _pmSort.col = col; _pmSort.dir = (col==='ticker'||col==='name') ? 1 : -1; }
+  renderPMScan();
+}
+
+// ─────────────────────────────────────────────
 var _dashSort = {col:'ema', dir:-1};
 
 function runMartiniDash() {
