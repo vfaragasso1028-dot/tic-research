@@ -944,7 +944,7 @@ function renderPMScan() {
       default: return 0;
     }
   });
-  tbody.innerHTML = sorted.slice(0,100).map(function(d,i) {
+  tbody.innerHTML = sorted.map(function(d,i) {
     var ticker  = d[0] || '';
     var name    = (d[1] || '').substring(0,22);
     var close   = d[2], pmClose = d[3], pmChg = d[4], pmVol = d[5];
@@ -1053,7 +1053,7 @@ function renderMartiniDash() {
       default: return 0;
     }
   });
-  tbody.innerHTML = sorted.slice(0,100).map(function(d,i){
+  tbody.innerHTML = sorted.map(function(d,i){
     var ticker=d[0], name=(d[1]||'').substring(0,20);
     var close=d[2], chg=d[3], vol=d[4];
     var ema9=d[6], sma50=d[7], sma150=d[8], sma200=d[9], rsi=d[10];
