@@ -4016,6 +4016,15 @@ function showToast(show) { toast(show?'Alert activated':'Alert paused'); }
 document.getElementById('global-search').addEventListener('keydown', function(e) {
   if(e.key==='Enter' && this.value.trim()) { goAnalyze(this.value.trim()); this.value=''; }
 });
+
+// Auto-load ticker from URL param — e.g. TICsignal_Platform.html?symbol=NVDA
+(function() {
+  var sym = new URLSearchParams(window.location.search).get('symbol');
+  if (sym) {
+    sym = sym.trim().toUpperCase();
+    setTimeout(function() { goAnalyze(sym); }, 600);
+  }
+})();
 </script>
 </body>
 </html>
