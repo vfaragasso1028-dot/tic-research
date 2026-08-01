@@ -201,6 +201,14 @@ body { height:auto; overflow:auto; display:block; }
   <div id="analyze-clock" style="font-size:12px;color:#6b7280"></div>
 </div>
 
+<!-- Stub elements Platform JS expects — hidden, prevent null errors -->
+<div id="topbar-title" style="display:none"></div>
+<div id="fh-key-input" style="display:none"></div>
+<div id="theme-grid" style="display:none"></div>
+<div id="spy-grid" style="display:none"></div>
+<div id="dash-date" style="display:none"></div>
+<div id="dash-greeting" style="display:none"></div>
+
 <!-- ── CONTENT ── -->
 <div class="main-wrap">
 
@@ -3310,6 +3318,9 @@ document.getElementById('global-search').addEventListener('keydown', function(e)
 
 
 
+
+// ── OVERRIDE Platform nav() — must run AFTER Platform JS so it wins ──
+nav = function(p) { /* standalone — no sidebar nav */ };
 
 // ── AUTO-LOAD FROM URL ──
 (function() {
