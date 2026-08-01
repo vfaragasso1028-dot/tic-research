@@ -493,7 +493,7 @@ function nav(p) { /* standalone — no sidebar */ }
 // ══ FINNHUB DATA LAYER ══
 var FH_BASE = 'https://finnhub.io/api/v1';
 
-function getFHKey() { return localStorage.getItem('fh_key') || 'd8st0mpr01qh5rev6p10d8st0mpr01qh5rev6p1g'; }
+function getFHKey() { return localStorage.getItem('fh_key') || localStorage.getItem('fh_key_dash') || 'd8st0mpr01qh5rev6p10d8st0mpr01qh5rev6p1g'; }
 function saveFHKey(k) {
   if (!k || !k.trim()) { toast('Please paste your Finnhub API key first'); return; }
   localStorage.setItem('fh_key', k.trim());
