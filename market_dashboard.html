@@ -243,25 +243,8 @@ input:focus{border-color:#3b82f6}
     </div>
     <div id="pm-count" style="font-size:11px;color:#4b5563"></div>
   </div>
-  <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px">
-    <table style="width:100%;border-collapse:collapse">
-      <thead>
-        <tr style="border-bottom:1px solid #1f2937">
-          <th style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">#</th>
-          <th onclick="sortPM('ticker')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Ticker <span id="pm-t"></span></th>
-          <th onclick="sortPM('name')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Company <span id="pm-name"></span></th>
-          <th onclick="sortPM('close')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Prev Close <span id="pm-close"></span></th>
-          <th onclick="sortPM('pmclose')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">PM Price <span id="pm-pmclose"></span></th>
-          <th onclick="sortPM('pmchg')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">PM Chg% <span id="pm-pmchg">▼</span></th>
-          <th onclick="sortPM('pmvol')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">PM Volume <span id="pm-pmvol"></span></th>
-          <th onclick="sortPM('mcap')" style="cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Mkt Cap <span id="pm-mcap"></span></th>
-          <th style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:10px 12px;text-align:left;font-weight:600">Stage</th>
-        </tr>
-      </thead>
-      <tbody id="pm-tbody">
-        <tr><td colspan="9" style="text-align:center;color:#4b5563;padding:28px;font-size:12px">Click Run Pre-Market Scan → to load results</td></tr>
-      </tbody>
-    </table>
+  <div id="pm-results-container" style="margin-bottom:28px">
+    <div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">Click Run Pre-Market Scan → to load results</div>
   </div>
 
   <!-- 5. MARTINI SPECIAL SCANNER -->
@@ -891,7 +874,7 @@ function runPMScan() {
     ],
     options: {lang:'en'},
     symbols: {query:{types:['stock']}, tickers:[]},
-    columns: ['name','description','close','premarket_close','premarket_change','premarket_volume','market_cap_basic','SMA50','SMA150','SMA200'],
+    columns: ['name','description','close','premarket_close','premarket_change','premarket_volume','market_cap_basic','SMA50','SMA150','SMA200','sector'],
     sort: {sortBy:'premarket_change', sortOrder:'desc'},
     range: [0, 500]
   };
@@ -925,13 +908,38 @@ function runPMScan() {
   });
 }
 
+var _pmSectorColors = {
+  'Technology': '#3b82f6',
+  'Finance': '#8b5cf6',
+  'Health Technology': '#ec4899',
+  'Health Services': '#ec4899',
+  'Consumer Non-Durables': '#f59e0b',
+  'Consumer Durables': '#f59e0b',
+  'Consumer Services': '#f59e0b',
+  'Retail Trade': '#f59e0b',
+  'Energy Minerals': '#22c55e',
+  'Non-Energy Minerals': '#22c55e',
+  'Industrial Services': '#6b7280',
+  'Producer Manufacturing': '#6b7280',
+  'Electronic Technology': '#06b6d4',
+  'Communications': '#06b6d4',
+  'Utilities': '#a78bfa',
+  'Transportation': '#9ca3af',
+  'Process Industries': '#84cc16',
+  'Distribution Services': '#9ca3af',
+  'Commercial Services': '#9ca3af',
+  'Miscellaneous': '#4b5563'
+};
+
+function pmSectorColor(sector) {
+  if (!sector) return '#4b5563';
+  return _pmSectorColors[sector] || '#4b5563';
+}
+
 function renderPMScan() {
-  var tbody = document.getElementById('pm-tbody');
-  if (!tbody) return;
-  ['ticker','name','close','pmclose','pmchg','pmvol','mcap'].forEach(function(c) {
-    var el = document.getElementById('pm-'+c);
-    if (el) el.textContent = _pmSort.col===c ? (_pmSort.dir===1?' ▲':' ▼') : '';
-  });
+  var container = document.getElementById('pm-results-container');
+  if (!container) return;
+
   var sorted = _pmResults.slice().sort(function(a,b) {
     switch(_pmSort.col) {
       case 'ticker':  var at=a[0]||'',bt=b[0]||''; return _pmSort.dir*(at<bt?-1:at>bt?1:0);
@@ -944,30 +952,75 @@ function renderPMScan() {
       default: return 0;
     }
   });
-  tbody.innerHTML = sorted.map(function(d,i) {
-    var ticker  = d[0] || '';
-    var name    = (d[1] || '').substring(0,22);
-    var close   = d[2], pmClose = d[3], pmChg = d[4], pmVol = d[5];
-    var mcap    = d[6], sma50 = d[7], sma150 = d[8], sma200 = d[9];
-    var pmColor = pmChg >= 0 ? '#22c55e' : '#ef4444';
-    var pmArrow = pmChg >= 0 ? '▲' : '▼';
-    var volFmt  = pmVol ? (pmVol>=1e6?(pmVol/1e6).toFixed(1)+'M':pmVol>=1e3?(pmVol/1e3).toFixed(0)+'K':pmVol) : '—';
-    var mcapFmt = mcap  ? (mcap>=1e12?(mcap/1e12).toFixed(1)+'T':mcap>=1e9?(mcap/1e9).toFixed(1)+'B':mcap>=1e6?(mcap/1e6).toFixed(0)+'M':'<1M') : '—';
-    var stage   = stageOfDash(close, sma50, sma150, sma200);
-    var sCls    = stage==='2'?'background:#052e16;color:#22c55e;border:1px solid #16a34a':stage==='1'?'background:#1c1917;color:#f59e0b;border:1px solid #d97706':'background:#450a0a;color:#ef4444;border:1px solid #dc2626';
-    var platformUrl = 'https://vfaragasso1028-dot.github.io/tic-research/analyze.html?symbol='+ticker;
-    return '<tr style="border-bottom:1px solid #141414">'
-      +'<td style="padding:8px 12px;color:#4b5563;font-size:12px">'+(i+1)+'</td>'
-      +'<td style="padding:8px 12px;font-weight:800;font-size:14px"><a href="'+platformUrl+'" target="_blank" style="color:#60a5fa;text-decoration:none" title="Open '+ticker+' analysis on Platform">'+ticker+' ↗</a></td>'
-      +'<td style="padding:8px 12px;color:#6b7280;font-size:12px">'+name+'</td>'
-      +'<td style="padding:8px 12px;color:#9ca3af">$'+(close!=null?close.toFixed(2):'—')+'</td>'
-      +'<td style="padding:8px 12px;font-weight:700;color:#f9fafb">$'+(pmClose!=null?pmClose.toFixed(2):'—')+'</td>'
-      +'<td style="padding:8px 12px;color:'+pmColor+';font-weight:800;font-size:14px">'+pmArrow+' '+(pmChg!=null?(pmChg>=0?'+':'')+pmChg.toFixed(2)+'%':'—')+'</td>'
-      +'<td style="padding:8px 12px;color:#9ca3af">'+volFmt+'</td>'
-      +'<td style="padding:8px 12px;color:#6b7280;font-size:12px">'+mcapFmt+'</td>'
-      +'<td style="padding:8px 12px"><span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;'+sCls+'">S'+stage+'</span></td>'
-      +'</tr>';
+
+  // group by sector
+  var groups = {};
+  var groupOrder = [];
+  sorted.forEach(function(d) {
+    var sec = d[10] || 'Other';
+    if (!groups[sec]) { groups[sec] = []; groupOrder.push(sec); }
+    groups[sec].push(d);
+  });
+
+  var thStyle = 'font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:8px 12px;text-align:left;font-weight:600;cursor:pointer;user-select:none;';
+  var thStyleNoSort = 'font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:8px 12px;text-align:left;font-weight:600;';
+
+  function sortArrow(col) {
+    return _pmSort.col===col ? (_pmSort.dir===1?' ▲':' ▼') : '';
+  }
+
+  var html = groupOrder.map(function(sec) {
+    var rows = groups[sec];
+    var color = pmSectorColor(sec);
+    var rowsHtml = rows.map(function(d, i) {
+      var ticker  = d[0] || '';
+      var name    = (d[1] || '').substring(0,22);
+      var close   = d[2], pmClose = d[3], pmChg = d[4], pmVol = d[5];
+      var mcap    = d[6], sma50 = d[7], sma150 = d[8], sma200 = d[9];
+      var pmColor = pmChg >= 0 ? '#22c55e' : '#ef4444';
+      var pmArrow = pmChg >= 0 ? '▲' : '▼';
+      var volFmt  = pmVol ? (pmVol>=1e6?(pmVol/1e6).toFixed(1)+'M':pmVol>=1e3?(pmVol/1e3).toFixed(0)+'K':pmVol) : '—';
+      var mcapFmt = mcap  ? (mcap>=1e12?(mcap/1e12).toFixed(1)+'T':mcap>=1e9?(mcap/1e9).toFixed(1)+'B':mcap>=1e6?(mcap/1e6).toFixed(0)+'M':'<1M') : '—';
+      var stage   = stageOfDash(close, sma50, sma150, sma200);
+      var sCls    = stage==='2'?'background:#052e16;color:#22c55e;border:1px solid #16a34a':stage==='1'?'background:#1c1917;color:#f59e0b;border:1px solid #d97706':'background:#450a0a;color:#ef4444;border:1px solid #dc2626';
+      var platformUrl = 'https://vfaragasso1028-dot.github.io/tic-research/analyze.html?symbol='+ticker;
+      return '<tr style="border-bottom:1px solid #141414">'
+        +'<td style="padding:8px 12px;color:#4b5563;font-size:12px">'+(i+1)+'</td>'
+        +'<td style="padding:8px 12px;font-weight:800;font-size:14px"><a href="'+platformUrl+'" target="_blank" style="color:#60a5fa;text-decoration:none">'+ticker+' ↗</a></td>'
+        +'<td style="padding:8px 12px;color:#6b7280;font-size:12px">'+name+'</td>'
+        +'<td style="padding:8px 12px;color:#9ca3af">$'+(close!=null?close.toFixed(2):'—')+'</td>'
+        +'<td style="padding:8px 12px;font-weight:700;color:#f9fafb">$'+(pmClose!=null?pmClose.toFixed(2):'—')+'</td>'
+        +'<td style="padding:8px 12px;color:'+pmColor+';font-weight:800;font-size:14px">'+pmArrow+' '+(pmChg!=null?(pmChg>=0?'+':'')+pmChg.toFixed(2)+'%':'—')+'</td>'
+        +'<td style="padding:8px 12px;color:#9ca3af">'+volFmt+'</td>'
+        +'<td style="padding:8px 12px;color:#6b7280;font-size:12px">'+mcapFmt+'</td>'
+        +'<td style="padding:8px 12px"><span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;'+sCls+'">S'+stage+'</span></td>'
+        +'</tr>';
+    }).join('');
+
+    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">'
+      +'<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:#0d1117;border-bottom:1px solid #1f2937">'
+      +'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+color+';flex-shrink:0"></span>'
+      +'<span style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em">'+sec+'</span>'
+      +'<span style="font-size:11px;color:#4b5563;margin-left:auto">'+rows.length+' stock'+(rows.length>1?'s':'')+'</span>'
+      +'</div>'
+      +'<table style="width:100%;border-collapse:collapse">'
+      +'<thead><tr style="border-bottom:1px solid #1f2937">'
+      +'<th style="'+thStyleNoSort+'">#</th>'
+      +'<th onclick="sortPM(\'ticker\')" style="'+thStyle+'">Ticker'+sortArrow('ticker')+'</th>'
+      +'<th onclick="sortPM(\'name\')" style="'+thStyle+'">Company'+sortArrow('name')+'</th>'
+      +'<th onclick="sortPM(\'close\')" style="'+thStyle+'">Prev Close'+sortArrow('close')+'</th>'
+      +'<th onclick="sortPM(\'pmclose\')" style="'+thStyle+'">PM Price'+sortArrow('pmclose')+'</th>'
+      +'<th onclick="sortPM(\'pmchg\')" style="'+thStyle+'">PM Chg%'+sortArrow('pmchg')+'</th>'
+      +'<th onclick="sortPM(\'pmvol\')" style="'+thStyle+'">PM Vol'+sortArrow('pmvol')+'</th>'
+      +'<th onclick="sortPM(\'mcap\')" style="'+thStyle+'">Mkt Cap'+sortArrow('mcap')+'</th>'
+      +'<th style="'+thStyleNoSort+'">Stage</th>'
+      +'</tr></thead>'
+      +'<tbody>'+rowsHtml+'</tbody>'
+      +'</table>'
+      +'</div>';
   }).join('');
+
+  container.innerHTML = html || '<div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">No results</div>';
 }
 
 function sortPM(col) {
