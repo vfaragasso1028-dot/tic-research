@@ -180,34 +180,28 @@ input:focus,select:focus{border-color:#3b82f6}
 .settings-label{color:#d1d5db;font-weight:500}
 .settings-desc{font-size:11px;color:#6b7280;margin-top:3px}
 
-/* ── STANDALONE OVERRIDES ── */
-body { height:auto; overflow:auto; display:block; }
-.standalone-header { background:#0d0d0d; border-bottom:1px solid #1a1a1a; padding:12px 24px; display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:100; }
-.main-wrap { max-width:1300px; margin:0 auto; padding:20px 24px 60px; }
-#page-analyze { display:block !important; }
-.analyze-form { flex-wrap:wrap; }
+body{height:auto;overflow:auto;display:block}
+.standalone-header{background:#0d0d0d;border-bottom:1px solid #1a1a1a;padding:12px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.main-wrap{max-width:1300px;margin:0 auto;padding:20px 24px 60px}
+#page-analyze{display:block!important}
+.analyze-form{flex-wrap:wrap}
 </style>
 </head>
 <body>
-
-<!-- stub elements Platform JS expects -->
 <div id="topbar-title" style="display:none"></div>
 <div id="fh-key-input" style="display:none"></div>
 <div id="theme-grid" style="display:none"></div>
 <div id="spy-grid" style="display:none"></div>
 <div id="dash-date" style="display:none"></div>
 <div id="dash-greeting" style="display:none"></div>
-
-<!-- HEADER -->
 <div class="standalone-header">
-  <a href="market_dashboard.html" style="font-size:12px;color:#6b7280;text-decoration:none;white-space:nowrap;padding:6px 12px;border:1px solid #1f2937;border-radius:7px;font-weight:600">← TIC Sheet</a>
-  <a href="TICsignal_Platform.html" style="font-size:12px;color:#6b7280;text-decoration:none;white-space:nowrap;padding:6px 12px;border:1px solid #1f2937;border-radius:7px;font-weight:600">Platform →</a>
+  <a href="market_dashboard.html" style="font-size:12px;color:#6b7280;text-decoration:none;padding:6px 12px;border:1px solid #1f2937;border-radius:7px;font-weight:600">← TIC Sheet</a>
+  <a href="TICsignal_Platform.html" style="font-size:12px;color:#6b7280;text-decoration:none;padding:6px 12px;border:1px solid #1f2937;border-radius:7px;font-weight:600">Platform →</a>
   <div style="font-size:16px;font-weight:800;letter-spacing:2px;color:#f9fafb;margin-left:4px">TIC <span style="color:#3b82f6">ANALYZE</span></div>
   <div id="current-sym" style="font-size:13px;color:#60a5fa;font-weight:700;letter-spacing:1px"></div>
   <div style="flex:1"></div>
   <div id="analyze-clock" style="font-size:12px;color:#6b7280"></div>
 </div>
-
 <div class="main-wrap">
 <!-- ══ ANALYZE ══ -->
 <div class="page" id="page-analyze">
@@ -475,9 +469,7 @@ body { height:auto; overflow:auto; display:block; }
   </div>
 </div>
 </div>
-
 <div class="toast" id="toast"></div>
-
 <script>
 
 const pages = {
@@ -3323,27 +3315,19 @@ document.getElementById('global-search').addEventListener('keydown', function(e)
   }
 })();
 
-
-// Override nav() AFTER Platform JS so it wins
 nav = function(p) {};
-
-// AUTO-LOAD FROM URL
 (function() {
-  function tick() {
-    var el = document.getElementById("analyze-clock");
-    if (el) el.textContent = new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
-  }
-  tick(); setInterval(tick, 1000);
-  var k = getFHKey();
-  var inp = document.getElementById("fh-key-analyze");
-  if (inp && k) inp.value = k;
-  var sym = new URLSearchParams(window.location.search).get("symbol");
-  if (sym) {
-    sym = sym.trim().toUpperCase();
-    document.getElementById("analyze-ticker").value = sym;
-    var symEl = document.getElementById("current-sym");
-    if (symEl) symEl.textContent = sym;
-    setTimeout(function() { goAnalyze(sym); }, 600);
+  function tick(){var el=document.getElementById("analyze-clock");if(el)el.textContent=new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",second:"2-digit"});}
+  tick();setInterval(tick,1000);
+  var k=getFHKey();
+  var inp=document.getElementById("fh-key-analyze");
+  if(inp&&k)inp.value=k;
+  var sym=new URLSearchParams(window.location.search).get("symbol");
+  if(sym){
+    sym=sym.trim().toUpperCase();
+    document.getElementById("analyze-ticker").value=sym;
+    var el=document.getElementById("current-sym");if(el)el.textContent=sym;
+    setTimeout(function(){goAnalyze(sym);},600);
   }
 })();
 </script>
