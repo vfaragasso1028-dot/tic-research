@@ -70,8 +70,16 @@ select{background:#111;border:1px solid #1f2937;border-radius:6px;padding:4px 8p
   <!-- MARTINI SPECIAL -->
   <div class="section-label">🍸 Tic's Martini Special — Live Scanner</div>
   <div style="font-size:11px;color:#4b5563;margin-bottom:12px">Price $24–$2k · Close ≥4% above 9 EMA · Avg Vol >1M · Price above 50 SMA · Sorted by % above EMA</div>
-  <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center">
+  <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <button class="btn btn-blue" onclick="runMartiniDash()" style="font-weight:700">Run Martini Scan →</button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <label style="font-size:11px;color:#4b5563">Direction:</label>
+      <select id="martini-dir-filter">
+        <option value="both" selected>Both</option>
+        <option value="up">Gainers only</option>
+        <option value="down">Losers only</option>
+      </select>
+    </div>
     <div id="martini-dash-count" style="font-size:11px;color:#4b5563"></div>
   </div>
   <div id="martini-results-container">
@@ -323,10 +331,14 @@ function runMartiniDash() {
   .then(function(r){ return r.json(); })
   .then(function(data) {
     var stocks = (data.data || []).map(function(s){ return s.d; });
+    var martiniDir = document.getElementById('martini-dir-filter') ? document.getElementById('martini-dir-filter').value : 'both';
     _dashResults = stocks.filter(function(d) {
-      var close=d[2], ema9=d[6], sma50=d[7];
+      var close=d[2], ema9=d[6], sma50=d[7], chg=d[3];
       if (close==null||ema9==null||sma50==null) return false;
-      return close >= ema9*1.04 && close > sma50;
+      if (!(close >= ema9*1.04 && close > sma50)) return false;
+      if (martiniDir==='up'   && chg < 0) return false;
+      if (martiniDir==='down' && chg >= 0) return false;
+      return true;
     });
     _dashSort = {col:'ema', dir:-1};
     if (count) count.textContent = _dashResults.length + ' matches · ' + new Date().toLocaleTimeString();
