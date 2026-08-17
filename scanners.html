@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>TIC Scanners v2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0a0a0a;color:#e8e8e8;min-height:100vh}
+.card{background:#111;border:1px solid #1f2937;border-radius:10px;padding:16px 18px}
+.section-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#4b5563;font-weight:700;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid #1a1a1a}
+.btn{font-size:12px;padding:7px 14px;border-radius:7px;border:1px solid #1f2937;background:#111;cursor:pointer;color:#d1d5db;font-family:inherit;font-weight:500}
+.btn:hover{background:#151515;border-color:#374151}
+.btn-blue{background:#1e40af;color:#93c5fd;border-color:#1e40af}
+.btn-blue:hover{background:#1d4ed8}
+input{background:#111;border:1px solid #1f2937;border-radius:7px;padding:7px 11px;color:#e5e7eb;font-size:13px;font-family:inherit;outline:none}
+input:focus{border-color:#3b82f6}
+.toast{position:fixed;bottom:24px;right:24px;background:#1e40af;color:#93c5fd;font-size:13px;font-weight:600;padding:12px 20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.6);display:none;z-index:999}
+select{background:#111;border:1px solid #1f2937;border-radius:6px;padding:4px 8px;color:#e5e7eb;font-size:11px;font-family:inherit}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;padding:13px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100">
+  <div style="font-size:17px;font-weight:800;letter-spacing:2px;color:#f9fafb">THE <span style="color:#3b82f6">TIC</span> <span style="color:#9ca3af;font-weight:400">SCANNERS</span></div>
+  <div style="flex:1"></div>
+  <div id="live-clock" style="font-size:12px;color:#6b7280;white-space:nowrap"></div>
+  <a href="https://vfaragasso1028-dot.github.io/tic-research/market_dashboard.html" style="font-size:12px;color:#60a5fa;text-decoration:none">← TIC Sheet</a>
+  <a href="https://vfaragasso1028-dot.github.io/tic-research/TICsignal_Platform.html" style="font-size:12px;color:#60a5fa;text-decoration:none">Platform →</a>
+  <input id="fh-key-input" type="password" placeholder="Finnhub API key" style="width:180px;font-size:12px" oninput="saveKey(this.value)"/>
+</div>
+
+<!-- MAIN -->
+<div style="max-width:1440px;margin:0 auto;padding:20px 24px 60px">
+
+  <!-- PRE-MARKET MOVERS -->
+  <div class="section-label" style="margin-top:4px">🌅 Pre-Market Movers — Live Scanner</div>
+  <div style="font-size:11px;color:#4b5563;margin-bottom:12px">Price $5–$2k · Pre-market volume >25k · Sorted by biggest % move · Best used 4am–9:30am ET</div>
+  <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-blue" onclick="runPMScan()" style="font-weight:700">Run Pre-Market Scan →</button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <label style="font-size:11px;color:#4b5563">Min PM Vol:</label>
+      <select id="pm-vol-filter">
+        <option value="25000">25K</option>
+        <option value="50000" selected>50K</option>
+        <option value="100000">100K</option>
+        <option value="250000">250K</option>
+      </select>
+      <label style="font-size:11px;color:#4b5563">Min PM Move:</label>
+      <select id="pm-chg-filter">
+        <option value="1">1%</option>
+        <option value="2" selected>2%</option>
+        <option value="3">3%</option>
+        <option value="5">5%</option>
+      </select>
+      <label style="font-size:11px;color:#4b5563">Direction:</label>
+      <select id="pm-dir-filter">
+        <option value="both" selected>Both</option>
+        <option value="up">Gainers only</option>
+        <option value="down">Losers only</option>
+      </select>
+    </div>
+    <div id="pm-count" style="font-size:11px;color:#4b5563"></div>
+  </div>
+  <div id="pm-results-container" style="margin-bottom:40px">
+    <div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">Click Run Pre-Market Scan → to load results</div>
+  </div>
+
+  <!-- MARTINI SPECIAL -->
+  <div class="section-label">🍸 Tic's Martini Special — Live Scanner</div>
+  <div style="font-size:11px;color:#4b5563;margin-bottom:12px">Price $24–$2k · Close ≥4% above 9 EMA · Avg Vol >1M · Price above 50 SMA · Sorted by % above EMA</div>
+  <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-blue" onclick="runMartiniDash()" style="font-weight:700">Run Martini Scan →</button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <label style="font-size:11px;color:#4b5563">Min Avg Vol:</label>
+      <select id="martini-vol-filter">
+        <option value="500000">500K</option>
+        <option value="1000000" selected>1M</option>
+        <option value="2000000">2M</option>
+        <option value="5000000">5M</option>
+      </select>
+      <label style="font-size:11px;color:#4b5563">Min % Above EMA9:</label>
+      <select id="martini-ema-filter">
+        <option value="2">2%</option>
+        <option value="4" selected>4%</option>
+        <option value="6">6%</option>
+        <option value="10">10%</option>
+      </select>
+      <label style="font-size:11px;color:#4b5563">Direction:</label>
+      <select id="martini-dir-filter">
+        <option value="both" selected>Both</option>
+        <option value="up">Gainers only</option>
+        <option value="down">Losers only</option>
+      </select>
+    </div>
+    <div id="martini-dash-count" style="font-size:11px;color:#4b5563"></div>
+  </div>
+  <div id="martini-results-container">
+    <div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">Click Run Martini Scan → to load live results</div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CLOCK ──
+function tickClock() {
+  var el = document.getElementById('live-clock');
+  if (el) el.textContent = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(tickClock, 1000); tickClock();
+
+// ── KEY ──
+function getFHKey() {
+  return localStorage.getItem('fh_key') || localStorage.getItem('fh_key_dash') || 'd8st0mpr01qh5rev6p10d8st0mpr01qh5rev6p1g';
+}
+function saveKey(v) {
+  localStorage.setItem('fh_key', v);
+  localStorage.setItem('fh_key_dash', v);
+}
+(function() {
+  var k = getFHKey();
+  if (k) { var el = document.getElementById('fh-key-input'); if (el) el.value = k; }
+})();
+
+// ── TOAST ──
+function toast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function(){ t.style.display='none'; }, 3000);
+}
+
+// ── SECTOR COLORS ──
+var _pmSectorColors = {
+  'Technology':'#3b82f6','Finance':'#8b5cf6',
+  'Health Technology':'#ec4899','Health Services':'#ec4899',
+  'Consumer Non-Durables':'#f59e0b','Consumer Durables':'#f59e0b',
+  'Consumer Services':'#f59e0b','Retail Trade':'#f59e0b',
+  'Energy Minerals':'#22c55e','Non-Energy Minerals':'#22c55e',
+  'Industrial Services':'#6b7280','Producer Manufacturing':'#6b7280',
+  'Electronic Technology':'#06b6d4','Communications':'#06b6d4',
+  'Utilities':'#a78bfa','Transportation':'#9ca3af',
+  'Process Industries':'#84cc16','Distribution Services':'#9ca3af',
+  'Commercial Services':'#9ca3af','Miscellaneous':'#4b5563'
+};
+function pmSectorColor(s) { return _pmSectorColors[s] || '#4b5563'; }
+
+// ── STAGE ──
+function stageOfDash(c,s50,s150,s200) {
+  if (!c||!s50||!s150||!s200) return '?';
+  if (c>s150 && s150>s200 && c>s50) return '2';
+  if (c<s150 && s150>s200)          return '3';
+  if (c<s200)                       return '4';
+  return '1';
+}
+
+// ── SHARED RENDER HELPERS ──
+function fmtVol(v)  { return v ? (v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v) : '—'; }
+function fmtMcap(m) { return m ? (m>=1e12?(m/1e12).toFixed(1)+'T':m>=1e9?(m/1e9).toFixed(1)+'B':m>=1e6?(m/1e6).toFixed(0)+'M':'<1M') : '—'; }
+function sCls(stage){ return stage==='2'?'background:#052e16;color:#22c55e;border:1px solid #16a34a':stage==='1'?'background:#1c1917;color:#f59e0b;border:1px solid #d97706':'background:#450a0a;color:#ef4444;border:1px solid #dc2626'; }
+var analyzeBase = 'https://vfaragasso1028-dot.github.io/tic-research/analyze.html?symbol=';
+
+function buildSectorBlocks(groups, groupOrder, color, buildRowsFn, buildHeaderFn) {
+  var thS = 'font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:8px 12px;text-align:left;font-weight:600;cursor:pointer;user-select:none;';
+  var thN = 'font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4b5563;padding:8px 12px;text-align:left;font-weight:600;';
+  return groupOrder.map(function(sec) {
+    var rows = groups[sec];
+    var dot  = pmSectorColor(sec);
+    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">'
+      +'<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:#0d1117;border-bottom:1px solid #1f2937">'
+      +'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+dot+';flex-shrink:0"></span>'
+      +'<span style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em">'+sec+'</span>'
+      +'<span style="font-size:11px;color:#4b5563;margin-left:auto">'+rows.length+' stock'+(rows.length>1?'s':'')+'</span>'
+      +'</div>'
+      +'<table style="width:100%;border-collapse:collapse">'
+      +'<thead><tr style="border-bottom:1px solid #1f2937">'+buildHeaderFn(thS, thN)+'</tr></thead>'
+      +'<tbody>'+buildRowsFn(rows)+'</tbody>'
+      +'</table>'
+      +'</div>';
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+//  PRE-MARKET MOVERS
+// ─────────────────────────────────────────────
+var _pmResults = [];
+var _pmSort    = {col:'pmchg', dir:-1};
+
+function runPMScan() {
+  var container = document.getElementById('pm-results-container');
+  var count     = document.getElementById('pm-count');
+  if (container) container.innerHTML = '<div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">🌅 Scanning pre-market data…</div>';
+  if (count) count.textContent = '';
+
+  var minVol = parseInt(document.getElementById('pm-vol-filter').value) || 50000;
+  var minChg = parseFloat(document.getElementById('pm-chg-filter').value) || 2;
+  var dir    = document.getElementById('pm-dir-filter').value;
+
+  var payload = {
+    filter: [
+      {left:'close',            operation:'greater',  right:5},
+      {left:'close',            operation:'less',     right:2000},
+      {left:'premarket_volume', operation:'greater',  right:minVol},
+      {left:'premarket_change', operation:'nempty'},
+      {left:'is_primary',       operation:'equal',    right:true},
+      {left:'type',             operation:'in_range', right:['stock']}
+    ],
+    options:{lang:'en'},
+    symbols:{query:{types:['stock']},tickers:[]},
+    columns:['name','description','close','premarket_close','premarket_change','premarket_volume','market_cap_basic','SMA50','SMA150','SMA200','sector'],
+    sort:{sortBy:'premarket_change',sortOrder:'desc'},
+    range:[0,500]
+  };
+
+  var url = 'https://corsproxy.io/?url=' + encodeURIComponent('https://scanner.tradingview.com/america/scan');
+  fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    var stocks = (data.data || []).map(function(s){ return s.d; });
+    _pmResults = stocks.filter(function(d) {
+      var pmChg = d[4];
+      if (pmChg == null) return false;
+      var abs = Math.abs(pmChg);
+      if (abs < minChg) return false;
+      if (dir==='up'   && pmChg < 0) return false;
+      if (dir==='down' && pmChg > 0) return false;
+      return true;
+    });
+    _pmSort = {col:'pmchg', dir:-1};
+    if (count) count.textContent = _pmResults.length + ' movers · ' + new Date().toLocaleTimeString();
+    if (!_pmResults.length) {
+      if (container) container.innerHTML = '<div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">No pre-market movers found — try lowering the filters or check again after 4am ET</div>';
+      return;
+    }
+    renderPMScan();
+    toast(_pmResults.length + ' pre-market movers found');
+  })
+  .catch(function() {
+    if (container) container.innerHTML = '<div style="text-align:center;color:#ef4444;padding:28px;font-size:12px">Scan failed — try again</div>';
+  });
+}
+
+function renderPMScan() {
+  var container = document.getElementById('pm-results-container');
+  if (!container) return;
+
+  var sorted = _pmResults.slice().sort(function(a,b) {
+    switch(_pmSort.col) {
+      case 'ticker':  var at=a[0]||'',bt=b[0]||''; return _pmSort.dir*(at<bt?-1:at>bt?1:0);
+      case 'name':    var an=a[1]||'',bn=b[1]||''; return _pmSort.dir*(an<bn?-1:an>bn?1:0);
+      case 'close':   return _pmSort.dir*((a[2]||0)-(b[2]||0));
+      case 'pmclose': return _pmSort.dir*((a[3]||0)-(b[3]||0));
+      case 'pmchg':   return _pmSort.dir*((a[4]||0)-(b[4]||0));
+      case 'pmvol':   return _pmSort.dir*((a[5]||0)-(b[5]||0));
+      case 'mcap':    return _pmSort.dir*((a[6]||0)-(b[6]||0));
+      default: return 0;
+    }
+  });
+
+  var groups = {}, groupOrder = [];
+  sorted.forEach(function(d) {
+    var sec = d[10] || 'Other';
+    if (!groups[sec]) { groups[sec] = []; groupOrder.push(sec); }
+    groups[sec].push(d);
+  });
+
+  function arr(col) { return _pmSort.col===col?(_pmSort.dir===1?' ▲':' ▼'):''; }
+
+  var html = buildSectorBlocks(groups, groupOrder, pmSectorColor, function(rows) {
+    return rows.map(function(d,i) {
+      var ticker=d[0]||'', name=(d[1]||'').substring(0,22);
+      var close=d[2], pmClose=d[3], pmChg=d[4], pmVol=d[5];
+      var mcap=d[6], sma50=d[7], sma150=d[8], sma200=d[9];
+      var pmColor = pmChg>=0?'#22c55e':'#ef4444';
+      var pmArrow = pmChg>=0?'▲':'▼';
+      var stage = stageOfDash(close,sma50,sma150,sma200);
+      return '<tr style="border-bottom:1px solid #141414">'
+        +'<td style="padding:8px 12px;color:#4b5563;font-size:12px">'+(i+1)+'</td>'
+        +'<td style="padding:8px 12px;font-weight:800;font-size:14px"><a href="'+analyzeBase+ticker+'" target="_blank" style="color:#60a5fa;text-decoration:none">'+ticker+' ↗</a></td>'
+        +'<td style="padding:8px 12px;color:#6b7280;font-size:12px">'+name+'</td>'
+        +'<td style="padding:8px 12px;color:#9ca3af">$'+(close!=null?close.toFixed(2):'—')+'</td>'
+        +'<td style="padding:8px 12px;font-weight:700;color:#f9fafb">$'+(pmClose!=null?pmClose.toFixed(2):'—')+'</td>'
+        +'<td style="padding:8px 12px;color:'+pmColor+';font-weight:800;font-size:14px">'+pmArrow+' '+(pmChg!=null?(pmChg>=0?'+':'')+pmChg.toFixed(2)+'%':'—')+'</td>'
+        +'<td style="padding:8px 12px;color:#9ca3af">'+fmtVol(pmVol)+'</td>'
+        +'<td style="padding:8px 12px;color:#6b7280;font-size:12px">'+fmtMcap(mcap)+'</td>'
+        +'<td style="padding:8px 12px"><span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;'+sCls(stage)+'">S'+stage+'</span></td>'
+        +'</tr>';
+    }).join('');
+  }, function(thS, thN) {
+    function arr(col) { return _pmSort.col===col?(_pmSort.dir===1?' ▲':' ▼'):''; }
+    return '<th style="'+thN+'">#</th>'
+      +'<th onclick="sortPM(\'ticker\')" style="'+thS+'">Ticker'+arr('ticker')+'</th>'
+      +'<th onclick="sortPM(\'name\')" style="'+thS+'">Company'+arr('name')+'</th>'
+      +'<th onclick="sortPM(\'close\')" style="'+thS+'">Prev Close'+arr('close')+'</th>'
+      +'<th onclick="sortPM(\'pmclose\')" style="'+thS+'">PM Price'+arr('pmclose')+'</th>'
+      +'<th onclick="sortPM(\'pmchg\')" style="'+thS+'">PM Chg%'+arr('pmchg')+'</th>'
+      +'<th onclick="sortPM(\'pmvol\')" style="'+thS+'">PM Vol'+arr('pmvol')+'</th>'
+      +'<th onclick="sortPM(\'mcap\')" style="'+thS+'">Mkt Cap'+arr('mcap')+'</th>'
+      +'<th style="'+thN+'">Stage</th>';
+  });
+
+  container.innerHTML = html || '<div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">No results</div>';
+}
+
+function sortPM(col) {
+  if (!_pmResults.length) return;
+  if (_pmSort.col===col) { _pmSort.dir *= -1; }
+  else { _pmSort.col=col; _pmSort.dir=(col==='ticker'||col==='name')?1:-1; }
+  renderPMScan();
+}
+
+// ─────────────────────────────────────────────
+//  MARTINI SPECIAL
+// ─────────────────────────────────────────────
+var _dashResults = [];
+var _dashSort    = {col:'ema', dir:-1};
+
+function runMartiniDash() {
+  var container = document.getElementById('martini-results-container');
+  var count     = document.getElementById('martini-dash-count');
+  if (container) container.innerHTML = '<div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">🍸 Scanning live market data…</div>';
+  if (count) count.textContent = '';
+
+  var payload = {
+    filter: [
+      {left:'close',                   operation:'greater',  right:24},
+      {left:'close',                   operation:'less',     right:2000},
+      {left:'average_volume_30d_calc', operation:'greater',  right:parseInt(document.getElementById('martini-vol-filter').value)||1000000},
+      {left:'is_primary',              operation:'equal',    right:true},
+      {left:'type',                    operation:'in_range', right:['stock']}
+    ],
+    options:{lang:'en'},
+    symbols:{query:{types:['stock']},tickers:[]},
+    columns:['name','description','close','change','volume','average_volume_30d_calc','EMA9','SMA50','SMA150','SMA200','RSI','sector'],
+    sort:{sortBy:'change',sortOrder:'desc'},
+    range:[0,500]
+  };
+
+  var url = 'https://corsproxy.io/?url=' + encodeURIComponent('https://scanner.tradingview.com/america/scan');
+  fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    var stocks = (data.data || []).map(function(s){ return s.d; });
+    var martiniDir    = document.getElementById('martini-dir-filter') ? document.getElementById('martini-dir-filter').value : 'both';
+    var martiniEmaMin = parseFloat(document.getElementById('martini-ema-filter') ? document.getElementById('martini-ema-filter').value : 4) / 100;
+    _dashResults = stocks.filter(function(d) {
+      var close=d[2], ema9=d[6], sma50=d[7], chg=d[3];
+      if (close==null||ema9==null||sma50==null) return false;
+      if (!(close >= ema9*(1+martiniEmaMin) && close > sma50)) return false;
+      if (martiniDir==='up'   && chg < 0) return false;
+      if (martiniDir==='down' && chg >= 0) return false;
+      return true;
+    });
+    _dashSort = {col:'ema', dir:-1};
+    if (count) count.textContent = _dashResults.length + ' matches · ' + new Date().toLocaleTimeString();
+    if (!_dashResults.length) {
+      if (container) container.innerHTML = '<div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">No matches right now</div>';
+      return;
+    }
+    renderMartiniDash();
+    toast(_dashResults.length + ' stocks matched');
+  })
+  .catch(function() {
+    if (container) container.innerHTML = '<div style="text-align:center;color:#ef4444;padding:28px;font-size:12px">Scan failed — try again</div>';
+  });
+}
+
+function renderMartiniDash() {
+  var container = document.getElementById('martini-results-container');
+  if (!container) return;
+
+  var sorted = _dashResults.slice().sort(function(a,b) {
+    switch(_dashSort.col) {
+      case 'ticker': var av=a[0]||'',bv=b[0]||''; return _dashSort.dir*(av<bv?-1:av>bv?1:0);
+      case 'name':   var an=a[1]||'',bn=b[1]||''; return _dashSort.dir*(an<bn?-1:an>bn?1:0);
+      case 'price':  return _dashSort.dir*((a[2]||0)-(b[2]||0));
+      case 'chg':    return _dashSort.dir*((a[3]||0)-(b[3]||0));
+      case 'ema':    var ae=a[6]?((a[2]-a[6])/a[6]):0,be=b[6]?((b[2]-b[6])/b[6]):0; return _dashSort.dir*(ae-be);
+      case 'vol':    return _dashSort.dir*((a[4]||0)-(b[4]||0));
+      case 'rsi':    return _dashSort.dir*((a[10]||0)-(b[10]||0));
+      default: return 0;
+    }
+  });
+
+  var groups = {}, groupOrder = [];
+  sorted.forEach(function(d) {
+    var sec = d[11] || 'Other';
+    if (!groups[sec]) { groups[sec] = []; groupOrder.push(sec); }
+    groups[sec].push(d);
+  });
+
+  var html = buildSectorBlocks(groups, groupOrder, pmSectorColor, function(rows) {
+    return rows.map(function(d,i) {
+      var ticker=d[0], name=(d[1]||'').substring(0,20);
+      var close=d[2], chg=d[3], vol=d[4];
+      var ema9=d[6], sma50=d[7], sma150=d[8], sma200=d[9], rsi=d[10];
+      var aboveEma = ema9?((close-ema9)/ema9*100).toFixed(1):'—';
+      var stage    = stageOfDash(close,sma50,sma150,sma200);
+      var chgColor = chg>=0?'#22c55e':'#ef4444';
+      return '<tr style="border-bottom:1px solid #141414">'
+        +'<td style="padding:8px 12px;color:#4b5563;font-size:12px">'+(i+1)+'</td>'
+        +'<td style="padding:8px 12px;font-weight:800;font-size:14px"><a href="'+analyzeBase+ticker+'" target="_blank" style="color:#60a5fa;text-decoration:none">'+ticker+' ↗</a></td>'
+        +'<td style="padding:8px 12px;color:#6b7280;font-size:12px">'+name+'</td>'
+        +'<td style="padding:8px 12px;font-weight:600;color:#f9fafb">$'+(close||0).toFixed(2)+'</td>'
+        +'<td style="padding:8px 12px;color:'+chgColor+';font-weight:700">'+(chg>=0?'+':'')+(chg||0).toFixed(2)+'%</td>'
+        +'<td style="padding:8px 12px"><span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;'+sCls(stage)+'">S'+stage+'</span></td>'
+        +'<td style="padding:8px 12px;color:#22c55e;font-weight:700">+'+aboveEma+'%</td>'
+        +'<td style="padding:8px 12px;color:#9ca3af">'+fmtVol(vol)+'</td>'
+        +'<td style="padding:8px 12px;color:#9ca3af">'+(rsi?rsi.toFixed(0):'—')+'</td>'
+        +'</tr>';
+    }).join('');
+  }, function(thS, thN) {
+    function arr(col) { return _dashSort.col===col?(_dashSort.dir===1?' ▲':' ▼'):''; }
+    return '<th style="'+thN+'">#</th>'
+      +'<th onclick="sortMartiniDash(\'ticker\')" style="'+thS+'">Ticker'+arr('ticker')+'</th>'
+      +'<th onclick="sortMartiniDash(\'name\')" style="'+thS+'">Company'+arr('name')+'</th>'
+      +'<th onclick="sortMartiniDash(\'price\')" style="'+thS+'">Price'+arr('price')+'</th>'
+      +'<th onclick="sortMartiniDash(\'chg\')" style="'+thS+'">% Today'+arr('chg')+'</th>'
+      +'<th style="'+thN+'">Stage</th>'
+      +'<th onclick="sortMartiniDash(\'ema\')" style="'+thS+'">% Above EMA9'+arr('ema')+'</th>'
+      +'<th onclick="sortMartiniDash(\'vol\')" style="'+thS+'">Volume'+arr('vol')+'</th>'
+      +'<th onclick="sortMartiniDash(\'rsi\')" style="'+thS+'">RSI'+arr('rsi')+'</th>';
+  });
+
+  container.innerHTML = html || '<div style="text-align:center;color:#4b5563;padding:28px;font-size:12px">No results</div>';
+}
+
+function sortMartiniDash(col) {
+  if (!_dashResults.length) return;
+  if (_dashSort.col===col) { _dashSort.dir *= -1; }
+  else { _dashSort.col=col; _dashSort.dir=(col==='ticker'||col==='name')?1:-1; }
+  renderMartiniDash();
+}
+</script>
+</body>
+</html>

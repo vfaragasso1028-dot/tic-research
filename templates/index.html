@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TIC Research — Equity Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0a0a0a;color:#e8e8e8;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.hero{text-align:center;padding:40px 20px;max-width:680px;width:100%;}
+.logo{font-size:13px;font-weight:700;letter-spacing:3px;color:#4b5563;text-transform:uppercase;margin-bottom:32px;}
+.logo span{color:#3b82f6;}
+h1{font-size:48px;font-weight:800;color:#f9fafb;line-height:1.1;margin-bottom:12px;}
+h1 span{color:#3b82f6;}
+.sub{font-size:16px;color:#6b7280;margin-bottom:48px;line-height:1.6;}
+form{display:flex;flex-direction:column;gap:12px;width:100%;}
+.input-row{display:flex;gap:10px;width:100%;}
+input[type=text]{
+  flex:1;background:#141414;border:1px solid #222;color:#f9fafb;
+  border-radius:8px;padding:14px 18px;font-size:16px;font-family:'Inter',sans-serif;
+  outline:none;transition:border 0.2s;
+}
+input[type=text]:focus{border-color:#3b82f6;}
+input[type=text]::placeholder{color:#4b5563;}
+button{
+  background:#2563eb;color:#fff;border:none;border-radius:8px;
+  padding:14px 28px;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;
+  cursor:pointer;transition:background 0.2s;white-space:nowrap;
+}
+button:hover{background:#1d4ed8;}
+.api-row{display:flex;gap:10px;width:100%;}
+.api-label{font-size:12px;color:#4b5563;margin-bottom:4px;text-align:left;}
+.error{background:#450a0a;border:1px solid #dc2626;color:#fca5a5;padding:12px 16px;border-radius:8px;font-size:14px;margin-bottom:16px;}
+.badges{display:flex;justify-content:center;gap:12px;margin-top:40px;flex-wrap:wrap;}
+.badge{background:#141414;border:1px solid #222;border-radius:20px;padding:6px 14px;font-size:12px;color:#6b7280;}
+.badge b{color:#9ca3af;}
+.examples{display:flex;justify-content:center;gap:8px;margin-top:20px;flex-wrap:wrap;}
+.ex-btn{
+  background:transparent;border:1px solid #222;color:#6b7280;
+  border-radius:6px;padding:6px 14px;font-size:13px;font-family:'Inter',sans-serif;
+  cursor:pointer;transition:all 0.15s;
+}
+.ex-btn:hover{border-color:#3b82f6;color:#60a5fa;background:#0c1a3b;}
+.footer{position:fixed;bottom:16px;font-size:11px;color:#374151;letter-spacing:0.5px;}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="logo">TIC <span>Research</span></div>
+  <h1>Equity Analysis<br/><span>Built on CAN SLIM</span></h1>
+  <p class="sub">Enter any ticker for a full institutional-grade report — TicScore, Stage Analysis, technical signals, and AI-generated bull/bear thesis.</p>
+
+  {% if error %}
+  <div class="error">⚠ {{ error }}</div>
+  {% endif %}
+
+  <form action="/analyze" method="get">
+    <div class="input-row">
+      <input type="text" name="ticker" placeholder="Enter ticker symbol — TSLA, NVDA, AAPL ..." autofocus autocomplete="off" spellcheck="false"/>
+      <button type="submit">Analyze →</button>
+    </div>
+    <div style="width:100%;">
+      <div class="api-label">Anthropic API Key <span style="color:#374151;">(optional — enables AI thesis)</span></div>
+      <input type="text" name="api_key" placeholder="sk-ant-..." autocomplete="off" style="width:100%;"/>
+    </div>
+  </form>
+
+  <div class="examples">
+    <span style="font-size:12px;color:#374151;margin-right:4px;line-height:32px;">Try:</span>
+    {% for sym in ["TSLA","NVDA","AAPL","MSFT","META","AMZN","SPY"] %}
+    <button class="ex-btn" onclick="document.querySelector('input[name=ticker]').value='{{ sym }}'">{{ sym }}</button>
+    {% endfor %}
+  </div>
+
+  <div class="badges">
+    <div class="badge"><b>CAN SLIM</b> Scoring</div>
+    <div class="badge"><b>Stage</b> Analysis</div>
+    <div class="badge"><b>PowerStack</b> MAs</div>
+    <div class="badge"><b>Bull / Bear</b> Thesis</div>
+    <div class="badge"><b>AI</b> Signal</div>
+    <div class="badge"><b>Catalyst</b> Calendar</div>
+  </div>
+</div>
+
+<div class="footer">TIC Research · Not financial advice · Data via Yahoo Finance</div>
+</body>
+</html>
