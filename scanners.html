@@ -219,7 +219,7 @@ function runPMScan() {
     range:[0,500]
   };
 
-  var url = 'https://cors.sh/' + encodeURIComponent('https://scanner.tradingview.com/america/scan');
+  var url = 'https://cors.sh/https://scanner.tradingview.com/america/scan';
   fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
   .then(function(r){ return r.json(); })
   .then(function(data) {
@@ -343,7 +343,7 @@ function runMartiniDash() {
     range:[0,500]
   };
 
-  var url = 'https://cors.sh/' + encodeURIComponent('https://scanner.tradingview.com/america/scan');
+  var url = 'https://cors.sh/https://scanner.tradingview.com/america/scan';
   fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
   .then(function(r){ return r.json(); })
   .then(function(data) {
