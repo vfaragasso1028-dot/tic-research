@@ -435,12 +435,20 @@ function renderMartiniDash() {
 
 function copyMartiniList() {
   if (!_dashResults.length) { alert('Run the Martini scan first.'); return; }
-  var lines = _dashResults.map(function(d) {
+  var groups = {};
+  _dashResults.forEach(function(d) {
     var ticker = d[0] || '';
     var sector = d[11] || 'Unknown';
-    return ticker + '\t' + sector;
+    if (!groups[sector]) groups[sector] = [];
+    groups[sector].push(ticker);
   });
-  var text = 'Ticker\tSector\n' + lines.join('\n');
+  var lines = [];
+  Object.keys(groups).sort().forEach(function(sector) {
+    lines.push('── ' + sector + ' ──');
+    groups[sector].forEach(function(t) { lines.push(t); });
+    lines.push('');
+  });
+  var text = lines.join('\n').trim();
   navigator.clipboard.writeText(text).then(function() {
     toast('Copied ' + _dashResults.length + ' tickers to clipboard');
   });
