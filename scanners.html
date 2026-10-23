@@ -87,12 +87,15 @@ select{background:#111;border:1px solid #1f2937;border-radius:6px;padding:4px 8p
         <option value="50000000">50M</option>
         <option value="100000000">100M</option>
       </select>
-      <label style="font-size:11px;color:#4b5563">Min % Above EMA9:</label>
+      <label style="font-size:11px;color:#4b5563">EMA9 Setup:</label>
       <select id="martini-ema-filter">
-        <option value="2">2%</option>
-        <option value="4" selected>4%</option>
-        <option value="6">6%</option>
-        <option value="10">10%</option>
+        <option value="above_2">Above 2%</option>
+        <option value="above_4" selected>Above 4%</option>
+        <option value="above_6">Above 6%</option>
+        <option value="above_10">Above 10%</option>
+        <option value="below_2">Below 2% (Short)</option>
+        <option value="below_4">Below 4% (Short)</option>
+        <option value="below_6">Below 6% (Short)</option>
       </select>
       <label style="font-size:11px;color:#4b5563">Direction:</label>
       <select id="martini-dir-filter">
@@ -353,11 +356,18 @@ function runMartiniDash() {
   .then(function(data) {
     var stocks = (data.data || []).map(function(s){ return s.d; });
     var martiniDir    = document.getElementById('martini-dir-filter') ? document.getElementById('martini-dir-filter').value : 'both';
-    var martiniEmaMin = parseFloat(document.getElementById('martini-ema-filter') ? document.getElementById('martini-ema-filter').value : 4) / 100;
+    var emaVal        = (document.getElementById('martini-ema-filter') ? document.getElementById('martini-ema-filter').value : 'above_4');
+    var emaSide       = emaVal.startsWith('below') ? 'below' : 'above';
+    var emaPct        = parseFloat(emaVal.split('_')[1] || 4) / 100;
     _dashResults = stocks.filter(function(d) {
       var close=d[2], ema9=d[6], sma50=d[7], chg=d[3];
       if (close==null||ema9==null||sma50==null) return false;
-      if (!(close >= ema9*(1+martiniEmaMin) && close > sma50)) return false;
+      if (emaSide === 'above') {
+        if (!(close >= ema9*(1+emaPct) && close > sma50)) return false;
+      } else {
+        // short setup: price below EMA9 by at least emaPct, price below SMA50
+        if (!(close <= ema9*(1-emaPct) && close < sma50)) return false;
+      }
       if (martiniDir==='up'   && chg < 0) return false;
       if (martiniDir==='down' && chg >= 0) return false;
       return true;
