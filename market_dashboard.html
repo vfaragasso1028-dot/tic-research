@@ -534,9 +534,22 @@ function initSectorRotation() {
   }
   grid.innerHTML = '<div style="color:#4b5563;font-size:12px;padding:8px">Fetching sector data…</div>';
   var syms = ['SPY','QQQ','IWM'].concat(SECTOR_ETFS.map(function(s){ return s.etf; }));
-  Promise.all(syms.map(function(sym){
-    return fgetQ(FH_BASE+'/quote?symbol='+sym+'&token='+key);
-  })).then(function(results) {
+  // Sequential fetch — 1 per 700ms to stay under 60/min rate limit
+  (function seqFetch(i, results) {
+    if (i >= syms.length) {
+      processResults(results);
+      return;
+    }
+    fgetQ(FH_BASE+'/quote?symbol='+syms[i]+'&token='+key).then(function(q) {
+      results.push(q);
+      setTimeout(function(){ seqFetch(i+1, results); }, 700);
+    }).catch(function(){
+      results.push(null);
+      setTimeout(function(){ seqFetch(i+1, results); }, 700);
+    });
+  })(0, []);
+
+  function processResults(results) {
     var spyQ = results[0], qqqQ = results[1], iwmQ = results[2];
     if (!spyQ || spyQ.c == null) {
       grid.innerHTML = '<div style="color:#ef4444;font-size:12px;padding:8px">Failed to load — check API key or try refreshing</div>';
@@ -583,7 +596,7 @@ function initSectorRotation() {
     setTimeout(function(){ loadSubBreakdown(INDUSTRIALS_SUBGROUPS,   'ind-breakdown-list',    'ind-rotation-signal',    key); }, 110000);
     setTimeout(function(){ loadSubBreakdown(ENERGY_SUBGROUPS,        'nrg-breakdown-list',    'nrg-rotation-signal',    key); }, 120000);
     setTimeout(function(){ loadSubBreakdown(ALTFIN_SUBGROUPS,        'altfin-breakdown-list', 'altfin-rotation-signal', key); }, 130000);
-  });
+  }
 }
 
 // ─────────────────────────────────────────────
