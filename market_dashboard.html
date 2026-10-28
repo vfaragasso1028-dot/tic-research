@@ -26,8 +26,49 @@ input{background:#111;border:1px solid #1f2937;border-radius:7px;padding:7px 11p
 input:focus{border-color:#3b82f6}
 .toast{position:fixed;bottom:24px;right:24px;background:#1e40af;color:#93c5fd;font-size:13px;font-weight:600;padding:12px 20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.6);display:none;z-index:999}
 </style>
+<style>
+#lock-screen{position:fixed;inset:0;background:#0a0a0a;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px}
+#lock-screen h1{font-size:22px;font-weight:700;color:#e8e8e8;letter-spacing:1px}
+#lock-screen p{font-size:13px;color:#4b5563}
+#lock-form{display:flex;gap:10px}
+#lock-pw{background:#111;border:1px solid #374151;border-radius:8px;padding:10px 14px;color:#e5e7eb;font-size:14px;font-family:inherit;outline:none;width:200px}
+#lock-pw:focus{border-color:#3b82f6}
+#lock-btn{background:#1e40af;color:#93c5fd;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+#lock-btn:hover{background:#1d4ed8}
+#lock-err{color:#ef4444;font-size:12px;display:none}
+</style>
 </head>
 <body>
+<div id="lock-screen">
+  <h1>TIC Sheet</h1>
+  <p>Enter password to continue</p>
+  <div id="lock-form">
+    <input id="lock-pw" type="password" placeholder="Password" autocomplete="off"/>
+    <button id="lock-btn" onclick="checkLock()">Unlock</button>
+  </div>
+  <span id="lock-err">Incorrect password</span>
+</div>
+<script>
+(function(){
+  if(localStorage.getItem('tic_auth')==='ok'){
+    document.getElementById('lock-screen').style.display='none';
+  }
+  document.getElementById('lock-pw').addEventListener('keydown',function(e){
+    if(e.key==='Enter') checkLock();
+  });
+})();
+function checkLock(){
+  var pw=document.getElementById('lock-pw').value;
+  if(pw==='vince'){
+    localStorage.setItem('tic_auth','ok');
+    document.getElementById('lock-screen').style.display='none';
+  } else {
+    document.getElementById('lock-err').style.display='block';
+    document.getElementById('lock-pw').value='';
+    document.getElementById('lock-pw').focus();
+  }
+}
+</script>
 
 <!-- ── HEADER ── -->
 <div style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;padding:13px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100">
